@@ -3,20 +3,20 @@ import { Link } from 'react-router-dom'
 import { Button } from 'reactstrap'
 
 // Interface for the Counter component state
-interface CounterState {
-  currentCount: number
-}
+// interface CounterState {
+//   currentCount: number
+// }
 
 const initialState = { currentCount: 0 }
 
-export default class Counter extends React.Component<{}, CounterState> {
+export default class Counter extends React.Component {
   constructor() {
     super()
     // Set the initial state of the component in a constructor.
     this.state = initialState
   }
 
-  public render(): JSX.Element {
+  render() {
     return (
       <div>
         <h1>Counter</h1>
@@ -58,19 +58,19 @@ export default class Counter extends React.Component<{}, CounterState> {
     )
   }
 
-  private incrementCounter() {
+  incrementCounter() {
     this.setState({
       currentCount: this.state.currentCount + 1
     })
   }
 
-  private decrementCounter() {
+  decrementCounter() {
     this.setState({
       currentCount: this.state.currentCount - 1
     })
   }
 
-  private resetCounter() {
+  resetCounter() {
     this.setState({
       currentCount: 0
     })

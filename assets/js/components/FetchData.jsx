@@ -3,36 +3,36 @@ import { Link } from 'react-router-dom'
 import { Table, Button } from 'reactstrap'
 
 // The interface for our API response
-interface ApiResponse {
-  data: Language[]
-}
+// interface ApiResponse {
+//   data: Language[]
+// }
 
 // The interface for our Language model.
-interface Language {
-  id: number
-  name: string
-  proverb: string
-}
+// interface Language {
+//   id: number
+//   name: string
+//   proverb: string
+// }
 
-interface FetchDataExampleState {
-  languages: Language[]
-  loading: boolean
-}
+// interface FetchDataExampleState {
+//   languages: Language[]
+//   loading: boolean
+// }
 
-export default class FetchData extends React.Component<{}, FetchDataExampleState> {
+export default class FetchData extends React.Component {
   constructor() {
     super()
     this.state = { languages: [], loading: true }
 
     // Get the data from our API.
     fetch('/api/languages')
-      .then((response) => response.json() as Promise<ApiResponse>)
+      .then((response) => response.json())
       .then((data) => {
         this.setState({ languages: data.data, loading: false })
       })
   }
 
-  private static renderLanguagesTable(languages: Language[]) {
+  static renderLanguagesTable(languages) {
     return (
       <Table>
         <thead>
@@ -53,7 +53,7 @@ export default class FetchData extends React.Component<{}, FetchDataExampleState
     )
   }
 
-  public render(): JSX.Element {
+  render() {
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
       : FetchData.renderLanguagesTable(this.state.languages)
