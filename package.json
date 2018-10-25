@@ -1,0 +1,47 @@
+{
+  "name": "phoenix_react_playground",
+  "version": "1.0.0",
+  "description": "https://resir014.xyz/posts/2017/08/09/a-phoenix-react-initial-setup-that-actually-works/",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Resir",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "4.0.0-alpha.6",
+    "history": "^4.6.3",
+    "phoenix": "file:deps/phoenix",
+    "phoenix_html": "file:deps/phoenix_html",
+    "react": "^15.6.1",
+    "react-addons-css-transition-group": "^15.6.0",
+    "react-addons-transition-group": "^15.6.0",
+    "react-dom": "^15.6.1",
+    "react-hot-loader": "^1.3.1",
+    "react-router": "^4.1.2",
+    "react-router-dom": "^4.1.2",
+    "react-stdio": "^3.1.0",
+    "reactstrap": "^4.8.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^7.1.2",
+    "clean-webpack-plugin": "^0.1.16",
+    "copy-webpack-plugin": "^4.0.1",
+    "css-loader": "^0.28.4",
+    "cssnano": "^3.10.0",
+    "extract-text-webpack-plugin": "^3.0.0",
+    "file-loader": "^0.11.2",
+    "node-sass": "^4.5.3",
+    "postcss-loader": "^2.0.6",
+    "sass-loader": "^6.0.6",
+    "source-map-loader": "^0.2.1",
+    "style-loader": "^0.18.2",
+    "url-loader": "^0.5.9",
+    "webpack": "^3.4.1",
+    "webpack-cli": "^1.3.3"
+  }
+}
