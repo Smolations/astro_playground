@@ -1,12 +1,16 @@
-import * as React from 'react'
-import { Container } from 'reactstrap'
+import React from 'react';
+import { Container, Header, Image } from 'semantic-ui-react';
 
 export default class Root extends React.Component {
   render() {
     return (
-      <div>
+      <Container>
+        <Header dividing>
+          <Image src='/images/phoenix.png' size='massive' centered />
+          {/*<span class="logo"></span>*/}
+        </Header>
         {this.props.children}
-      </div>
+      </Container>
     );
   }
-}
+};

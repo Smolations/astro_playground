@@ -1,19 +1,15 @@
-import * as React from 'react'
-import { Link } from 'react-router-dom'
-import { Button } from 'reactstrap'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from 'semantic-ui-react';
 
-// Interface for the Counter component state
-// interface CounterState {
-//   currentCount: number
-// }
 
-const initialState = { currentCount: 0 }
+const initialState = { currentCount: 0 };
 
 export default class Counter extends React.Component {
   constructor() {
-    super()
+    super();
     // Set the initial state of the component in a constructor.
-    this.state = initialState
+    this.state = initialState;
   }
 
   render() {
@@ -60,19 +56,19 @@ export default class Counter extends React.Component {
 
   incrementCounter() {
     this.setState({
-      currentCount: this.state.currentCount + 1
-    })
+      currentCount: this.state.currentCount + 1,
+    });
   }
 
   decrementCounter() {
     this.setState({
-      currentCount: this.state.currentCount - 1
-    })
+      currentCount: this.state.currentCount - 1,
+    });
   }
 
   resetCounter() {
     this.setState({
-      currentCount: 0
-    })
+      currentCount: 0,
+    });
   }
 }

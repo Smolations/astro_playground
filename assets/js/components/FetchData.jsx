@@ -1,28 +1,12 @@
-import * as React from 'react'
-import { Link } from 'react-router-dom'
-import { Table, Button } from 'reactstrap'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Table, Button } from 'semantic-ui-react';
 
-// The interface for our API response
-// interface ApiResponse {
-//   data: Language[]
-// }
-
-// The interface for our Language model.
-// interface Language {
-//   id: number
-//   name: string
-//   proverb: string
-// }
-
-// interface FetchDataExampleState {
-//   languages: Language[]
-//   loading: boolean
-// }
 
 export default class FetchData extends React.Component {
   constructor() {
-    super()
-    this.state = { languages: [], loading: true }
+    super();
+    this.state = { languages: [], loading: true };
 
     // Get the data from our API.
     fetch('/api/languages')
@@ -35,20 +19,20 @@ export default class FetchData extends React.Component {
   static renderLanguagesTable(languages) {
     return (
       <Table>
-        <thead>
-          <tr>
-            <th>Language</th>
-            <th>Example proverb</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Language</Table.HeaderCell>
+            <Table.HeaderCell>Example proverb</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {languages.map((language) =>
-            <tr key={language.id}>
-              <td>{language.name}</td>
-              <td>{language.proverb}</td>
-            </tr>
+            <Table.Row key={language.id}>
+              <Table.Cell>{language.name}</Table.Cell>
+              <Table.Cell>{language.proverb}</Table.Cell>
+            </Table.Row>
           )}
-        </tbody>
+        </Table.Body>
       </Table>
     )
   }
