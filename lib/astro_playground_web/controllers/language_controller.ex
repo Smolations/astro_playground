@@ -1,8 +1,8 @@
 defmodule AstroPlaygroundWeb.LanguageController do
   use AstroPlaygroundWeb, :controller
 
-  alias AstroPlayground.Example
-  alias AstroPlayground.Example.Language
+  alias AstroPlayground.Bodies
+  alias AstroPlayground.Bodies.Language
 
   action_fallback AstroPlaygroundWeb.FallbackController
 

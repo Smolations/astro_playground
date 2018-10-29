@@ -1,10 +1,10 @@
-defmodule AstroPlayground.ExampleTest do
+defmodule AstroPlayground.BodiesTest do
   use AstroPlayground.DataCase
 
-  alias AstroPlayground.Example
+  alias AstroPlayground.Bodies
 
   describe "languages" do
-    alias AstroPlayground.Example.Language
+    alias AstroPlayground.Bodies.Language
 
     @valid_attrs %{name: "some name", proverb: "some proverb"}
     @update_attrs %{name: "some updated name", proverb: "some updated proverb"}

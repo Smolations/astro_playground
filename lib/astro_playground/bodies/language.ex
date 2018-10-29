@@ -1,4 +1,4 @@
-defmodule AstroPlayground.Example.Language do
+defmodule AstroPlayground.Bodies.Language do
   use Ecto.Schema
   import Ecto.Changeset
 

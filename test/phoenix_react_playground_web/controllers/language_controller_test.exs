@@ -1,8 +1,8 @@
 defmodule AstroPlaygroundWeb.LanguageControllerTest do
   use AstroPlaygroundWeb.ConnCase
 
-  alias AstroPlayground.Example
-  alias AstroPlayground.Example.Language
+  alias AstroPlayground.Bodies
+  alias AstroPlayground.Bodies.Language
 
   @create_attrs %{name: "some name", proverb: "some proverb"}
   @update_attrs %{name: "some updated name", proverb: "some updated proverb"}

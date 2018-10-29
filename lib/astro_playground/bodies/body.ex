@@ -1,4 +1,4 @@
-defmodule AstroPlayground.Example do
+defmodule AstroPlayground.Bodies do
   @moduledoc """
   The Example context.
   """
@@ -6,7 +6,7 @@ defmodule AstroPlayground.Example do
   import Ecto.Query, warn: false
   alias AstroPlayground.Repo
 
-  alias AstroPlayground.Example.Language
+  alias AstroPlayground.Bodies.Language
 
   @doc """
   Returns the list of languages.

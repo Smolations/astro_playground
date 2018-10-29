@@ -10,7 +10,7 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias AstroPlayground.Repo
-alias AstroPlayground.Example.Language
+alias AstroPlayground.Bodies.Language
 
 Repo.insert! %Language{
   name: "English",
