@@ -1,7 +1,7 @@
 {
   "name": "phoenix_react_playground",
   "version": "1.0.0",
-  "description": "https://resir014.xyz/posts/2017/08/09/a-phoenix-react-initial-setup-that-actually-works/",
+  "description": "",
   "main": "index.js",
   "directories": {
     "lib": "lib",
@@ -17,15 +17,13 @@
     "history": "^4.7.2",
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
-    "react_render": "file:deps/react_render",
     "react": "^16.6.0",
-    "react-addons-css-transition-group": "^15.6.2",
-    "react-addons-transition-group": "^15.6.2",
     "react-dom": "^16.6.0",
     "react-hot-loader": "^4.3.11",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-stdio": "^3.4.6",
+    "react_render": "file:deps/react_render",
     "reactstrap": "^6.5.0"
   },
   "devDependencies": {
