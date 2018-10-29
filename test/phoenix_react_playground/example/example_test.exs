@@ -1,10 +1,10 @@
-defmodule PhoenixReactPlayground.ExampleTest do
-  use PhoenixReactPlayground.DataCase
+defmodule AstroPlayground.ExampleTest do
+  use AstroPlayground.DataCase
 
-  alias PhoenixReactPlayground.Example
+  alias AstroPlayground.Example
 
   describe "languages" do
-    alias PhoenixReactPlayground.Example.Language
+    alias AstroPlayground.Example.Language
 
     @valid_attrs %{name: "some name", proverb: "some proverb"}
     @update_attrs %{name: "some updated name", proverb: "some updated proverb"}

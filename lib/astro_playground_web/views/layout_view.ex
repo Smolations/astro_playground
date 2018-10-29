@@ -1,3 +1,3 @@
-defmodule PhoenixReactPlaygroundWeb.LayoutView do
-  use PhoenixReactPlaygroundWeb, :view
+defmodule AstroPlaygroundWeb.LayoutView do
+  use AstroPlaygroundWeb, :view
 end

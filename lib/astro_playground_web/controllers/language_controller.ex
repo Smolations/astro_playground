@@ -1,10 +1,10 @@
-defmodule PhoenixReactPlaygroundWeb.LanguageController do
-  use PhoenixReactPlaygroundWeb, :controller
+defmodule AstroPlaygroundWeb.LanguageController do
+  use AstroPlaygroundWeb, :controller
 
-  alias PhoenixReactPlayground.Example
-  alias PhoenixReactPlayground.Example.Language
+  alias AstroPlayground.Example
+  alias AstroPlayground.Example.Language
 
-  action_fallback PhoenixReactPlaygroundWeb.FallbackController
+  action_fallback AstroPlaygroundWeb.FallbackController
 
   def index(conn, _params) do
     languages = Example.list_languages()

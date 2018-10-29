@@ -1,12 +1,12 @@
-defmodule PhoenixReactPlayground.Example do
+defmodule AstroPlayground.Example do
   @moduledoc """
   The Example context.
   """
 
   import Ecto.Query, warn: false
-  alias PhoenixReactPlayground.Repo
+  alias AstroPlayground.Repo
 
-  alias PhoenixReactPlayground.Example.Language
+  alias AstroPlayground.Example.Language
 
   @doc """
   Returns the list of languages.

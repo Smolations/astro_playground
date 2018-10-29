@@ -5,12 +5,12 @@
 # Inside the script, you can read and write to any of your
 # repositories directly:
 #
-#     PhoenixReactPlayground.Repo.insert!(%PhoenixReactPlayground.SomeSchema{})
+#     AstroPlayground.Repo.insert!(%AstroPlayground.SomeSchema{})
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias PhoenixReactPlayground.Repo
-alias PhoenixReactPlayground.Example.Language
+alias AstroPlayground.Repo
+alias AstroPlayground.Example.Language
 
 Repo.insert! %Language{
   name: "English",

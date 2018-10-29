@@ -1,8 +1,8 @@
-defmodule PhoenixReactPlaygroundWeb.Router do
-  use PhoenixReactPlaygroundWeb, :router
+defmodule AstroPlaygroundWeb.Router do
+  use AstroPlaygroundWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
+    plug :accepts, ["html", "css"]
     plug :fetch_session
     plug :fetch_flash
     plug :protect_from_forgery
@@ -14,13 +14,13 @@ defmodule PhoenixReactPlaygroundWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", PhoenixReactPlaygroundWeb do
+  scope "/api", AstroPlaygroundWeb do
     pipe_through :api
 
     resources "/languages", LanguageController, except: [:new, :edit]
   end
 
-  scope "/", PhoenixReactPlaygroundWeb do
+  scope "/", AstroPlaygroundWeb do
     pipe_through :browser # Use the default browser stack
 
     get "/*path", PageController, :index

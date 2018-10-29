@@ -1,12 +1,12 @@
-defmodule PhoenixReactPlaygroundWeb do
+defmodule AstroPlaygroundWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, views, channels and so on.
 
   This can be used in your application as:
 
-      use PhoenixReactPlaygroundWeb, :controller
-      use PhoenixReactPlaygroundWeb, :view
+      use AstroPlaygroundWeb, :controller
+      use AstroPlaygroundWeb, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -19,17 +19,17 @@ defmodule PhoenixReactPlaygroundWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: PhoenixReactPlaygroundWeb
+      use Phoenix.Controller, namespace: AstroPlaygroundWeb
       import Plug.Conn
-      import PhoenixReactPlaygroundWeb.Router.Helpers
-      import PhoenixReactPlaygroundWeb.Gettext
+      import AstroPlaygroundWeb.Router.Helpers
+      import AstroPlaygroundWeb.Gettext
     end
   end
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/phoenix_react_playground_web/templates",
-                        namespace: PhoenixReactPlaygroundWeb
+      use Phoenix.View, root: "lib/astro_playground_web/templates",
+                        namespace: AstroPlaygroundWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
@@ -37,9 +37,9 @@ defmodule PhoenixReactPlaygroundWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import PhoenixReactPlaygroundWeb.Router.Helpers
-      import PhoenixReactPlaygroundWeb.ErrorHelpers
-      import PhoenixReactPlaygroundWeb.Gettext
+      import AstroPlaygroundWeb.Router.Helpers
+      import AstroPlaygroundWeb.ErrorHelpers
+      import AstroPlaygroundWeb.Gettext
     end
   end
 
@@ -54,7 +54,7 @@ defmodule PhoenixReactPlaygroundWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import PhoenixReactPlaygroundWeb.Gettext
+      import AstroPlaygroundWeb.Gettext
     end
   end
 

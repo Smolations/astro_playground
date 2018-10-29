@@ -1,8 +1,8 @@
-defmodule PhoenixReactPlaygroundWeb.LanguageControllerTest do
-  use PhoenixReactPlaygroundWeb.ConnCase
+defmodule AstroPlaygroundWeb.LanguageControllerTest do
+  use AstroPlaygroundWeb.ConnCase
 
-  alias PhoenixReactPlayground.Example
-  alias PhoenixReactPlayground.Example.Language
+  alias AstroPlayground.Example
+  alias AstroPlayground.Example.Language
 
   @create_attrs %{name: "some name", proverb: "some proverb"}
   @update_attrs %{name: "some updated name", proverb: "some updated proverb"}

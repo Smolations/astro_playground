@@ -1,3 +1,3 @@
-defmodule PhoenixReactPlaygroundWeb.PageViewTest do
-  use PhoenixReactPlaygroundWeb.ConnCase, async: true
+defmodule AstroPlaygroundWeb.PageViewTest do
+  use AstroPlaygroundWeb.ConnCase, async: true
 end

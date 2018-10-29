@@ -1,6 +1,6 @@
-defmodule PhoenixReactPlaygroundWeb.LanguageView do
-  use PhoenixReactPlaygroundWeb, :view
-  alias PhoenixReactPlaygroundWeb.LanguageView
+defmodule AstroPlaygroundWeb.LanguageView do
+  use AstroPlaygroundWeb, :view
+  alias AstroPlaygroundWeb.LanguageView
 
   def render("index.json", %{languages: languages}) do
     %{data: render_many(languages, LanguageView, "language.json")}

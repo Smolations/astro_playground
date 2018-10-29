@@ -1,4 +1,4 @@
-defmodule PhoenixReactPlayground.Example.Language do
+defmodule AstroPlayground.Example.Language do
   use Ecto.Schema
   import Ecto.Changeset
 

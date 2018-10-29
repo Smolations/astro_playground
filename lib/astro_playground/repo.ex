@@ -1,5 +1,5 @@
-defmodule PhoenixReactPlayground.Repo do
-  use Ecto.Repo, otp_app: :phoenix_react_playground
+defmodule AstroPlayground.Repo do
+  use Ecto.Repo, otp_app: :astro_playground
 
   @doc """
   Dynamically loads the repository url from the

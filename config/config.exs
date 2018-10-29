@@ -6,15 +6,15 @@
 use Mix.Config
 
 # General application configuration
-config :phoenix_react_playground,
-  ecto_repos: [PhoenixReactPlayground.Repo]
+config :astro_playground,
+  ecto_repos: [AstroPlayground.Repo]
 
 # Configures the endpoint
-config :phoenix_react_playground, PhoenixReactPlaygroundWeb.Endpoint,
+config :astro_playground, AstroPlaygroundWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Q7HOAUenon+hzoc2e9WuNgSrZRFvZ9fFL5ADyicAvn14g7rEKLb7hhcq+MZORdgi",
-  render_errors: [view: PhoenixReactPlaygroundWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: PhoenixReactPlayground.PubSub,
+  render_errors: [view: AstroPlaygroundWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: AstroPlayground.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger

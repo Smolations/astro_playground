@@ -1,16 +1,16 @@
-defmodule PhoenixReactPlaygroundWeb.ErrorViewTest do
-  use PhoenixReactPlaygroundWeb.ConnCase, async: true
+defmodule AstroPlaygroundWeb.ErrorViewTest do
+  use AstroPlaygroundWeb.ConnCase, async: true
 
   # Bring render/3 and render_to_string/3 for testing custom views
   import Phoenix.View
 
   test "renders 404.html" do
-    assert render_to_string(PhoenixReactPlaygroundWeb.ErrorView, "404.html", []) ==
+    assert render_to_string(AstroPlaygroundWeb.ErrorView, "404.html", []) ==
            "Not Found"
   end
 
   test "renders 500.html" do
-    assert render_to_string(PhoenixReactPlaygroundWeb.ErrorView, "500.html", []) ==
+    assert render_to_string(AstroPlaygroundWeb.ErrorView, "500.html", []) ==
            "Internal Server Error"
   end
 end

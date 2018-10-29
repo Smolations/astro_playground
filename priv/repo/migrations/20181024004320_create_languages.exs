@@ -1,4 +1,4 @@
-defmodule PhoenixReactPlayground.Repo.Migrations.CreateLanguages do
+defmodule AstroPlayground.Repo.Migrations.CreateLanguages do
   use Ecto.Migration
 
   def change do

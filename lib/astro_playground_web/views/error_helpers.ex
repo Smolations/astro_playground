@@ -1,4 +1,4 @@
-defmodule PhoenixReactPlaygroundWeb.ErrorHelpers do
+defmodule AstroPlaygroundWeb.ErrorHelpers do
   @moduledoc """
   Conveniences for translating and building error messages.
   """
@@ -36,9 +36,9 @@ defmodule PhoenixReactPlaygroundWeb.ErrorHelpers do
     # should be written to the errors.po file. The :count option is
     # set by Ecto and indicates we should also apply plural rules.
     if count = opts[:count] do
-      Gettext.dngettext(PhoenixReactPlaygroundWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(AstroPlaygroundWeb.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(PhoenixReactPlaygroundWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(AstroPlaygroundWeb.Gettext, "errors", msg, opts)
     end
   end
 end

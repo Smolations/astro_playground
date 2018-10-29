@@ -1,11 +1,11 @@
-defmodule PhoenixReactPlaygroundWeb.ChangesetView do
-  use PhoenixReactPlaygroundWeb, :view
+defmodule AstroPlaygroundWeb.ChangesetView do
+  use AstroPlaygroundWeb, :view
 
   @doc """
   Traverses and translates changeset errors.
 
   See `Ecto.Changeset.traverse_errors/2` and
-  `PhoenixReactPlaygroundWeb.ErrorHelpers.translate_error/1` for more details.
+  `AstroPlaygroundWeb.ErrorHelpers.translate_error/1` for more details.
   """
   def translate_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
