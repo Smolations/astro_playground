@@ -22,7 +22,7 @@ export default class Counter extends React.Component {
         </p>
         {/* We apply an onClick event to these buttons to their corresponding functions */}
         <Button
-          color="primary"
+          primary
           onClick={() => {
             this.incrementCounter()
           }}
@@ -30,7 +30,7 @@ export default class Counter extends React.Component {
           Increment counter
         </Button>{' '}
         <Button
-          color="secondary"
+          secondary
           onClick={() => {
             this.decrementCounter()
           }}
@@ -38,7 +38,7 @@ export default class Counter extends React.Component {
           Decrement counter
         </Button>{' '}
         <Button
-          color="secondary"
+          secondary
           onClick={() => {
             this.resetCounter()
           }}

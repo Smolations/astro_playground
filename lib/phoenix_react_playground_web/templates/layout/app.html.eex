@@ -8,8 +8,8 @@
     <meta name="author" content="">
 
     <title>Hello PhoenixReactPlayground!</title>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/semantic-ui@2.4.1/dist/semantic.min.css">
-    <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/semantic-ui@2.4.1/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/css/app.css") %>">
   </head>
 
   <body>
