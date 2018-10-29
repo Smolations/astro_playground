@@ -6,6 +6,10 @@ defmodule PhoenixReactPlayground.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
+    render_service_path = "assets/js/server.js"
+    pool_size = 4
+
+
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
@@ -14,6 +18,8 @@ defmodule PhoenixReactPlayground.Application do
       supervisor(PhoenixReactPlaygroundWeb.Endpoint, []),
       # Start your own worker by calling: PhoenixReactPlayground.Worker.start_link(arg1, arg2, arg3)
       # worker(PhoenixReactPlayground.Worker, [arg1, arg2, arg3]),
+
+      supervisor(ReactRender, [[render_service_path: render_service_path, pool_size: 4]])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
