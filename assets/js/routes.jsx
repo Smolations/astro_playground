@@ -1,14 +1,14 @@
-import * as React from 'react'
-import { Route } from 'react-router-dom'
-import Root from './components/Root'
-import Home from './components/Home'
-import Counter from './components/Counter'
-import FetchData from './components/FetchData'
+import React from 'react';
+import { Route } from 'react-router-dom';
+import Root from './components/Root';
+import Home from './components/Home';
+import Bodies from './components/Bodies';
+import Counter from './components/Counter';
 
 export const routes = (
   <Root>
     <Route exact path="/" component={ Home } />
     <Route path="/counter" component={ Counter } />
-    <Route path="/fetch-data" component={ FetchData } />
+    <Route path="/bodies" component={ Bodies } />
   </Root>
 )
