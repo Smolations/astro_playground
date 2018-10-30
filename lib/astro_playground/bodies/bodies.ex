@@ -6,99 +6,99 @@ defmodule AstroPlayground.Bodies do
   import Ecto.Query, warn: false
   alias AstroPlayground.Repo
 
-  alias AstroPlayground.Bodies.Language
+  alias AstroPlayground.Bodies.Body
 
   @doc """
-  Returns the list of languages.
+  Returns the list of bodies.
 
   ## Examples
 
-      iex> list_languages()
-      [%Language{}, ...]
+      iex> list_bodies()
+      [%Body{}, ...]
 
   """
-  def list_languages do
-    Repo.all(Language)
+  def list_bodies do
+    Repo.all(Body)
   end
 
   @doc """
-  Gets a single language.
+  Gets a single body.
 
-  Raises `Ecto.NoResultsError` if the Language does not exist.
+  Raises `Ecto.NoResultsError` if the Body does not exist.
 
   ## Examples
 
-      iex> get_language!(123)
-      %Language{}
+      iex> get_body!(123)
+      %Body{}
 
-      iex> get_language!(456)
+      iex> get_body!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_language!(id), do: Repo.get!(Language, id)
+  def get_body!(id), do: Repo.get!(Body, id)
 
   @doc """
-  Creates a language.
+  Creates a body.
 
   ## Examples
 
-      iex> create_language(%{field: value})
-      {:ok, %Language{}}
+      iex> create_body(%{field: value})
+      {:ok, %Body{}}
 
-      iex> create_language(%{field: bad_value})
+      iex> create_body(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_language(attrs \\ %{}) do
-    %Language{}
-    |> Language.changeset(attrs)
+  def create_body(attrs \\ %{}) do
+    %Body{}
+    |> Body.changeset(attrs)
     |> Repo.insert()
   end
 
   @doc """
-  Updates a language.
+  Updates a body.
 
   ## Examples
 
-      iex> update_language(language, %{field: new_value})
-      {:ok, %Language{}}
+      iex> update_body(body, %{field: new_value})
+      {:ok, %Body{}}
 
-      iex> update_language(language, %{field: bad_value})
+      iex> update_body(body, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_language(%Language{} = language, attrs) do
-    language
-    |> Language.changeset(attrs)
+  def update_body(%Body{} = body, attrs) do
+    body
+    |> Body.changeset(attrs)
     |> Repo.update()
   end
 
   @doc """
-  Deletes a Language.
+  Deletes a Body.
 
   ## Examples
 
-      iex> delete_language(language)
-      {:ok, %Language{}}
+      iex> delete_body(body)
+      {:ok, %Body{}}
 
-      iex> delete_language(language)
+      iex> delete_body(body)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_language(%Language{} = language) do
-    Repo.delete(language)
+  def delete_body(%Body{} = body) do
+    Repo.delete(body)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking language changes.
+  Returns an `%Ecto.Changeset{}` for tracking body changes.
 
   ## Examples
 
-      iex> change_language(language)
-      %Ecto.Changeset{source: %Language{}}
+      iex> change_body(body)
+      %Ecto.Changeset{source: %Body{}}
 
   """
-  def change_language(%Language{} = language) do
-    Language.changeset(language, %{})
+  def change_body(%Body{} = body) do
+    Body.changeset(body, %{})
   end
 end

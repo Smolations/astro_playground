@@ -10,17 +10,50 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias AstroPlayground.Repo
-alias AstroPlayground.Bodies.Language
+alias AstroPlayground.Bodies.Body
 
-Repo.insert! %Language{
-  name: "English",
-  proverb: "A penny saved is a penny earned."
+Repo.insert! %Body{
+  name: "Sun",
+  type: "star",
+  diameter: 1392684
 }
-Repo.insert! %Language{
-  name: "Indonesian",
-  proverb: "Dimana ada kemauan, di situ ada jalan."
+Repo.insert! %Body{
+  name: "Mercury",
+  type: "planet",
+  diameter: 4879
 }
-Repo.insert! %Language{
-  name: "Dutch",
-  proverb: "Die goed doet, goed ontmoet."
+Repo.insert! %Body{
+  name: "Venus",
+  type: "planet",
+  diameter: 12104
+}
+Repo.insert! %Body{
+  name: "Earth",
+  type: "planet",
+  diameter: 12756
+}
+Repo.insert! %Body{
+  name: "Mars",
+  type: "planet",
+  diameter: 6792
+}
+Repo.insert! %Body{
+  name: "Jupiter",
+  type: "planet",
+  diameter: 142984
+}
+Repo.insert! %Body{
+  name: "Saturn",
+  type: "planet",
+  diameter: 120536
+}
+Repo.insert! %Body{
+  name: "Neptune",
+  type: "planet",
+  diameter: 51118
+}
+Repo.insert! %Body{
+  name: "Uranus",
+  type: "planet",
+  diameter: 49528
 }

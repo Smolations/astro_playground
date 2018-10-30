@@ -1,19 +1,20 @@
-defmodule AstroPlayground.Bodies.Language do
+defmodule AstroPlayground.Bodies.Body do
   use Ecto.Schema
   import Ecto.Changeset
 
 
-  schema "languages" do
+  schema "bodies" do
     field :name, :string
-    field :proverb, :string
+    field :type, :string
+    field :diameter, :integer
 
     timestamps()
   end
 
   @doc false
-  def changeset(language, attrs) do
-    language
-    |> cast(attrs, [:name, :proverb])
-    |> validate_required([:name, :proverb])
+  def changeset(body, attrs) do
+    body
+    |> cast(attrs, [:name, :type, :diameter])
+    |> validate_required([:name, :type, :diameter])
   end
 end

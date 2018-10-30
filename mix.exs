@@ -3,7 +3,7 @@ defmodule PhoenixReactPlayground.Mixfile do
 
   def project do
     [
-      app: :phoenix_react_playground,
+      app: :astro_playground,
       version: "0.0.1",
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
@@ -19,7 +19,7 @@ defmodule PhoenixReactPlayground.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {PhoenixReactPlayground.Application, []},
+      mod: {AstroPlayground.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

@@ -1,41 +1,41 @@
-defmodule AstroPlaygroundWeb.LanguageController do
+defmodule AstroPlaygroundWeb.BodyController do
   use AstroPlaygroundWeb, :controller
 
   alias AstroPlayground.Bodies
-  alias AstroPlayground.Bodies.Language
+  alias AstroPlayground.Bodies.Body
 
   action_fallback AstroPlaygroundWeb.FallbackController
 
   def index(conn, _params) do
-    languages = Example.list_languages()
-    render(conn, "index.json", languages: languages)
+    bodies = Bodies.list_bodies()
+    render(conn, "index.json", bodies: bodies)
   end
 
-  def create(conn, %{"language" => language_params}) do
-    with {:ok, %Language{} = language} <- Example.create_language(language_params) do
+  def create(conn, %{"body" => body_params}) do
+    with {:ok, %Body{} = body} <- Bodies.create_body(body_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", language_path(conn, :show, language))
-      |> render("show.json", language: language)
+      |> put_resp_header("location", body_path(conn, :show, body))
+      |> render("show.json", body: body)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    language = Example.get_language!(id)
-    render(conn, "show.json", language: language)
+    body = Bodies.get_body!(id)
+    render(conn, "show.json", body: body)
   end
 
-  def update(conn, %{"id" => id, "language" => language_params}) do
-    language = Example.get_language!(id)
+  def update(conn, %{"id" => id, "body" => body_params}) do
+    body = Bodies.get_body!(id)
 
-    with {:ok, %Language{} = language} <- Example.update_language(language, language_params) do
-      render(conn, "show.json", language: language)
+    with {:ok, %Body{} = body} <- Bodies.update_body(body, body_params) do
+      render(conn, "show.json", body: body)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    language = Example.get_language!(id)
-    with {:ok, %Language{}} <- Example.delete_language(language) do
+    body = Bodies.get_body!(id)
+    with {:ok, %Body{}} <- Bodies.delete_body(body) do
       send_resp(conn, :no_content, "")
     end
   end

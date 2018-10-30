@@ -6,30 +6,30 @@ import { Table, Button } from 'semantic-ui-react';
 export default class FetchData extends React.Component {
   constructor() {
     super();
-    this.state = { languages: [], loading: true };
+    this.state = { bodies: [], loading: true };
 
     // Get the data from our API.
-    fetch('/api/languages')
+    fetch('/api/bodies')
       .then((response) => response.json())
       .then((data) => {
-        this.setState({ languages: data.data, loading: false })
+        this.setState({ bodies: data.data, loading: false })
       })
   }
 
-  static renderLanguagesTable(languages) {
+  static renderBodiesTable(bodies) {
     return (
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Language</Table.HeaderCell>
-            <Table.HeaderCell>Example proverb</Table.HeaderCell>
+            <Table.HeaderCell>Body</Table.HeaderCell>
+            <Table.HeaderCell>Diameter</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {languages.map((language) =>
-            <Table.Row key={language.id}>
-              <Table.Cell>{language.name}</Table.Cell>
-              <Table.Cell>{language.proverb}</Table.Cell>
+          {bodies.map((body) =>
+            <Table.Row key={body.id}>
+              <Table.Cell>{body.name}</Table.Cell>
+              <Table.Cell>{body.diameter}km</Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
@@ -40,7 +40,7 @@ export default class FetchData extends React.Component {
   render() {
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
-      : FetchData.renderLanguagesTable(this.state.languages)
+      : FetchData.renderBodiesTable(this.state.bodies)
 
     return (
       <div>
