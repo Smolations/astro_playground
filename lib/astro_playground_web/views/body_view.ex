@@ -11,9 +11,12 @@ defmodule AstroPlaygroundWeb.BodyView do
   end
 
   def render("body.json", %{body: body}) do
-    %{id: body.id,
+    %{
+      id: body.id,
       name: body.name,
       type: body.type,
-      diameter: body.diameter}
+      diameter: body.diameter,
+      orbital_radius: body.orbital_radius
+    }
   end
 end

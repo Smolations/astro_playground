@@ -7,6 +7,7 @@ defmodule AstroPlayground.Bodies.Body do
     field :name, :string
     field :type, :string
     field :diameter, :integer
+    field :orbital_radius, :integer
 
     timestamps()
   end
@@ -14,7 +15,7 @@ defmodule AstroPlayground.Bodies.Body do
   @doc false
   def changeset(body, attrs) do
     body
-    |> cast(attrs, [:name, :type, :diameter])
+    |> cast(attrs, [:name, :type, :diameter, :orbital_radius])
     |> validate_required([:name, :type, :diameter])
   end
 end

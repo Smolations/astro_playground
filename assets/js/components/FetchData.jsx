@@ -23,6 +23,7 @@ export default class FetchData extends React.Component {
           <Table.Row>
             <Table.HeaderCell>Body</Table.HeaderCell>
             <Table.HeaderCell>Diameter</Table.HeaderCell>
+            <Table.HeaderCell>Orbital Radius</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -30,6 +31,7 @@ export default class FetchData extends React.Component {
             <Table.Row key={body.id}>
               <Table.Cell>{body.name}</Table.Cell>
               <Table.Cell>{body.diameter}km</Table.Cell>
+              <Table.Cell>{body.orbital_radius}km</Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
