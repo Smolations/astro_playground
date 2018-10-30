@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import BodiesTable from './BodiesTable';
 
+
 export default class FetchData extends React.Component {
   constructor() {
     super();
@@ -12,13 +13,13 @@ export default class FetchData extends React.Component {
       .then((response) => response.json())
       .then((data) => {
         this.setState({ bodies: data.data, loading: false })
-      })
+      });
   }
 
   render() {
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
-      : <BodiesTable bodies={this.state.bodies}/>
+      : <BodiesTable bodies={this.state.bodies}/>;
 
     return (
       <div>
@@ -28,6 +29,6 @@ export default class FetchData extends React.Component {
         <br /><br />
         <p><Link to="/">Back to home</Link></p>
       </div>
-    )
+    );
   }
-}
+};

@@ -1,6 +1,6 @@
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
-// import { Jumbotron, Button, Row, Col } from 'semantic-ui-react';
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { List } from 'semantic-ui-react';
 
 export default class Home extends React.Component {
   constructor(props) {
@@ -9,10 +9,10 @@ export default class Home extends React.Component {
 
   render() {
     return (
-      <div>
-        {/* Be sure to always wrap the content of a component in an enclosing
-         element (e.g. `<div>`) */}
-      </div>
+      <List>
+        <List.Item><Link to="/counter">Counter Example</Link></List.Item>
+        <List.Item><Link to="/bodies">Heavenly Bodies</Link></List.Item>
+      </List>
     );
   }
 }
