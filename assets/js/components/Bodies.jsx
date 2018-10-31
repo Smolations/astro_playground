@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import BodiesTable from './BodiesTable';
 
 
-export default class FetchData extends React.Component {
+export default class Bodies extends React.Component {
   constructor() {
     super();
     this.state = { bodies: [], loading: true };

@@ -13,6 +13,7 @@
   "author": "Resir",
   "license": "ISC",
   "dependencies": {
+    "@wildpeaks/three-webpack-plugin": "^2.0.0",
     "history": "^4.7.2",
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
@@ -24,7 +25,8 @@
     "react-stdio": "^3.4.6",
     "react_render": "file:deps/react_render",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^0.83.0"
+    "semantic-ui-react": "^0.83.0",
+    "three": "^0.97.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.0",

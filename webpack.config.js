@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ThreeWebpackPlugin = require('@wildpeaks/three-webpack-plugin');
 
 // Since Webpack will be run directly within Phoenix, we'll use the `MIX_ENV`
 // variable instead of `NODE_ENV`.
@@ -97,6 +98,7 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: path.join(__dirname, 'assets', 'static') }
     ]),
+    new ThreeWebpackPlugin(),
   ].concat(plugins[env]),
   resolve: {
     modules: [
