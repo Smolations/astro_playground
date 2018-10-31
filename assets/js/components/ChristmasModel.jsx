@@ -7,6 +7,9 @@ import Present from '../three/models/present';
 import Star from '../three/models/star';
 
 
+// https://www.august.com.au/blog/animating-scenes-with-webgl-three-js/
+
+
 /*
   To actually be able to display anything with three.js, we need three
   things: scene, camera and renderer, so that we can render the scene
@@ -117,6 +120,7 @@ export default class ChristmasModel extends React.Component {
   configureControls() {
     // Add an orbit control which allows us to move around the scene.
     const controls = new OrbitControls(this.camera, this.canvasRef.current );
+
     controls.target = new THREE.Vector3(0, 80, 0);
     controls.maxPolarAngle = Math.PI / 2;
     controls.minDistance = 100;

@@ -1,4 +1,8 @@
-# PhoenixReactPlayground
+# AstroPlayground
+
+A React.js app backed by an Elixir/Phoenix/PostgreSQL backend. Experimental
+WebGL rendering done with Three.js.
+
 
 To start your Phoenix server:
 
