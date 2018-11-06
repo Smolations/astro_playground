@@ -16,7 +16,9 @@ defmodule AstroPlaygroundWeb.BodyView do
       name: body.name,
       type: body.type,
       diameter: body.diameter,
-      orbital_radius: body.orbital_radius
+      oblateness: body.oblateness,
+      axial_tilt: body.axial_tilt,
+      rotation_duration: body.rotation_duration,
     }
   end
 end

@@ -6,7 +6,9 @@ defmodule AstroPlayground.Repo.Migrations.CreateBodies do
       add :name, :string
       add :type, :string
       add :diameter, :integer
-      add :orbital_radius, :bigint
+      add :axial_tilt, :float
+      add :rotation_duration, :float
+      add :oblateness, :float
 
       timestamps()
     end

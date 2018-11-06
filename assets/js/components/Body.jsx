@@ -29,8 +29,7 @@ export default class Body extends React.Component {
         <h1>Single Heavenly Body</h1>
         {content}
         <br /><br />
-        {/*<PlanetModel/>*/}
-        <ChristmasModel/>
+        <PlanetModel specs={body} />
         <p><Link to="/">Back to home</Link></p>
       </div>
     );

@@ -1,3 +1,6 @@
+# os x
+.DS_Store
+
 # App artifacts
 /_build
 /db
@@ -18,3 +21,4 @@ erl_crash.dump
 # frontend
 /node_modules
 /priv/static
+assets/static/images

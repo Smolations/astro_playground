@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 
 const util = {
   /**
@@ -45,6 +47,13 @@ const util = {
     }
 
     return shapes;
+  },
+
+  loadTexture(url, onProgress = () => {}) {
+    const loader = new THREE.TextureLoader();
+    return new Promise((resolve, reject) => {
+      loader.load(url, resolve, onProgress, reject);
+    });
   },
 };
 
