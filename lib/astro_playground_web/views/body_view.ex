@@ -1,6 +1,6 @@
 defmodule AstroPlaygroundWeb.BodyView do
   use AstroPlaygroundWeb, :view
-  alias AstroPlaygroundWeb.BodyView
+  alias AstroPlaygroundWeb.{BodyView, OrbitView, TextureView}
 
   def render("index.json", %{bodies: bodies}) do
     %{data: render_many(bodies, BodyView, "body.json")}
@@ -11,6 +11,8 @@ defmodule AstroPlaygroundWeb.BodyView do
   end
 
   def render("body.json", %{body: body}) do
+    # IO.inspect body
+    texture = render_one(body.texture, TextureView, "texture.json")
     %{
       id: body.id,
       name: body.name,
@@ -20,6 +22,7 @@ defmodule AstroPlaygroundWeb.BodyView do
       oblateness: body.oblateness,
       axial_tilt: body.axial_tilt,
       rotation_period: body.rotation_period,
+      texture: texture,
     }
   end
 end

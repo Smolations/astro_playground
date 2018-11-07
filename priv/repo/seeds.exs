@@ -11,7 +11,8 @@
 # and so on) as they will fail if something goes wrong.
 alias AstroPlayground.Repo
 alias AstroPlayground.Bodies.Body
-alias AstroPlayground.Bodies.Texture
+alias AstroPlayground.Orbits.Orbit
+alias AstroPlayground.Textures.Texture
 
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
@@ -146,9 +147,26 @@ Repo.insert! %Texture{ body_id: neptune.id,
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
+Repo.insert! %Texture{ body_id: pluto.id,
+  map: "pluto_1k_grayscale.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
 
 Repo.insert! %Texture{ body_id: moon.id,
   map: "moon_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
+}
+
+
+# orbits
+
+Repo.insert! %Orbit{ center_body_id: earth.id, orbiting_body_id: moon.id,
+  inclination: 5.145,
+  period: 27.3217,
+  # eccentricity: 0.0549,
+  min_velocity: 0.970,
+  max_velocity: 1.082,
+  semi_major_axis: 0.3844
 }

@@ -2,7 +2,7 @@ defmodule AstroPlaygroundWeb.TextureControllerTest do
   use AstroPlaygroundWeb.ConnCase
 
   alias AstroPlayground.Bodies
-  alias AstroPlayground.Bodies.Texture
+  alias AstroPlayground.Textures.Texture
 
   @create_attrs %{ambient_occlusion: "some ambient_occlusion", bump: "some bump", displacement: "some displacement", emissive: "some emissive", map: "some map", normal: "some normal"}
   @update_attrs %{ambient_occlusion: "some updated ambient_occlusion", bump: "some updated bump", displacement: "some updated displacement", emissive: "some updated emissive", map: "some updated map", normal: "some updated normal"}

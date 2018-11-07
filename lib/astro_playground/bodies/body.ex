@@ -11,6 +11,9 @@ defmodule AstroPlayground.Bodies.Body do
     field :oblateness, :float
     field :axial_tilt, :float
     field :rotation_period, :float
+    has_one :texture, AstroPlayground.Textures.Texture
+    has_one :orbit, AstroPlayground.Orbits.Orbit, foreign_key: :orbiting_body_id
+    has_many :orbiting, AstroPlayground.Orbits.Orbit, foreign_key: :center_body_id
 
     timestamps()
   end

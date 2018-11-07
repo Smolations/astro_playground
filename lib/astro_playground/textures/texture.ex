@@ -1,4 +1,4 @@
-defmodule AstroPlayground.Bodies.Texture do
+defmodule AstroPlayground.Textures.Texture do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -10,7 +10,7 @@ defmodule AstroPlayground.Bodies.Texture do
     field :emissive, :string
     field :map, :string
     field :normal, :string
-    field :body_id, :id
+    belongs_to :body, AstroPlayground.Bodies.Body
 
     timestamps()
   end

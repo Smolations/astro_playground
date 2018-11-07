@@ -9,7 +9,7 @@ defmodule AstroPlayground.Repo.Migrations.CreateTextures do
       add :emissive, :string
       add :map, :string
       add :normal, :string
-      add :body_id, references(:bodies, on_delete: :nothing)
+      add :body_id, references(:bodies, on_delete: :delete_all), null: false
 
       timestamps()
     end

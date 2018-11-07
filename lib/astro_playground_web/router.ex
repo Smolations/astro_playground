@@ -19,6 +19,8 @@ defmodule AstroPlaygroundWeb.Router do
 
     resources "/bodies", BodyController, except: [:new, :edit] do
       resources "/textures", TextureController, only: [:index]
+      get "/orbits", OrbitController, :orbits_index
+      get "/orbiting", OrbitController, :orbiting_index
     end
 
     resources "/textures", TextureController, except: [:new, :edit]
