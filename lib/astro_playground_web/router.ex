@@ -17,7 +17,11 @@ defmodule AstroPlaygroundWeb.Router do
   scope "/api", AstroPlaygroundWeb do
     pipe_through :api
 
-    resources "/bodies", BodyController, except: [:new, :edit]
+    resources "/bodies", BodyController, except: [:new, :edit] do
+      resources "/textures", TextureController, only: [:index]
+    end
+
+    resources "/textures", TextureController, except: [:new, :edit]
   end
 
   scope "/", AstroPlaygroundWeb do

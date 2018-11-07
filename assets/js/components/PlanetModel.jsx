@@ -5,13 +5,13 @@ import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 // const loader = new STLLoader();console.log(loader);
 
 import util from '../three/util';
+import Body from '../three/models/body';
+import Satellite from '../three/models/satellite';
 
 
-/*
-  To actually be able to display anything with three.js, we need three
-  things: scene, camera and renderer, so that we can render the scene
-  with camera.
-*/
+const _body = Symbol('body');
+const _satellites = Symbol('satellites');
+
 
 export default class PlanetModel extends React.Component {
   constructor(props) {
@@ -21,6 +21,9 @@ export default class PlanetModel extends React.Component {
 
     this.canvasRef = React.createRef();
     this.dims = dims;
+    this.maps = {};
+
+    this[_satellites] = [];
 
     /*
       a group or stage containing all the objects we want to render. Scenes
@@ -31,32 +34,19 @@ export default class PlanetModel extends React.Component {
   }
 
   addBody() {
-    const { specs } = this.props;
-    const geometry = new THREE.SphereGeometry( 1, 128, 128 );
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xeeeeee,
-      map: this.maps.textureMap,
-      displacementMap: this.maps.displacementMap,
-      displacementScale: 0.1,
-      normalMap: this.maps.normalMap,
-      normalScale: new THREE.Vector2(0.5, 0.5),
-      metalness: 0,
-      roughness: 1,
+    const { specs, texture } = this.props;
+    const { maps } = this;
+
+    const body = new Body({
+      diameter: 2,
+      // diameter: specs.diameter,
+      axialTilt: specs.axial_tilt,
+      rotationPeriod: specs.rotation_period,
+      maps,
     });
 
-    const sphere = new THREE.Mesh( geometry, material );
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
-
-    const axialTiltDeg = 25.19;
-
-    const sphereWrap = new THREE.Group();
-    sphereWrap.add(sphere);
-
-    sphereWrap.rotation.z = specs.axial_tilt * Math.PI / 180;
-
-    this.sphere = sphere;
-    this.scene.add( sphereWrap );
+    this[_body] = body;
+    this.scene.add( body );
   }
 
   addLighting() {
@@ -79,20 +69,42 @@ export default class PlanetModel extends React.Component {
     this.scene.add(directionalLight);
   }
 
-  async componentDidMount() {
-    await this.loadMaps();
+  addSatellites() {
+    // diameter: 3454,
+    // oblateness: 0.0012,
+    // axial_tilt: 6.687,
+    // rotation_period: 655.704
+    const moon = new Body({
+      diameter: 0.2,
+      axialTilt: 6.687,
+      rotationPeriod: 1000,
+      // maps,
+    });
 
-    console.log('PlanetModel: props %o', this.props);
+    const satellite = new Satellite({
+      body: moon,
+      orbitalRadius: 2,
+      inclination: 5.145,
+    });
+
+    this.scene.add( satellite );
+    this[_satellites].push(satellite);
+  }
+
+  async componentDidMount() {
+    console.log('PlanetModel.componentDidMount: props %o', this.props);
+
+    await this.loadMaps();
 
     this.camera = this.configureCamera();
     this.renderer = this.configureRenderer();
 
     this.addLighting();
     this.addBody();
+    this.addSatellites();
 
     this.controls = this.configureControls();
     this.renderScene();
-    // mix phx.gen.schema Bodies.
   }
 
   configureCamera() {
@@ -104,7 +116,7 @@ export default class PlanetModel extends React.Component {
     );
 
     // Reposition the camera
-    camera.position.set(0, 0, 5);
+    camera.position.set(0, 0.5, 5);
 
     // Point the camera at a given coordinate
     camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -144,14 +156,28 @@ export default class PlanetModel extends React.Component {
   }
 
   async loadMaps() {
-    // const loader = new THREE.TextureLoader();
-    const [textureMap, displacementMap, normalMap] = await Promise.all([
-      util.loadTexture('/images/mars_8k_color.jpg'),
-      util.loadTexture('/images/mars_2k_displacement.jpg'),
-      util.loadTexture('/images/mars_2k_normal.jpg'),
-    ]);
+    const path = '/images';
+    const { texture } =  this.props;
+    const toLoad = [];
+    let promise;
 
-    this.maps = { textureMap, displacementMap, normalMap };
+    // console.log('loadMaps() texture: %o', texture);
+    for (const [textureType, texturePath] of Object.entries(texture)) {
+      // console.log(`${textureType} -> ${texturePath}`);
+      if (texturePath && !textureType.endsWith('id')) {
+        promise = util.loadTexture(`${path}/${texturePath}`)
+          .then((map) => {
+            const key = (textureType !== 'map') ? `${textureType}Map` : textureType;
+            console.log(`adding this.${key} = %o`, map);
+            this.maps[key] = map;
+          });
+
+        toLoad.push(promise);
+      }
+    }
+
+    await Promise.all(toLoad);
+    console.log('this.maps = %o', this.maps)
   }
 
   render() {
@@ -165,10 +191,8 @@ export default class PlanetModel extends React.Component {
       this.controls.update();
 
       // Update animated elements
-      // this.tree.updatePosition();
-      // this.star.updatePosition();
-      // sphere.rotation.x += 0.01;
-      this.sphere.rotation.y += 0.001;
+      this[_body].updatePosition();
+      this[_satellites].forEach(sat => sat.updatePosition());
 
       // Render the scene/camera combnation
       this.renderer.render(this.scene, this.camera);

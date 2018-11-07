@@ -15,10 +15,11 @@ defmodule AstroPlaygroundWeb.BodyView do
       id: body.id,
       name: body.name,
       type: body.type,
+      mass: body.mass,
       diameter: body.diameter,
       oblateness: body.oblateness,
       axial_tilt: body.axial_tilt,
-      rotation_duration: body.rotation_duration,
+      rotation_period: body.rotation_period,
     }
   end
 end

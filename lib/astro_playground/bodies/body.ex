@@ -6,10 +6,11 @@ defmodule AstroPlayground.Bodies.Body do
   schema "bodies" do
     field :name, :string
     field :type, :string
+    field :mass, :float
     field :diameter, :integer
     field :oblateness, :float
     field :axial_tilt, :float
-    field :rotation_duration, :float
+    field :rotation_period, :float
 
     timestamps()
   end
@@ -17,7 +18,7 @@ defmodule AstroPlayground.Bodies.Body do
   @doc false
   def changeset(body, attrs) do
     body
-    |> cast(attrs, [:name, :type, :diameter, :oblateness, :axial_tilt, :rotation_duration])
-    |> validate_required([:name, :type, :diameter])
+    |> cast(attrs, [:name, :type, :mass, :diameter, :oblateness, :axial_tilt, :rotation_period])
+    |> validate_required([:name, :type, :mass, :diameter])
   end
 end
