@@ -13,7 +13,7 @@ defmodule AstroPlayground.Bodies.Body do
     field :rotation_period, :float
     has_one :texture, AstroPlayground.Textures.Texture
     has_one :orbit, AstroPlayground.Orbits.Orbit, foreign_key: :orbiting_body_id
-    has_many :orbiting, AstroPlayground.Orbits.Orbit, foreign_key: :center_body_id
+    has_many :orbiting, AstroPlayground.Orbits.Orbit, foreign_key: :central_body_id
 
     timestamps()
   end

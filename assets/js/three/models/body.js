@@ -4,9 +4,13 @@ const _polarAxis = Symbol('polarAxis');
 const _satellites = Symbol('satellites');
 const _sphere = Symbol('sphere');
 const _specs = Symbol('specs');
+const _mu = Symbol('mu');
 
 
 export default class Body extends THREE.Group {
+
+
+
   constructor({ diameter, mass, axialTilt = 0, rotationPeriod = 24, maps = {}, satellites = [] }) {
     super();
 
@@ -19,10 +23,13 @@ export default class Body extends THREE.Group {
       rotationPeriod,
     };
 
+    // standard gravitational parameter (mu = G*M)
+    this[_mu] =
+
     this.add(this[_sphere]);
     this.add(this[_polarAxis]);
 
-    this[_satellites] = satellites.map(this.addSatellite);
+    // this[_satellites] = satellites.map(this.addSatellite);
 
     // apply the axial tilt
     this.rotation.z = axialTilt * Math.PI / 180;
@@ -47,16 +54,25 @@ export default class Body extends THREE.Group {
   getSphere(diameter, maps) {
     // use diameter here somehow...
     const geometry = new THREE.SphereGeometry( diameter / 2, 128, 128 );
-    const material = new THREE.MeshStandardMaterial({
+    const matOpts = {
       color: 0xeeeeee,
-      map: maps.map,
-      displacementMap: maps.displacementMap,
-      displacementScale: 0.1,
-      normalMap: maps.normalMap,
-      normalScale: new THREE.Vector2(0.5, 0.5),
       metalness: 0,
       roughness: 1,
-    });
+    };
+
+    if (maps.map) {
+      matOpts.map = maps.map;
+    }
+    if (maps.displacementMap) {
+      matOpts.displacementMap = maps.displacementMap;
+      matOpts.displacementScale = 0.1;
+    }
+    if (maps.normalMap) {
+      matOpts.normalMap = maps.normalMap;
+      matOpts.normalScale = new THREE.Vector2(0.5, 0.5);
+    }
+
+    const material = new THREE.MeshStandardMaterial(matOpts);
 
     const sphere = new THREE.Mesh( geometry, material );
     sphere.castShadow = true;
@@ -68,7 +84,7 @@ export default class Body extends THREE.Group {
   updatePosition() {
     // how do we tie this to rotationPeriod?
     const { rotationPeriod } = this[_specs];
-    const sign = rotationPeriod / Math.abs(rotationPeriod);
+    const sign = rotationPeriod == 0 ? 1 : rotationPeriod / Math.abs(rotationPeriod);
     this[_sphere].rotation.y += sign * 0.001;
   }
 };

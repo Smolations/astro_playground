@@ -34,7 +34,7 @@ export default class PlanetModel extends React.Component {
   }
 
   addBody() {
-    const { specs, texture } = this.props;
+    const { specs } = this.props;
     const { maps } = this;
 
     const body = new Body({
@@ -69,32 +69,40 @@ export default class PlanetModel extends React.Component {
     this.scene.add(directionalLight);
   }
 
-  addSatellites() {
-    // diameter: 3454,
-    // oblateness: 0.0012,
-    // axial_tilt: 6.687,
-    // rotation_period: 655.704
-    const moon = new Body({
-      diameter: 0.2,
-      axialTilt: 6.687,
-      rotationPeriod: 1000,
-      // maps,
+  async addSatellites() {
+    const satelliteOrbits = this.props.orbiting;
+    const maps = {};
+
+    const promises = satelliteOrbits.map((orbit, ndx) => {
+      return this.loadMaps(orbit.orbiting_body.texture)
+        .then(map => maps[ndx] = map);
     });
 
-    const satellite = new Satellite({
-      body: moon,
-      orbitalRadius: 2,
-      inclination: 5.145,
-    });
+    await Promise.all(promises);
 
-    this.scene.add( satellite );
-    this[_satellites].push(satellite);
+    satelliteOrbits.forEach((orbit, ndx) => {
+      const body = new Body({
+        diameter: 0.2,
+        axialTilt: orbit.orbiting_body.axial_tilt,
+        rotationPeriod: orbit.orbiting_body.rotation_period,
+        maps: maps[ndx],
+      });
+
+      const satellite = new Satellite({
+        body,
+        orbitalRadius: ndx + 2,
+        inclination: orbit.inclination,
+      });
+
+      this.scene.add( satellite );
+      this[_satellites].push(satellite);
+    });
   }
 
   async componentDidMount() {
     console.log('PlanetModel.componentDidMount: props %o', this.props);
 
-    await this.loadMaps();
+    this.maps = await this.loadMaps(this.props.specs.texture);
 
     this.camera = this.configureCamera();
     this.renderer = this.configureRenderer();
@@ -155,29 +163,28 @@ export default class PlanetModel extends React.Component {
     return renderer;
   }
 
-  async loadMaps() {
+  async loadMaps(texture) {
     const path = '/images';
-    const { texture } =  this.props;
     const toLoad = [];
+    const maps = {};
     let promise;
 
-    // console.log('loadMaps() texture: %o', texture);
     for (const [textureType, texturePath] of Object.entries(texture)) {
-      // console.log(`${textureType} -> ${texturePath}`);
       if (texturePath && !textureType.endsWith('id')) {
         promise = util.loadTexture(`${path}/${texturePath}`)
           .then((map) => {
             const key = (textureType !== 'map') ? `${textureType}Map` : textureType;
-            console.log(`adding this.${key} = %o`, map);
-            this.maps[key] = map;
+            console.log(`adding maps.${key} = %o`, map);
+            maps[key] = map;
           });
 
         toLoad.push(promise);
       }
     }
 
-    await Promise.all(toLoad);
-    console.log('this.maps = %o', this.maps)
+    console.log('maps = %o', maps);
+    return await Promise.all(toLoad)
+      .then(() => maps);
   }
 
   render() {

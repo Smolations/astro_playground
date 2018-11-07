@@ -109,8 +109,8 @@ Repo.insert! %Texture{ body_id: sun.id,
 
 Repo.insert! %Texture{ body_id: mercury.id,
   map: "mercury_2k_color.jpg",
-  displacement: "mercury_2k_displacement.jpg",
-  normal: "mercury_2k_normal.jpg"
+  # displacement: "mercury_2k_displacement.jpg",
+  # normal: "mercury_2k_normal.jpg"
 }
 Repo.insert! %Texture{ body_id: venus.id,
   map: "venus_2k_color.jpg",
@@ -124,8 +124,8 @@ Repo.insert! %Texture{ body_id: earth.id,
 }
 Repo.insert! %Texture{ body_id: mars.id,
   map: "mars_2k_color.jpg",
-  displacement: "mars_2k_displacement.jpg",
-  normal: "mars_2k_normal.jpg"
+  # displacement: "mars_2k_displacement.jpg",
+  # normal: "mars_2k_normal.jpg"
 }
 Repo.insert! %Texture{ body_id: jupiter.id,
   map: "jupiter_2k_color.jpg",
@@ -162,11 +162,83 @@ Repo.insert! %Texture{ body_id: moon.id,
 
 # orbits
 
-Repo.insert! %Orbit{ center_body_id: earth.id, orbiting_body_id: moon.id,
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mercury.id,
+  inclination: 7.0,
+  period: 87.969,
+  # eccentricity: 0.2056,
+  min_velocity: 38.86,
+  max_velocity: 58.98,
+  semi_major_axis: 57.91
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: venus.id,
+  inclination: 3.39,
+  period: 224.701,
+  # eccentricity: 0.0067,
+  min_velocity: 34.79,
+  max_velocity: 35.26,
+  semi_major_axis: 108.21
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: earth.id,
+  inclination: 0.0,
+  period: 365.256,
+  # eccentricity: 0.0167,
+  min_velocity: 29.29,
+  max_velocity: 30.29,
+  semi_major_axis: 149.6
+}
+Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: moon.id,
   inclination: 5.145,
   period: 27.3217,
   # eccentricity: 0.0549,
   min_velocity: 0.970,
   max_velocity: 1.082,
   semi_major_axis: 0.3844
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
+  inclination: 1.85,
+  period: 686.98,
+  # eccentricity: 0.0935,
+  min_velocity: 21.97,
+  max_velocity: 26.5,
+  semi_major_axis: 227.92
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
+  inclination: 1.304,
+  period: 4332.589,
+  # eccentricity: 0.0489,
+  min_velocity: 12.44,
+  max_velocity: 13.72,
+  semi_major_axis: 778.57
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: saturn.id,
+  inclination: 2.485,
+  period: 10759.22,
+  # eccentricity: 0.0565,
+  min_velocity: 9.09,
+  max_velocity: 10.18,
+  semi_major_axis: 1433.53
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: uranus.id,
+  inclination: 0.772,
+  period: 30685.4,
+  # eccentricity: 0.0457,
+  min_velocity: 6.49,
+  max_velocity: 7.11,
+  semi_major_axis: 2872.46
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: neptune.id,
+  inclination: 1.769,
+  period: 60189.0,
+  # eccentricity: 0.0113,
+  min_velocity: 5.37,
+  max_velocity: 5.5,
+  semi_major_axis: 4495.06
+}
+Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
+  inclination: 17.16,
+  period: 90560.0,
+  # eccentricity: 0.2488,
+  min_velocity: 3.71,
+  max_velocity: 6.1,
+  semi_major_axis: 5906.38
 }

@@ -2,7 +2,6 @@ defmodule AstroPlaygroundWeb.OrbitController do
   use AstroPlaygroundWeb, :controller
 
   alias AstroPlayground.Orbits
-  alias AstroPlayground.Orbits.Orbit
 
   action_fallback AstroPlaygroundWeb.FallbackController
 

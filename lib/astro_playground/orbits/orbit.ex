@@ -10,7 +10,7 @@ defmodule AstroPlayground.Orbits.Orbit do
     field :min_velocity, :float
     field :max_velocity, :float
     field :semi_major_axis, :float
-    belongs_to :center_body, AstroPlayground.Bodies.Body, foreign_key: :center_body_id
+    belongs_to :central_body, AstroPlayground.Bodies.Body, foreign_key: :central_body_id
     belongs_to :orbiting_body, AstroPlayground.Bodies.Body, foreign_key: :orbiting_body_id
 
     timestamps()

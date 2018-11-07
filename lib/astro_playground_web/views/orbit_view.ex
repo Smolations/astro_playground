@@ -28,7 +28,7 @@ defmodule AstroPlaygroundWeb.OrbitView do
 
   def render("orbit.json", %{orbit: orbit}) do
     %{id: orbit.id,
-      center_body_id: orbit.center_body_id,
+      central_body_id: orbit.central_body_id,
       orbiting_body_id: orbit.orbiting_body_id,
       inclination: orbit.inclination,
       period: orbit.period,
@@ -38,9 +38,9 @@ defmodule AstroPlaygroundWeb.OrbitView do
   end
 
   def render("orbit_center.json", %{orbit: orbit}) do
-    center_body = render_one(orbit.center_body, BodyView, "body.json")
+    central_body = render_one(orbit.central_body, BodyView, "body.json")
     %{id: orbit.id,
-      center_body: center_body,
+      central_body: central_body,
       orbiting_body_id: orbit.orbiting_body_id,
       inclination: orbit.inclination,
       period: orbit.period,
@@ -52,7 +52,7 @@ defmodule AstroPlaygroundWeb.OrbitView do
   def render("orbit_orbiting.json", %{orbit: orbit}) do
     orbiting_body = render_one(orbit.orbiting_body, BodyView, "body.json")
     %{id: orbit.id,
-      center_body_id: orbit.center_body_id,
+      central_body_id: orbit.central_body_id,
       orbiting_body: orbiting_body,
       inclination: orbit.inclination,
       period: orbit.period,
