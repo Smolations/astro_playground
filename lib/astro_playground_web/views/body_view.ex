@@ -18,10 +18,16 @@ defmodule AstroPlaygroundWeb.BodyView do
       name: body.name,
       type: body.type,
       mass: body.mass,
-      diameter: body.diameter,
+      volume: body.volume,
+      mean_density: body.mean_density,
+      equatorial_radius: body.equatorial_radius,
+      polar_radius: body.polar_radius,
+      volumetric_mean_radius: body.volumetric_mean_radius,
       oblateness: body.oblateness,
       axial_tilt: body.axial_tilt,
-      rotation_period: body.rotation_period,
+      obliquity_to_orbit: body.obliquity_to_orbit,
+      sidereal_rotation_period: body.sidereal_rotation_period,
+      mu: body.mu,
       texture: texture,
     }
   end

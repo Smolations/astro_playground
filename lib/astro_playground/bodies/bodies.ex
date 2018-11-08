@@ -38,9 +38,8 @@ defmodule AstroPlayground.Bodies do
 
   """
   def get_body!(id) do
-    # Body
-    # |> Repo.get!(id)
-    Repo.get!(Body, id)
+    Body
+    |> Repo.get!(id)
     |> Repo.preload(:texture)
   end
 

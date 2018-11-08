@@ -10,6 +10,7 @@ defmodule AstroPlayground.Textures.Texture do
     field :emissive, :string
     field :map, :string
     field :normal, :string
+
     belongs_to :body, AstroPlayground.Bodies.Body
 
     timestamps()

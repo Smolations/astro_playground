@@ -24,7 +24,7 @@ export default class Body extends THREE.Group {
     };
 
     // standard gravitational parameter (mu = G*M)
-    this[_mu] =
+    // this[_mu] =
 
     this.add(this[_sphere]);
     this.add(this[_polarAxis]);

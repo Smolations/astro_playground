@@ -18,85 +18,163 @@ alias AstroPlayground.Textures.Texture
 
 # bodies
 
+# :name
+# :type
+# :mass
+# :mean_density
+# :equatorial_radius
+# :polar_radius
+# :volumetric_mean_radius
+# :oblateness
+# :axial_tilt
+# :obliquity_to_orbit
+# :sidereal_rotation_period
+# :mu
+
 sun = Repo.insert! %Body{ name: "Sun",
   type: "star",
-  mass: 100.0, # lookup
-  diameter: 1392684,
-  oblateness: 0.0,
-  axial_tilt: 0.0,
-  rotation_period: 0.0 }
+  mass: 1988500.0,
+  volume: 1412000.0,
+  mean_density: 1408.0,
+  equatorial_radius: 695700.0,
+  polar_radius: 695700.0,
+  volumetric_mean_radius: 695700.0,
+  oblateness: 0.00005,
+  axial_tilt: 7.25,
+  obliquity_to_orbit: 7.25,
+  sidereal_rotation_period: 609.12,
+  mu: 132712.0 }
 
 mercury = Repo.insert! %Body{ name: "Mercury",
   type: "planet",
-  mass: 0.33,
-  diameter: 4879,
+  mass: 0.33011,
+  volume: 6.083,
+  mean_density: 5427.0,
+  equatorial_radius: 2439.7,
+  polar_radius: 2439.7,
+  volumetric_mean_radius: 2439.7,
   oblateness: 0.0,
   axial_tilt: 0.034,
-  rotation_period: 1407.6 }
+  obliquity_to_orbit: 0.034,
+  sidereal_rotation_period: 1407.6,
+  mu: 0.022032 }
 venus = Repo.insert! %Body{ name: "Venus",
   type: "planet",
-  mass: 4.87,
-  diameter: 12104,
+  mass: 4.8675,
+  volume: 92.843,
+  mean_density: 5243.0,
+  equatorial_radius: 6051.8,
+  polar_radius: 6051.8,
+  volumetric_mean_radius: 6051.8,
   oblateness: 0.0,
-  axial_tilt: 177.4,
-  rotation_period: -5832.5 }
+  axial_tilt: 2.64,
+  obliquity_to_orbit: 177.4,
+  sidereal_rotation_period: 5832.5,
+  mu: 0.32486 }
 earth = Repo.insert! %Body{ name: "Earth",
   type: "planet",
-  mass: 5.97,
-  diameter: 12756,
-  oblateness: 0.00335,
-  axial_tilt: 23.4,
-  rotation_period: 23.9 }
-mars = Repo.insert! %Body{ name: "Mars",
-  type: "planet",
-  mass: 0.642,
-  diameter: 6792,
-  oblateness: 0.00648,
-  axial_tilt: 25.2,
-  rotation_period: 24.6 }
-jupiter = Repo.insert! %Body{ name: "Jupiter",
-  type: "planet",
-  mass: 1898.0,
-  diameter: 142984,
-  oblateness: 0.06487,
-  axial_tilt: 3.1,
-  rotation_period: 9.9 }
-saturn = Repo.insert! %Body{ name: "Saturn",
-  type: "planet",
-  mass: 568.0,
-  diameter: 120536,
-  oblateness: 0.09796,
-  axial_tilt: 26.7,
-  rotation_period: 10.7 }
-uranus = Repo.insert! %Body{ name: "Uranus",
-  type: "planet",
-  mass: 86.8,
-  diameter: 51118,
-  oblateness: 0.02293,
-  axial_tilt: 97.8,
-  rotation_period: -17.2 }
-neptune = Repo.insert! %Body{ name: "Neptune",
-  type: "planet",
-  mass: 102.0,
-  diameter: 49528,
-  oblateness: 0.01708,
-  axial_tilt: 28.3,
-  rotation_period: 16.1 }
-pluto = Repo.insert! %Body{ name: "Pluto",
-  type: "planet",
-  mass: 0.0146,
-  diameter: 2370,
-  oblateness: 0.0,
-  axial_tilt: 122.5,
-  rotation_period: -153.3 }
-
+  mass: 5.9723,
+  volume: 108.321,
+  mean_density: 5514.0,
+  equatorial_radius: 6378.137,
+  polar_radius: 6356.752,
+  volumetric_mean_radius: 6371.0,
+  oblateness: 0.003353,
+  axial_tilt: 23.44,
+  obliquity_to_orbit: 23.44,
+  sidereal_rotation_period: 23.9345,
+  mu: 0.3986 }
 moon = Repo.insert! %Body{ name: "Moon",
   type: "satellite",
   mass: 0.073,
-  diameter: 3454,
+  volume: 2.1968,
+  mean_density: 3344.0,
+  equatorial_radius: 1738.1,
+  polar_radius: 1736.0,
+  volumetric_mean_radius: 1737.4,
   oblateness: 0.0012,
   axial_tilt: 6.687,
-  rotation_period: 655.7 }
+  obliquity_to_orbit: 6.687,
+  sidereal_rotation_period: 655.728,
+  mu: 0.0049 }
+mars = Repo.insert! %Body{ name: "Mars",
+  type: "planet",
+  mass: 0.64171,
+  volume: 16.318,
+  mean_density: 3933.0,
+  equatorial_radius: 3396.2,
+  polar_radius: 3376.2,
+  volumetric_mean_radius: 3389.5,
+  oblateness: 0.00589,
+  axial_tilt: 25.19,
+  obliquity_to_orbit: 25.19,
+  sidereal_rotation_period: 24.6229,
+  mu: 0.042828 }
+jupiter = Repo.insert! %Body{ name: "Jupiter",
+  type: "planet",
+  mass: 1898.19,
+  volume: 143128.0,
+  mean_density: 1326.0,
+  equatorial_radius: 71492.0,
+  polar_radius: 66854.0,
+  volumetric_mean_radius: 69911.0,
+  oblateness: 0.06487,
+  axial_tilt: 3.13,
+  obliquity_to_orbit: 3.13,
+  sidereal_rotation_period: 9.9259,
+  mu: 126.687 }
+saturn = Repo.insert! %Body{ name: "Saturn",
+  type: "planet",
+  mass: 568.34,
+  volume: 82713.0,
+  mean_density: 687.0,
+  equatorial_radius: 60268.0,
+  polar_radius: 54364.0,
+  volumetric_mean_radius: 58232.0,
+  oblateness: 0.09796,
+  axial_tilt: 26.73,
+  obliquity_to_orbit: 26.73,
+  sidereal_rotation_period: 10.656,
+  mu: 37.931 }
+uranus = Repo.insert! %Body{ name: "Uranus",
+  type: "planet",
+  mass: 86.813,
+  volume: 6833.0,
+  mean_density: 1271.0,
+  equatorial_radius: 25559.0,
+  polar_radius: 24973.0,
+  volumetric_mean_radius: 25362.0,
+  oblateness: 0.02293,
+  axial_tilt: 82.23,
+  obliquity_to_orbit: 97.77,
+  sidereal_rotation_period: 17.24,
+  mu: 5.794 }
+neptune = Repo.insert! %Body{ name: "Neptune",
+  type: "planet",
+  mass: 102.413,
+  volume: 6254.0,
+  mean_density: 1638.0,
+  equatorial_radius: 24764.0,
+  polar_radius: 24341.0,
+  volumetric_mean_radius: 24622.0,
+  oblateness: 0.01708,
+  axial_tilt: 28.32,
+  obliquity_to_orbit: 28.32,
+  sidereal_rotation_period: 16.11,
+  mu: 6.8351 }
+pluto = Repo.insert! %Body{ name: "Pluto",
+  type: "planet",
+  mass: 0.01303,
+  volume: 0.697,
+  mean_density: 1860.0,
+  equatorial_radius: 1187.0,
+  polar_radius: 1187.0,
+  volumetric_mean_radius: 1187.0,
+  oblateness: 0.0,
+  axial_tilt: 57.47,
+  obliquity_to_orbit: 122.53,
+  sidereal_rotation_period: 153.2928,
+  mu: 0.00087 }
 
 
 # textures
@@ -162,83 +240,112 @@ Repo.insert! %Texture{ body_id: moon.id,
 
 # orbits
 
+# semi_major_axis
+# sidereal_period
+# perihelion
+# aphelion
+# min_velocity
+# max_velocity
+# inclination
+# eccentricity
+
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mercury.id,
-  inclination: 7.0,
-  period: 87.969,
-  # eccentricity: 0.2056,
+  semi_major_axis: 57.91,
+  sidereal_period: 87.969,
+  periapsis: 46.0,
+  apoapsis: 69.82,
   min_velocity: 38.86,
   max_velocity: 58.98,
-  semi_major_axis: 57.91
+  inclination: 7.0,
+  eccentricity: 0.2056,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: venus.id,
-  inclination: 3.39,
-  period: 224.701,
-  # eccentricity: 0.0067,
+  semi_major_axis: 108.21,
+  sidereal_period: 224.701,
+  periapsis: 107.48,
+  apoapsis: 108.94,
   min_velocity: 34.79,
   max_velocity: 35.26,
-  semi_major_axis: 108.21
+  inclination: 3.39,
+  eccentricity: 0.0067,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: earth.id,
-  inclination: 0.0,
-  period: 365.256,
-  # eccentricity: 0.0167,
+  semi_major_axis: 149.6,
+  sidereal_period: 365.256,
+  periapsis: 147.09,
+  apoapsis: 152.1,
   min_velocity: 29.29,
   max_velocity: 30.29,
-  semi_major_axis: 149.6
+  inclination: 0.0,
+  eccentricity: 0.0167,
 }
 Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: moon.id,
-  inclination: 5.145,
-  period: 27.3217,
-  # eccentricity: 0.0549,
+  semi_major_axis: 0.3844,
+  sidereal_period: 27.3217,
+  periapsis: 0.3633,
+  apoapsis: 0.4055,
   min_velocity: 0.970,
   max_velocity: 1.082,
-  semi_major_axis: 0.3844
+  inclination: 5.145,
+  eccentricity: 0.0549,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
-  inclination: 1.85,
-  period: 686.98,
-  # eccentricity: 0.0935,
+  semi_major_axis: 227.92,
+  sidereal_period: 686.98,
+  periapsis: 206.62,
+  apoapsis: 249.23,
   min_velocity: 21.97,
   max_velocity: 26.5,
-  semi_major_axis: 227.92
+  inclination: 1.85,
+  eccentricity: 0.0935,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
-  inclination: 1.304,
-  period: 4332.589,
-  # eccentricity: 0.0489,
+  semi_major_axis: 778.57,
+  sidereal_period: 4332.589,
+  periapsis: 740.52,
+  apoapsis: 816.62,
   min_velocity: 12.44,
   max_velocity: 13.72,
-  semi_major_axis: 778.57
+  inclination: 1.304,
+  eccentricity: 0.0489,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: saturn.id,
-  inclination: 2.485,
-  period: 10759.22,
-  # eccentricity: 0.0565,
+  semi_major_axis: 1433.53,
+  sidereal_period: 10759.22,
+  periapsis: 1352.55,
+  apoapsis: 1514.5,
   min_velocity: 9.09,
   max_velocity: 10.18,
-  semi_major_axis: 1433.53
+  inclination: 2.485,
+  eccentricity: 0.0565,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: uranus.id,
-  inclination: 0.772,
-  period: 30685.4,
-  # eccentricity: 0.0457,
+  semi_major_axis: 2872.46,
+  sidereal_period: 30685.4,
+  periapsis: 2741.3,
+  apoapsis: 3003.62,
   min_velocity: 6.49,
   max_velocity: 7.11,
-  semi_major_axis: 2872.46
+  inclination: 0.772,
+  eccentricity: 0.0457,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: neptune.id,
-  inclination: 1.769,
-  period: 60189.0,
-  # eccentricity: 0.0113,
+  semi_major_axis: 4495.06,
+  sidereal_period: 60189.0,
+  periapsis: 4444.45,
+  apoapsis: 4545.67,
   min_velocity: 5.37,
   max_velocity: 5.5,
-  semi_major_axis: 4495.06
+  inclination: 1.769,
+  eccentricity: 0.0113,
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
-  inclination: 17.16,
-  period: 90560.0,
-  # eccentricity: 0.2488,
+  semi_major_axis: 5906.38,
+  sidereal_period: 90560.0,
+  periapsis: 4436.82,
+  apoapsis: 7375.93,
   min_velocity: 3.71,
   max_velocity: 6.1,
-  semi_major_axis: 5906.38
+  inclination: 17.16,
+  eccentricity: 0.2488,
 }
