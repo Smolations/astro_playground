@@ -15,6 +15,7 @@
   "dependencies": {
     "@wildpeaks/three-webpack-plugin": "^2.0.0",
     "history": "^4.7.2",
+    "lodash": "^4.17.11",
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
     "react": "^16.6.0",

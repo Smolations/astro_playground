@@ -18,19 +18,6 @@ alias AstroPlayground.Textures.Texture
 
 # bodies
 
-# :name
-# :type
-# :mass
-# :mean_density
-# :equatorial_radius
-# :polar_radius
-# :volumetric_mean_radius
-# :oblateness
-# :axial_tilt
-# :obliquity_to_orbit
-# :sidereal_rotation_period
-# :mu
-
 sun = Repo.insert! %Body{ name: "Sun",
   type: "star",
   mass: 1988500.0,
@@ -239,15 +226,6 @@ Repo.insert! %Texture{ body_id: moon.id,
 
 
 # orbits
-
-# semi_major_axis
-# sidereal_period
-# perihelion
-# aphelion
-# min_velocity
-# max_velocity
-# inclination
-# eccentricity
 
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mercury.id,
   semi_major_axis: 57.91,

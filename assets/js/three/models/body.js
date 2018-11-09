@@ -1,48 +1,54 @@
 import * as THREE from 'three';
+import _camelCase from 'lodash/camelCase';
+import AstroGroup from '../lib/astro-group';
+import Specs from '../lib/specs';
 
 const _polarAxis = Symbol('polarAxis');
 const _satellites = Symbol('satellites');
 const _sphere = Symbol('sphere');
 const _specs = Symbol('specs');
 const _mu = Symbol('mu');
+const _g = Symbol('g');
 
 
-export default class Body extends THREE.Group {
+export default class Body extends AstroGroup {
+  // gravitational constant
+  get G() { return this.specs.mu / this.specs.mass; }
 
+  constructor({ maps = {}, groupScalars = [], ...rawSpecs }) {
+    const specs = new Specs(rawSpecs, {
+      groupScalars,
+      mass: { units: 'kg', scalar: 1e+24 },
+      volume: { units: 'km^3', scalar: 1e+10 },
+      meanDensity: { units: 'kg/m^3' },
+      equatorialRadius: { units: 'km' },
+      polarRadius: { units: 'km' },
+      volumetricMeanRadius: { units: 'km' },
+      axialTilt: { units: '\u00B0' },
+      obliquityToOrbit: { units: '\u00B0' },
+      siderealRotationPeriod: { units: 'hrs' },
+      mu: { units: 'km^3/s^2', scalar: 1e+6, desc: 'standard gravitational parameter (mu = G*M)' },
+    });
 
+    super({ specs });
 
-  constructor({ diameter, mass, axialTilt = 0, rotationPeriod = 24, maps = {}, satellites = [] }) {
-    super();
-
-    this[_polarAxis] = this.getPolarAxis(diameter);
-    this[_sphere] = this.getSphere(diameter, maps);
-    this[_specs] = {
-      diameter,
-      mass,
-      axialTilt,
-      rotationPeriod,
-    };
-
-    // standard gravitational parameter (mu = G*M)
-    // this[_mu] =
+    this[_polarAxis] = this.getPolarAxis(this.specs.polarRadius);
+    this[_sphere] = this.getSphere(this.specs.polarRadius, maps);
 
     this.add(this[_sphere]);
     this.add(this[_polarAxis]);
 
-    // this[_satellites] = satellites.map(this.addSatellite);
-
     // apply the axial tilt
-    this.rotation.z = axialTilt * Math.PI / 180;
+    this.rotation.z = this.specs.toRad('obliquityToOrbit');
   }
 
-  addSatellite({ body, orbitalRadius, inclination = 0, revolutionDuration = 24 }) {
-
-  }
-
-  getPolarAxis(diameter) {
+  getPolarAxis(radius) {
     const material = new THREE.LineBasicMaterial();
     const geometry = new THREE.Geometry();
+    const diameter = radius * 2;
 
+    // maybe use values from a given sphere to make
+    // sure axis goes through the center?
     geometry.vertices.push(
       new THREE.Vector3( 0, -1 * diameter, 0 ),
       new THREE.Vector3( 0, 1 * diameter, 0 )
@@ -51,9 +57,8 @@ export default class Body extends THREE.Group {
     return new THREE.Line( geometry, material );
   }
 
-  getSphere(diameter, maps) {
-    // use diameter here somehow...
-    const geometry = new THREE.SphereGeometry( diameter / 2, 128, 128 );
+  getSphere(radius, maps) {
+    const geometry = new THREE.SphereGeometry( radius, 128, 128 );
     const matOpts = {
       color: 0xeeeeee,
       metalness: 0,
@@ -83,8 +88,9 @@ export default class Body extends THREE.Group {
 
   updatePosition() {
     // how do we tie this to rotationPeriod?
-    const { rotationPeriod } = this[_specs];
+    const rotationPeriod = this.specs.siderealRotationPeriod;
     const sign = rotationPeriod == 0 ? 1 : rotationPeriod / Math.abs(rotationPeriod);
+
     this[_sphere].rotation.y += sign * 0.001;
   }
 };

@@ -6,30 +6,44 @@ import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 
 import util from '../three/util';
 import Body from '../three/models/body';
-import Satellite from '../three/models/satellite';
+import Orbit from '../three/models/orbit';
+import Specs from '../three/lib/specs';
 
 
 const _body = Symbol('body');
-const _satellites = Symbol('satellites');
+const _orbitals = Symbol('orbitals');
 
 
 export default class PlanetModel extends React.Component {
   constructor(props) {
     super(props);
 
-    const dims = { x: 800, y: 800 };
+    const dims = { x: 1127, y: 1127 };
 
     this.canvasRef = React.createRef();
     this.dims = dims;
     this.maps = {};
+    this.bodyGroupScalar = {
+      scalar: 1,
+      keys: [
+        'mass',
+        'volume',
+        'equatorialRadius',
+        'polarRadius',
+        'volumetricMeanRadius',
+      ],
+    };
+    this.orbitGroupScalar = {
+      scalar: 1,
+      keys: [
+        'semiMajorAxis',
+        'periapsis',
+        'apoapsis',
+      ],
+    };
 
-    this[_satellites] = [];
+    this[_orbitals] = [];
 
-    /*
-      a group or stage containing all the objects we want to render. Scenes
-      allow you to set up what and where is going to be rendered by Three.js.
-      This is where you place objects, lights, and cameras.
-    */
     this.scene = new THREE.Scene();
   }
 
@@ -38,12 +52,11 @@ export default class PlanetModel extends React.Component {
     const { maps } = this;
 
     const body = new Body({
-      diameter: 2,
-      // diameter: specs.diameter,
-      axialTilt: specs.axial_tilt,
-      rotationPeriod: specs.rotation_period,
+      groupScalars: [this.bodyGroupScalar],
       maps,
+      ...specs,
     });
+    console.log(body.toString());
 
     this[_body] = body;
     this.scene.add( body );
@@ -69,38 +82,46 @@ export default class PlanetModel extends React.Component {
     this.scene.add(directionalLight);
   }
 
-  async addSatellites() {
-    const satelliteOrbits = this.props.orbiting;
+  async addOrbitals() {
+    const orbits = this.props.orbiting;
     const maps = {};
 
-    const promises = satelliteOrbits.map((orbit, ndx) => {
+    const promises = orbits.map((orbit, ndx) => {
       return this.loadMaps(orbit.orbiting_body.texture)
         .then(map => maps[ndx] = map);
     });
 
     await Promise.all(promises);
 
-    satelliteOrbits.forEach((orbit, ndx) => {
-      const body = new Body({
-        diameter: 0.2,
-        axialTilt: orbit.orbiting_body.axial_tilt,
-        rotationPeriod: orbit.orbiting_body.rotation_period,
+    orbits.forEach((orbit, ndx) => {
+      const { central_body, orbiting_body, ...rawSpecs } = orbit;
+
+      const orbitingBody = new Body({
+        groupScalars: [this.bodyGroupScalar],
         maps: maps[ndx],
+        ...orbiting_body,
       });
 
-      const satellite = new Satellite({
-        body,
-        orbitalRadius: ndx + 2,
-        inclination: orbit.inclination,
+      const orbital = new Orbit({
+        groupScalars: [this.orbitGroupScalar],
+        centralBody: this[_body],
+        orbitingBody,
+        ...rawSpecs,
       });
 
-      this.scene.add( satellite );
-      this[_satellites].push(satellite);
+      console.log(orbital);
+      console.log(orbital.toString());
+
+      this.scene.add( orbital );
+
+      this[_orbitals].push(orbital);
     });
   }
 
   async componentDidMount() {
     console.log('PlanetModel.componentDidMount: props %o', this.props);
+    this.bodyGroupScalar.scalar = 1 / this.props.specs.polar_radius;
+    this.orbitGroupScalar.scalar = this.bodyGroupScalar.scalar/3;
 
     this.maps = await this.loadMaps(this.props.specs.texture);
 
@@ -109,7 +130,7 @@ export default class PlanetModel extends React.Component {
 
     this.addLighting();
     this.addBody();
-    this.addSatellites();
+    this.addOrbitals();
 
     this.controls = this.configureControls();
     this.renderScene();
@@ -120,11 +141,11 @@ export default class PlanetModel extends React.Component {
       70,                         // field of view
       this.dims.x / this.dims.y,  // aspect ratio
       0.1,                        // near clipping pane
-      100                         // far clipping pane
+      1000                         // far clipping pane
     );
 
     // Reposition the camera
-    camera.position.set(0, 0.5, 5);
+    camera.position.set(0, 0.5, 10);
 
     // Point the camera at a given coordinate
     camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -139,7 +160,7 @@ export default class PlanetModel extends React.Component {
     controls.target = new THREE.Vector3(0, 0, 0);
     controls.maxPolarAngle = Math.PI / 2;
     controls.minDistance = 1;
-    controls.maxDistance = 100;
+    controls.maxDistance = 999;
 
     // add this only if there is no animation loop (requestAnimationFrame)
     // controls.addEventListener('change', () => this.renderScene());
@@ -199,7 +220,7 @@ export default class PlanetModel extends React.Component {
 
       // Update animated elements
       this[_body].updatePosition();
-      this[_satellites].forEach(sat => sat.updatePosition());
+      this[_orbitals].forEach(orbit => orbit.updatePosition());
 
       // Render the scene/camera combnation
       this.renderer.render(this.scene, this.camera);
