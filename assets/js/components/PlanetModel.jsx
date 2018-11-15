@@ -20,6 +20,8 @@ export default class PlanetModel extends React.Component {
 
     const dims = { x: 1127, y: 1127 };
 
+    THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 0, 1 );
+
     this.canvasRef = React.createRef();
     this.dims = dims;
     this.maps = {};
@@ -63,20 +65,10 @@ export default class PlanetModel extends React.Component {
   }
 
   addLighting() {
-    // Add an ambient lights
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-    // this.scene.add(ambientLight);
-
-    // Add a point light that will cast shadows
-    // const pointLight = new THREE.PointLight(0xffffff, 0.8);
-    // pointLight.position.set(80, 160, 120);
-    // pointLight.castShadow = true;
-    // pointLight.shadow.mapSize.width = 1024;
-    // pointLight.shadow.mapSize.height = 1024;
-    // this.scene.add(pointLight);
-
     const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    directionalLight.position.set(-10, 0, 10);
+
+    // enforces initial vernal equinox position
+    directionalLight.position.set(-10, 0, 0);
     directionalLight.castShadow = true;
 
     this.scene.add(directionalLight);
@@ -128,6 +120,7 @@ export default class PlanetModel extends React.Component {
     this.camera = this.configureCamera();
     this.renderer = this.configureRenderer();
 
+    this.drawAxes();
     this.addLighting();
     this.addBody();
     this.addOrbitals();
@@ -141,11 +134,17 @@ export default class PlanetModel extends React.Component {
       70,                         // field of view
       this.dims.x / this.dims.y,  // aspect ratio
       0.1,                        // near clipping pane
-      1000                         // far clipping pane
+      1000                        // far clipping pane
     );
 
-    // Reposition the camera
-    camera.position.set(0, 0.5, 10);
+    // Reposition the camera at an angle where axes markers would be
+    // visible, and where sunlight is visible
+    camera.position.set(-5, -10, 5);
+
+    // tell camera that axes orientation rotates 90deg away from eyes.
+    // this more closely matches the rectangular reference frame
+    // in astrodynamics.
+    // camera.up = new THREE.Vector3(0, 0, 1);
 
     // Point the camera at a given coordinate
     camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -158,7 +157,7 @@ export default class PlanetModel extends React.Component {
     const controls = new OrbitControls(this.camera, this.canvasRef.current );
 
     controls.target = new THREE.Vector3(0, 0, 0);
-    controls.maxPolarAngle = Math.PI / 2;
+    controls.maxPolarAngle = Math.PI;
     controls.minDistance = 1;
     controls.maxDistance = 999;
 
@@ -182,6 +181,12 @@ export default class PlanetModel extends React.Component {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     return renderer;
+  }
+
+  drawAxes() {
+    // x-axis: red, y-axis: green, z-axis: blue
+    const axesHelper = new THREE.AxesHelper( 5 );
+    this.scene.add( axesHelper );
   }
 
   async loadMaps(texture) {

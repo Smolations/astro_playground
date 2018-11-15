@@ -31,6 +31,7 @@ defmodule AstroPlaygroundWeb.OrbitView do
       max_velocity: orbit.max_velocity,
       inclination: orbit.inclination,
       eccentricity: orbit.eccentricity,
+      ascending_node: orbit.ascending_node,
     }
   end
 
@@ -48,6 +49,7 @@ defmodule AstroPlaygroundWeb.OrbitView do
       max_velocity: orbit.max_velocity,
       inclination: orbit.inclination,
       eccentricity: orbit.eccentricity,
+      ascending_node: orbit.ascending_node,
     }
   end
 
@@ -65,6 +67,7 @@ defmodule AstroPlaygroundWeb.OrbitView do
       max_velocity: orbit.max_velocity,
       inclination: orbit.inclination,
       eccentricity: orbit.eccentricity,
+      ascending_node: orbit.ascending_node,
     }
   end
 end

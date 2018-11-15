@@ -28,7 +28,7 @@ export default class Body extends React.Component {
           if (data.data && data.data.length) {
             // just to test with earth/moon
             const orbit = data.data[0];
-            orbit.eccentricity = 0.5;
+            orbit.eccentricity = 0.7;
             this.setState({ orbiting: data.data });
           }
         }),

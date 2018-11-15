@@ -12,6 +12,7 @@ defmodule AstroPlayground.Orbits.Orbit do
     field :max_velocity, :float     # km/s
     field :inclination, :float      # degrees
     field :eccentricity, :float
+    field :ascending_node, :float   # degrees
 
     belongs_to :central_body, AstroPlayground.Bodies.Body, foreign_key: :central_body_id
     belongs_to :orbiting_body, AstroPlayground.Bodies.Body, foreign_key: :orbiting_body_id
@@ -31,6 +32,7 @@ defmodule AstroPlayground.Orbits.Orbit do
         :max_velocity,
         :inclination,
         :eccentricity,
+        :ascending_node,
       ])
     |> validate_required([:semi_major_axis, :inclination, :sidereal_period])
     |> unique_constraint(:orbiting_body_id)

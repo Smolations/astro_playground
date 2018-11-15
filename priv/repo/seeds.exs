@@ -14,6 +14,39 @@ alias AstroPlayground.Bodies.Body
 alias AstroPlayground.Orbits.Orbit
 alias AstroPlayground.Textures.Texture
 
+defmodule Elements do
+  def get_json(filename) do
+    with {:ok, body} <- File.read(filename),
+         {:ok, json} <- Poison.decode(body), do: {:ok, json}
+  end
+
+  def by_name(list, name) do
+    Enum.find(list, fn (obj) ->
+      case obj["name"] do
+        ^name -> obj
+        _ -> false
+      end
+    end)
+  end
+end
+
+{:ok, json} = Elements.get_json("elements.json");
+
+bodies = get_in(json, ["bodies"])
+
+mercuryElements = Elements.by_name(bodies, "Mercury")["elements"]
+venusElements = Elements.by_name(bodies, "Venus")["elements"]
+earthElements = Elements.by_name(bodies, "Earth")["elements"]
+lunaElements = Elements.by_name(bodies, "Luna")["elements"]
+marsElements = Elements.by_name(bodies, "Mars")["elements"]
+jupiterElements = Elements.by_name(bodies, "Jupiter")["elements"]
+saturnElements = Elements.by_name(bodies, "Saturn")["elements"]
+uranusElements = Elements.by_name(bodies, "Uranus")["elements"]
+neptuneElements = Elements.by_name(bodies, "Neptune")["elements"]
+plutoElements = Elements.by_name(bodies, "Pluto")["elements"]
+
+# IO.inspect earth
+
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
 # bodies
@@ -71,7 +104,7 @@ earth = Repo.insert! %Body{ name: "Earth",
   obliquity_to_orbit: 23.44,
   sidereal_rotation_period: 23.9345,
   mu: 0.3986 }
-moon = Repo.insert! %Body{ name: "Moon",
+luna = Repo.insert! %Body{ name: "Luna",
   type: "satellite",
   mass: 0.073,
   volume: 2.1968,
@@ -218,7 +251,7 @@ Repo.insert! %Texture{ body_id: pluto.id,
   # normal: "neptune_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ body_id: moon.id,
+Repo.insert! %Texture{ body_id: luna.id,
   map: "moon_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
@@ -236,6 +269,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mercury.id,
   max_velocity: 58.98,
   inclination: 7.0,
   eccentricity: 0.2056,
+  ascending_node: mercuryElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: venus.id,
   semi_major_axis: 108.21,
@@ -246,6 +280,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: venus.id,
   max_velocity: 35.26,
   inclination: 3.39,
   eccentricity: 0.0067,
+  ascending_node: venusElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: earth.id,
   semi_major_axis: 149.6,
@@ -256,8 +291,9 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: earth.id,
   max_velocity: 30.29,
   inclination: 0.0,
   eccentricity: 0.0167,
+  ascending_node: earthElements["OM"],
 }
-Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: moon.id,
+Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: luna.id,
   semi_major_axis: 0.3844,
   sidereal_period: 27.3217,
   periapsis: 0.3633,
@@ -266,6 +302,7 @@ Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: moon.id,
   max_velocity: 1.082,
   inclination: 5.145,
   eccentricity: 0.0549,
+  ascending_node: lunaElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
   semi_major_axis: 227.92,
@@ -276,6 +313,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
   max_velocity: 26.5,
   inclination: 1.85,
   eccentricity: 0.0935,
+  ascending_node: marsElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
   semi_major_axis: 778.57,
@@ -286,6 +324,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
   max_velocity: 13.72,
   inclination: 1.304,
   eccentricity: 0.0489,
+  ascending_node: jupiterElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: saturn.id,
   semi_major_axis: 1433.53,
@@ -296,6 +335,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: saturn.id,
   max_velocity: 10.18,
   inclination: 2.485,
   eccentricity: 0.0565,
+  ascending_node: saturnElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: uranus.id,
   semi_major_axis: 2872.46,
@@ -306,6 +346,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: uranus.id,
   max_velocity: 7.11,
   inclination: 0.772,
   eccentricity: 0.0457,
+  ascending_node: uranusElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: neptune.id,
   semi_major_axis: 4495.06,
@@ -316,6 +357,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: neptune.id,
   max_velocity: 5.5,
   inclination: 1.769,
   eccentricity: 0.0113,
+  ascending_node: neptuneElements["OM"],
 }
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
   semi_major_axis: 5906.38,
@@ -326,4 +368,5 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
   max_velocity: 6.1,
   inclination: 17.16,
   eccentricity: 0.2488,
+  ascending_node: plutoElements["OM"],
 }

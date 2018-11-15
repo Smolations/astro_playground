@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import _camelCase from 'lodash/camelCase';
 import AstroGroup from '../lib/astro-group';
 import Specs from '../lib/specs';
 
@@ -7,8 +6,6 @@ const _polarAxis = Symbol('polarAxis');
 const _satellites = Symbol('satellites');
 const _sphere = Symbol('sphere');
 const _specs = Symbol('specs');
-const _mu = Symbol('mu');
-const _g = Symbol('g');
 
 
 export default class Body extends AstroGroup {
@@ -38,8 +35,8 @@ export default class Body extends AstroGroup {
     this.add(this[_sphere]);
     this.add(this[_polarAxis]);
 
-    // apply the axial tilt
-    this.rotation.z = this.specs.toRad('obliquityToOrbit');
+    // rotate so north pole is up, then apply the axial tilt
+    this.rotation.x = Math.PI / 2 + this.specs.toRad('obliquityToOrbit');
   }
 
   getPolarAxis(radius) {
@@ -78,8 +75,8 @@ export default class Body extends AstroGroup {
     }
 
     const material = new THREE.MeshStandardMaterial(matOpts);
-
     const sphere = new THREE.Mesh( geometry, material );
+
     sphere.castShadow = true;
     sphere.receiveShadow = true;
 
@@ -91,6 +88,7 @@ export default class Body extends AstroGroup {
     const rotationPeriod = this.specs.siderealRotationPeriod;
     const sign = rotationPeriod == 0 ? 1 : rotationPeriod / Math.abs(rotationPeriod);
 
+    // coincides with sphere's original orientation where y is up
     this[_sphere].rotation.y += sign * 0.001;
   }
 };

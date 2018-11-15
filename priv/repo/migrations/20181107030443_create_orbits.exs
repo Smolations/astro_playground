@@ -11,6 +11,7 @@ defmodule AstroPlayground.Repo.Migrations.CreateOrbits do
       add :max_velocity, :float
       add :inclination, :float
       add :eccentricity, :float
+      add :ascending_node, :float
       add :central_body_id, references(:bodies, on_delete: :delete_all), null: false
       add :orbiting_body_id, references(:bodies, on_delete: :delete_all), null: false
 
