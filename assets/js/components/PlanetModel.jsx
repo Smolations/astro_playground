@@ -113,7 +113,7 @@ export default class PlanetModel extends React.Component {
   async componentDidMount() {
     console.log('PlanetModel.componentDidMount: props %o', this.props);
     this.bodyGroupScalar.scalar = 1 / this.props.specs.polar_radius;
-    this.orbitGroupScalar.scalar = this.bodyGroupScalar.scalar/3;
+    this.orbitGroupScalar.scalar = this.bodyGroupScalar.scalar/4;
 
     this.maps = await this.loadMaps(this.props.specs.texture);
 
@@ -220,12 +220,16 @@ export default class PlanetModel extends React.Component {
   }
 
   renderScene() {
+    const clock = new THREE.Clock();
+
     const render = () => {
+      const t = clock.getElapsedTime();
+
       this.controls.update();
 
       // Update animated elements
-      this[_body].updatePosition();
-      this[_orbitals].forEach(orbit => orbit.updatePosition());
+      this[_body].updatePosition(t);
+      this[_orbitals].forEach(orbit => orbit.updatePosition(t * 5));
 
       // Render the scene/camera combnation
       this.renderer.render(this.scene, this.camera);

@@ -52,7 +52,7 @@ class JPL {
   //
   // JDTDB    Julian Day Number, Barycentric Dynamical Time
   //   EC     Eccentricity, e
-  //   QR     Periapsis distance, q (au)
+  //   QR     Periapsis distance, q (km)
   //   IN     Inclination w.r.t XY-plane, i (degrees)
   //   OM     Longitude of Ascending Node, OMEGA, (degrees)
   //   W      Argument of Perifocus, w (degrees)
@@ -60,8 +60,8 @@ class JPL {
   //   N      Mean motion, n (degrees/day)
   //   MA     Mean anomaly, M (degrees)
   //   TA     True anomaly, nu (degrees)
-  //   A      Semi-major axis, a (au)
-  //   AD     Apoapsis distance (au)
+  //   A      Semi-major axis, a (km)
+  //   AD     Apoapsis distance (km)
   //   PR     Sidereal orbit period (day)
   parseElements(data) {
     const paramsPatt = /\$\$SOE\n([^\$]+)\n\$\$EOE/m;
