@@ -20,12 +20,11 @@ const _semiMinorAxis = Symbol('semiMinorAxis');
 const _semiMajorAxis = Symbol('semiMajorAxis');
 const _specificAngularMomentum = Symbol('specificAngularMomentum');
 
-const _hVec = Symbol('hVec');
-const _nVec = Symbol('nVec');
 const _r0Vec = Symbol('r0Vec');
 const _rVec = Symbol('rVec');
 const _v0Vec = Symbol('v0Vec');
 const _vVec = Symbol('vVec');
+const _rootMu = Symbol('rootMu');
 
 
 
@@ -40,6 +39,7 @@ export default class Orbit extends AstroGroup {
   get p() { return this[_semiLatusRectum]; }
   get μ() { return this[_gravitationalParam]; }
   get Ω() { return this[_ascendingNode]; }
+  get rootMu() { return this[_rootMu]; }
 
   // position vector
   get rVec() { return this[_rVec]; }
@@ -51,23 +51,6 @@ export default class Orbit extends AstroGroup {
   // initial velocity vector
   get v0Vec() { return this[_v0Vec]; }
 
-  // node vector
-  get nVec() { return this[_nVec].set( -this.hVec.y, this.hVec.x, 0 ); }
-
-  // specific angular momentum vector
-  get hVec() { return this[_hVec].crossVectors( this.rVec, this.vVec ); }
-
-  // eccentricity vector
-  get eVec() { return this[_eVec]; }
-
-  // argument of periapsis
-  // get ω() {}
-  // specific mechanical energy
-  // get ε() {}
-  // time of periapsis passage
-  // get T() {}
-  // longitude of periapsis (instead of argument of periapsis)
-  // get Π() { return this.Ω + this.ω; }
 
 
   rVecFromAngle(theta) {
@@ -85,66 +68,93 @@ export default class Orbit extends AstroGroup {
 
   // this is not x in terms of the axis, this is a created variable
   // to assist in solving kepler's problem.
-  // for elliptical orbits, works as a good first guess
-  x(t) { return ( Math.sqrt(this.μ) * t ) / this.a; }
+  // for elliptical orbits, works as a good first guess for newton iteration.
+  x(t) { return ( this.rootMu * t ) / this.a; }
 
-  z(x) { return Math.pow(x, 2) / this.a }
+  // newton iteration scheme to get accurate value of x
+  // note: this was the final piece of the puzzle to get
+  // the orbit to match the drawn ellipse!
+  xNewton(t) {
+    let x = this.x(t);
+    let tn, dtdxn, xn;
+
+    do {
+      tn = this.tn(x);
+      dtdxn = this.dtdxn(x);
+      xn = x + ( t - tn ) / dtdxn;
+      x = xn;
+    } while ( Math.abs( t - tn ) > 1e-6 );
+
+    return xn;
+  }
+
+  // nth value of t, given x
+  tn(x) {
+    const r0 = this.r0Vec.length();
+    const term1 = ( this.r0Vec.dot( this.v0Vec ) / this.rootMu ) * Math.pow(x, 2) * this.C(x);
+    const term2 = ( 1 - r0 / this.a ) * Math.pow(x, 3) * this.S(x);
+    const term3 = r0 * x;
+
+    return ( term1 + term2 + term3 ) / this.rootMu;
+  }
+
+  // nth dt/dx term, given x
+  dtdxn(x) {
+    const r0 = this.r0Vec.length();
+    const z = this.z(x);
+    const term1 = Math.pow(x, 2) * this.C(x);
+    const term2 = ( this.r0Vec.dot( this.v0Vec ) / this.rootMu ) * x * ( 1 - z * this.S(x) );
+    const term3 = r0 * ( 1 - z * this.C(x) );
+
+    return ( term1 + term2 + term3 ) / this.rootMu;
+  }
+
+  z(x) { return Math.pow(x, 2) / this.a; }
 
   f(x) {
-    const r0 = this.r0Vec.x;
-    const z = this.z(x);
-    return 1 - ( Math.pow(x, 2) / r0 ) * this.C(z);
+    const r0 = this.r0Vec.length();
+    return 1 - ( Math.pow(x, 2) / r0 ) * this.C(x);
   }
 
   g(x, t) {
-    const z = this.z(x);
-    return t - ( Math.pow(x, 3) / Math.sqrt(this.μ) ) * this.S(z);
+    return t - ( Math.pow(x, 3) / this.rootMu ) * this.S(x);
   }
 
   fPrime(x, r) {
-    const r0 = this.r0Vec.x;
+    const r0 = this.r0Vec.length();
     const z = this.z(x);
-    return ( Math.sqrt(this.μ) / ( r0 * r ) ) * x * ( z * this.S(z) - 1 );
+    return ( this.rootMu / ( r0 * r ) ) * x * ( z * this.S(x) - 1 );
   }
 
   gPrime(x, r) {
-    const z = this.z(x);
-    return 1 - ( Math.pow(x, 2) / r ) * this.C(z);
+    return 1 - ( Math.pow(x, 2) / r ) * this.C(x);
   }
 
-  C(z) { return ( 1 - Math.cos( Math.sqrt(z) ) ) / z; }
+  C(x) {
+    const z = this.z(x);
+    return ( 1 - Math.cos( Math.sqrt(z) ) ) / z;
+  }
 
-  S(z) {
+  S(x) {
+    const z = this.z(x);
     const rootZ = Math.sqrt(z);
     return ( rootZ - Math.sin(rootZ) ) / Math.sqrt( Math.pow(z, 3) );
   }
 
-  move() {
-    const orbitingBody = this[_orbitingBody];
-
-    let theta = orbitingBody.userData.theta + 2 * Math.PI / 1000;
-
-    if (theta >= 2*Math.PI) {
-      theta -= 2*Math.PI;
-    }
-
-    let r = this.r(theta);
-
-    // targets z-axis because we rotated the ellipsis from the xy plane
-    // to the xz plane.
-    orbitingBody.position.set( r * Math.cos(theta), 0, r * Math.sin(theta) );
-
-    orbitingBody.userData.theta = theta;
-  }
-
+  // algorithm for solution to the kepler problem
+  // (aka universal variable foumulation)
+  //
+  // the advantages of this method over other methods are that only one
+  // set of equations works for all conic orbits and accuracy and
+  // convergence for nearly parabolic orbits is better.
   solveKeplers(t) {
     // 1) from r0Vec, v0Vec, determine r0 and a
-    const a = this.a;
-    const r0 = this.rVec.x;
+    // these are used within other functions used below
 
     // 2) given t-t0 (usually t0 is assumed to be zero), solve the universal
     // time of flight equation for x using a Newton iteration scheme
-    const x = this.x(t);
+    // const x = this.x(t);
+    const x = this.xNewton(t);
 
     // 3) Evaluate f and g from quations (4.4-31) and (4.4-34); then compute
     // rVec and r from equation (4.4-18).
@@ -157,10 +167,9 @@ export default class Orbit extends AstroGroup {
 
     this.rVec.copy(rVec);
 
-
     // 4) Evaluate fPrime and gPrime from equations (4.4-35) and (4.4-36);
     // then compute vVec from equation (4.4-19).
-    const r = this.rVec.length;
+    const r = this.rVec.length();
     const fPrime = this.fPrime(x, r);
     const gPrime = this.gPrime(x, r);
     const vVec = new THREE.Vector3();
@@ -187,11 +196,9 @@ export default class Orbit extends AstroGroup {
 
     super({ specs });
 
-    // initial setup requires minimal given information:
-    // semi-major axis, eccentricity, and inclination
-
     // set up constants (order matters)
     this[_gravitationalParam] = 1; // this.μ
+    this[_rootMu] = Math.sqrt( this.μ );
     this[_eccentricity] = this.specs.eccentricity; // this.e
     this[_inclination] = this.specs.toRad('inclination'); // this.i
     this[_ascendingNode] = this.specs.toRad('ascendingNode'); // this.Ω
@@ -206,7 +213,6 @@ export default class Orbit extends AstroGroup {
     // set up initial dynamic values
     this[_rVec] = this.rVecFromAngle(0);
     this[_vVec] = this.vVecFromAngle(0);
-    // this[_hVec] = new THREE.Vector3( 0, 0, 0 );
 
     // store references for animation, etc.
     this[_orbitGroup] = new THREE.Group();
@@ -215,17 +221,6 @@ export default class Orbit extends AstroGroup {
 
     // get stuffs added to group
     this.drawOrbit();
-    // this.addOrbitingBody();
-  }
-
-  addOrbitingBody() {
-    const centralBodyPos = this[_centralBody].position;
-    const orbitingBody = this[_orbitingBody];
-
-    orbitingBody.userData.theta = 0;
-    // orbitingBody.position.add( centralBodyPos );
-
-    this.add(orbitingBody);
   }
 
   drawOrbit() {
@@ -243,10 +238,25 @@ export default class Orbit extends AstroGroup {
     const material = new THREE.LineBasicMaterial( { color : 0xffffff } );
 
     const ellipse = new THREE.Line( geometry, material );
-    // ellipse.rotation.y = this.i;
+
+    // const curve2 = new THREE.EllipseCurve(
+    //   -this.c,  0,      // ax, aY
+    //   this.b, this.b,   // xRadius, yRadius
+    //   0,  2 * Math.PI,  // aStartAngle, aEndAngle
+    //   false,            // aClockwise
+    //   0                 // aRotation
+    // );
+
+    // const points2 = curve2.getPoints( 360 );
+    // const geometry2 = new THREE.BufferGeometry().setFromPoints( points2 );
+    // const material2 = new THREE.LineBasicMaterial( { color : 0xffff00 } );
+
+    // const ellipse2 = new THREE.Line( geometry2, material2 );
+    // ellipse2.rotation.y = this.i;
 
     // now we can think of the orbit as a simple 2D plane
     this[_orbitGroup].add(ellipse);
+    // this[_orbitGroup].add(ellipse2);
     this[_orbitGroup].add(this[_orbitingBody]);
     this[_orbitGroup].rotation.y = this.i;
 
@@ -261,29 +271,11 @@ export default class Orbit extends AstroGroup {
 
   updatePosition(t) {
     const orbitingBody = this[_orbitingBody];
-    // const clock = new THREE.Clock();
-    // const rotationPeriod = this.specs.siderealPeriod;
-    // const sign = rotationPeriod == 0 ? 1 : rotationPeriod / Math.abs(rotationPeriod);
-
-    // how do we tie this to rotationPeriod?
-
-    // let theta = orbitingBody.userData.theta + 2 * Math.PI / 1000;
-
-    // if (theta >= 2*Math.PI) {
-    //   theta -= 2*Math.PI;
-    // }
-
-    // let r = this.r(theta);
-
-    // targets z-axis because we rotated the ellipsis from the xy plane
-    // to the xz plane.
-    // orbitingBody.position.set( r * Math.cos(theta), r * Math.sin(theta), 0 );
 
     this.solveKeplers(t);
 
     orbitingBody.position.copy(this.rVec);
 
-    // orbitingBody.userData.theta = theta;
     orbitingBody.updatePosition(t);
   }
 

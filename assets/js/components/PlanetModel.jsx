@@ -229,7 +229,7 @@ export default class PlanetModel extends React.Component {
 
       // Update animated elements
       this[_body].updatePosition(t);
-      this[_orbitals].forEach(orbit => orbit.updatePosition(t * 5));
+      this[_orbitals].forEach(orbit => orbit.updatePosition(t * 10));
 
       // Render the scene/camera combnation
       this.renderer.render(this.scene, this.camera);
