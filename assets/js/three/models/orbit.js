@@ -52,6 +52,78 @@ export default class Orbit extends AstroGroup {
   get v0Vec() { return this[_v0Vec]; }
 
 
+  constructor({ centralBody, orbitingBody, groupScalars = [], ...rawSpecs }) {
+    const specs = new Specs(rawSpecs, {
+      groupScalars,
+      semiMajorAxis: { units: 'km' },
+      siderealPeriod: { units: 'days' },
+      periapsis: { units: 'km' },
+      apoapsis: { units: 'km' },
+      minVelocity: { units: 'km/s' },
+      maxVelocity: { units: 'km/s' },
+      inclination: { units: '\u00B0' },
+      eccentricity: { required: true },
+      ascendingNode: { units: '\u00B0' },
+    });
+
+    super({ specs });
+
+    // set up constants (order matters)
+    this[_gravitationalParam] = 1; // this.μ
+    this[_rootMu] = Math.sqrt( this.μ );
+    this[_eccentricity] = this.specs.eccentricity; // this.e
+    this[_inclination] = this.specs.toRad('inclination'); // this.i
+    this[_ascendingNode] = this.specs.toRad('ascendingNode'); // this.Ω
+    this[_semiMajorAxis] = this.specs.semiMajorAxis; // this.a
+    this[_focus] = this.a * this.e; // this.c
+    this[_semiLatusRectum] = this.a * ( 1 - Math.pow(this.e, 2) ); // this.p
+    this[_semiMinorAxis] = Math.sqrt(Math.pow(this.a, 2) - Math.pow(this.c, 2)); // this.b
+    this[_specificAngularMomentum] = Math.sqrt( this.p * this.μ ); // this.h
+    this[_r0Vec] = this.rVecFromAngle(0);
+    this[_v0Vec] = this.vVecFromAngle(0);
+
+    // set up initial dynamic values
+    this[_rVec] = this.rVecFromAngle(0);
+    this[_vVec] = this.vVecFromAngle(0);
+
+    // store references for animation, etc.
+    this[_orbitGroup] = new THREE.Group();
+    this[_centralBody] = centralBody;
+    this[_orbitingBody] = orbitingBody;
+
+    // get stuffs added to group
+    this.drawOrbit();
+  }
+
+  drawOrbit() {
+    // we'll rotate the container
+    const curve = new THREE.EllipseCurve(
+      -this.c,  0,      // ax, aY
+      this.a, this.b,   // xRadius, yRadius
+      0,  2 * Math.PI,  // aStartAngle, aEndAngle
+      false,            // aClockwise
+      0                 // aRotation
+    );
+
+    const points = curve.getPoints( 360 );
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const material = new THREE.LineBasicMaterial( { color : 0xffffff } );
+
+    const ellipse = new THREE.Line( geometry, material );
+
+    // now we can think of the orbit as a simple 2D plane
+    this[_orbitGroup].add(ellipse);
+    this[_orbitGroup].add(this[_orbitingBody]);
+    this[_orbitGroup].rotation.y = this.i;
+
+    const fociPivot = new THREE.Group();
+    fociPivot.add( this[_orbitGroup] );
+
+    // enforce longitude of periapsis
+    fociPivot.rotation.z = this.Ω;
+
+    this.add( fociPivot );
+  }
 
   rVecFromAngle(theta) {
     const rVec = new THREE.Vector3( Math.cos(theta), Math.sin(theta), 0 );
@@ -180,95 +252,6 @@ export default class Orbit extends AstroGroup {
     this.vVec.copy(vVec);
   }
 
-  constructor({ centralBody, orbitingBody, groupScalars = [], ...rawSpecs }) {
-    const specs = new Specs(rawSpecs, {
-      groupScalars,
-      semiMajorAxis: { units: 'km' },
-      siderealPeriod: { units: 'days' },
-      periapsis: { units: 'km' },
-      apoapsis: { units: 'km' },
-      minVelocity: { units: 'km/s' },
-      maxVelocity: { units: 'km/s' },
-      inclination: { units: '\u00B0' },
-      eccentricity: { required: true },
-      ascendingNode: { units: '\u00B0' },
-    });
-
-    super({ specs });
-
-    // set up constants (order matters)
-    this[_gravitationalParam] = 1; // this.μ
-    this[_rootMu] = Math.sqrt( this.μ );
-    this[_eccentricity] = this.specs.eccentricity; // this.e
-    this[_inclination] = this.specs.toRad('inclination'); // this.i
-    this[_ascendingNode] = this.specs.toRad('ascendingNode'); // this.Ω
-    this[_semiMajorAxis] = this.specs.semiMajorAxis; // this.a
-    this[_focus] = this.a * this.e; // this.c
-    this[_semiLatusRectum] = this.a * ( 1 - Math.pow(this.e, 2) ); // this.p
-    this[_semiMinorAxis] = Math.sqrt(Math.pow(this.a, 2) - Math.pow(this.c, 2)); // this.b
-    this[_specificAngularMomentum] = Math.sqrt( this.p * this.μ ); // this.h
-    this[_r0Vec] = this.rVecFromAngle(0);
-    this[_v0Vec] = this.vVecFromAngle(0);
-
-    // set up initial dynamic values
-    this[_rVec] = this.rVecFromAngle(0);
-    this[_vVec] = this.vVecFromAngle(0);
-
-    // store references for animation, etc.
-    this[_orbitGroup] = new THREE.Group();
-    this[_centralBody] = centralBody;
-    this[_orbitingBody] = orbitingBody;
-
-    // get stuffs added to group
-    this.drawOrbit();
-  }
-
-  drawOrbit() {
-    // we'll rotate the container
-    const curve = new THREE.EllipseCurve(
-      -this.c,  0,      // ax, aY
-      this.a, this.b,   // xRadius, yRadius
-      0,  2 * Math.PI,  // aStartAngle, aEndAngle
-      false,            // aClockwise
-      0                 // aRotation
-    );
-
-    const points = curve.getPoints( 360 );
-    const geometry = new THREE.BufferGeometry().setFromPoints( points );
-    const material = new THREE.LineBasicMaterial( { color : 0xffffff } );
-
-    const ellipse = new THREE.Line( geometry, material );
-
-    // const curve2 = new THREE.EllipseCurve(
-    //   -this.c,  0,      // ax, aY
-    //   this.b, this.b,   // xRadius, yRadius
-    //   0,  2 * Math.PI,  // aStartAngle, aEndAngle
-    //   false,            // aClockwise
-    //   0                 // aRotation
-    // );
-
-    // const points2 = curve2.getPoints( 360 );
-    // const geometry2 = new THREE.BufferGeometry().setFromPoints( points2 );
-    // const material2 = new THREE.LineBasicMaterial( { color : 0xffff00 } );
-
-    // const ellipse2 = new THREE.Line( geometry2, material2 );
-    // ellipse2.rotation.y = this.i;
-
-    // now we can think of the orbit as a simple 2D plane
-    this[_orbitGroup].add(ellipse);
-    // this[_orbitGroup].add(ellipse2);
-    this[_orbitGroup].add(this[_orbitingBody]);
-    this[_orbitGroup].rotation.y = this.i;
-
-    const fociPivot = new THREE.Group();
-    fociPivot.add( this[_orbitGroup] );
-
-    // enforce longitude of periapsis
-    fociPivot.rotation.z = this.Ω;
-
-    this.add( fociPivot );
-  }
-
   updatePosition(t) {
     const orbitingBody = this[_orbitingBody];
 
@@ -277,53 +260,6 @@ export default class Orbit extends AstroGroup {
     orbitingBody.position.copy(this.rVec);
 
     orbitingBody.updatePosition(t);
-  }
-
-  // https://space.stackexchange.com/questions/8911/determining-orbital-position-at-a-future-point-in-time
-  getOrbit() {
-    // Calculate the time t in centuries from J2000:
-    // month is zero-indexed, so 0 is January
-    var tMillisFromJ2000 = Date.now() - Date.UTC(2000, 0, 1, 12, 0, 0);
-    var tCenturiesFromJ2000 = tMillisFromJ2000 / (1000*60*60*24*365.25*100);
-
-    // Now we calculate the current values of each of the orbital
-    // parameters. For example, the semimajor axis of Earth
-    // a0 = 1.00000261; adot = 0.00000562
-    var a = a0 + adot * tCenturiesFromJ2000;
-
-    // L0 = 34.33479152; Ldot = 3034.90371757
-    // b = -0.00012452
-    // c =  0.06064060
-    // s = -0.35635438
-    // f = 38.35125000
-    var L = L0 + Ldot * tCenturiesFromJ2000
-               + b * Math.pow(tCenturiesFromJ2000, 2)
-               + c * Math.cos(f * tCenturiesFromJ2000)
-               + s * Math.sin(f * tCenturiesFromJ2000);
-
-    var M = L - p // p is the longitude of periapsis
-    var w = p - W // W is the longitude of the ascending node
-
-    E = M;
-    while(true) {
-      var dE = (E - e * Math.sin(E) - M)/(1 - e * Math.cos(E));
-      E -= dE;
-      if( Math.abs(dE) < 1e-6 ) break;
-    }
-
-    var P = a * (Math.cos(E) - e);
-    var Q = a * Math.sin(E) * Math.sqrt(1 - Math.pow(e, 2));
-
-    // rotate by argument of periapsis
-    var x = Math.cos(w) * P - Math.sin(w) * Q;
-    var y = Math.sin(w) * P + Math.cos(w) * Q;
-    // rotate by inclination
-    var z = Math.sin(i) * x;
-        x = Math.cos(i) * x;
-    // rotate by longitude of ascending node
-    var xtemp = x;
-    x = Math.cos(W) * xtemp - Math.sin(W) * y;
-    y = Math.sin(W) * xtemp + Math.cos(W) * y;
   }
 
   toString() {
