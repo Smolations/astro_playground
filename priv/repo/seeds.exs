@@ -50,14 +50,24 @@ plutoElements = Elements.by_name(bodies, "Pluto")["elements"]
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
 # bodies
-
+# mass: { units: 'kg', scalar: 1e+24 },
+# volume: { units: 'km^3', scalar: 1e+10 },
+# meanDensity: { units: 'kg/m^3' },
+# equatorialRadius: { units: 'km' },
+# polarRadius: { units: 'km' },
+# volumetricMeanRadius: { units: 'km' },
+# axialTilt: { units: '\u00B0' },
+# obliquityToOrbit: { units: '\u00B0' },
+# siderealRotationPeriod: { units: 'hrs' },
+# mu: { units: 'km^3/s^2', scalar: 1e+6 }
 sun = Repo.insert! %Body{ name: "Sun",
   type: "star",
   mass: 1988500.0,
   volume: 1412000.0,
   mean_density: 1408.0,
   equatorial_radius: 695700.0,
-  polar_radius: 695700.0,
+  polar_radius: 66854.0,
+  # polar_radius: 695700.0,
   volumetric_mean_radius: 695700.0,
   oblateness: 0.00005,
   axial_tilt: 7.25,

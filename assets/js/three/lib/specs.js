@@ -1,5 +1,6 @@
 import _camelCase from 'lodash/camelCase';
 import _defaults from 'lodash/defaults';
+import _isFunction from 'lodash/isFunction';
 import _isNumber from 'lodash/isNumber';
 
 const _groupScalars = Symbol('groupScalars');
@@ -29,13 +30,10 @@ const proxyHandler = {
 
 export default class Specs {
   constructor(specs = {}, opts = {}) {
-    const { groupScalars = [], ...otherOpts } = opts;
-
-    this[_groupScalars] = groupScalars;
     this[_toStringColumnWidth] = 0;
 
     this[_specs] = specs;
-    this[_specsMap] = this.getSpecMap(otherOpts);
+    this[_specsMap] = this.getSpecMap(opts);
 
     return new Proxy(this, proxyHandler);
   }
@@ -58,32 +56,35 @@ export default class Specs {
     const camelSpecs = this.camelCaseKeys(this[_specs]);
     const camelPartial = this.camelCaseKeys(partialMap);
     const specsEntries = Object.entries(camelSpecs);
-    let groupScalar;
 
     for (let [key, val] of specsEntries) {
       if (key.length > this[_toStringColumnWidth]) {
         this[_toStringColumnWidth] = key.length;
       }
 
-      groupScalar = this[_groupScalars].find(gs => gs.keys.includes(key));
+      camelPartial[key] || (camelPartial[key] = {});
 
       specMap[key] = _defaults(
         {
-          rawValue: camelSpecs[key],
           get value() {
             return _isNumber(this.rawValue)
-              ? this.groupScalar * (this.scalar * this.rawValue)
+              ? this.scale(this.rawValue)
               : this.rawValue;
           },
+          rawValue: camelSpecs[key],
+          scalar: this._getScalarFn(camelPartial[key].scalar),
         },
         camelPartial[key],
         {
-          required: false,
-          scalar: 1,
-          groupScalar: groupScalar ? groupScalar.scalar : 1,
+          required: false, // todo
           units: '',
+          scale(x) { return this.scalar() * x; },
         }
       );
+
+      if (!_isFunction(specMap[key].scalar)) {
+        specMap[key].scalar = () => specMap[key].scalar;
+      }
     }
 
     return specMap;
@@ -97,6 +98,11 @@ export default class Specs {
     return this[_specsMap][key].value * Math.PI / 180;
   }
 
+  _getScalarFn(scalar = 1) {
+    const scalarFn = () => scalar;
+    return _isFunction(scalar) ? scalar : scalarFn;
+  }
+
   toString() {
     const specMapEntries = Object.entries(this[_specsMap]);
     const rows = [];
@@ -105,7 +111,7 @@ export default class Specs {
     for (let [key, spec] of specMapEntries) {
       desc = spec.desc ? ` (${spec.desc})` : '';
       keyCol = `${key}:${' '.repeat(this[_toStringColumnWidth] - key.length)}`;
-      rows.push(`${keyCol} ${spec.value} ${spec.units}${desc}`);
+      rows.push(`${keyCol} ${spec.value}${spec.units}${desc}`);
     }
 
     return rows.join("\n");

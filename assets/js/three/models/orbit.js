@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import _camelCase from 'lodash/camelCase';
+import _defaultsDeep from 'lodash/defaultsDeep';
 
 import AstroGroup from '../lib/astro-group';
 import Specs from '../lib/specs';
@@ -52,9 +53,9 @@ export default class Orbit extends AstroGroup {
   get v0Vec() { return this[_v0Vec]; }
 
 
-  constructor({ centralBody, orbitingBody, groupScalars = [], ...rawSpecs }) {
-    const specs = new Specs(rawSpecs, {
-      groupScalars,
+  constructor({ centralBody, orbitingBody, groupScalars = [], specOpts = {}, ...rawSpecs }) {
+    const defaultSpecOpts = {
+      // groupScalars,
       semiMajorAxis: { units: 'km' },
       siderealPeriod: { units: 'days' },
       periapsis: { units: 'km' },
@@ -64,7 +65,9 @@ export default class Orbit extends AstroGroup {
       inclination: { units: '\u00B0' },
       eccentricity: { required: true },
       ascendingNode: { units: '\u00B0' },
-    });
+    };
+
+    const specs = new Specs(rawSpecs, _defaultsDeep({}, specOpts, defaultSpecOpts));
 
     super({ specs });
 

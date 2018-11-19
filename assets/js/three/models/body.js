@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import _defaultsDeep from 'lodash/defaultsDeep';
+
 import AstroGroup from '../lib/astro-group';
 import Specs from '../lib/specs';
 
@@ -12,11 +14,10 @@ export default class Body extends AstroGroup {
   // gravitational constant
   get G() { return this.specs.mu / this.specs.mass; }
 
-  constructor({ maps = {}, groupScalars = [], ...rawSpecs }) {
-    const specs = new Specs(rawSpecs, {
-      groupScalars,
-      mass: { units: 'kg', scalar: 1e+24 },
-      volume: { units: 'km^3', scalar: 1e+10 },
+  constructor({ maps = {}, specOpts = {}, ...rawSpecs }) {
+    const defaultSpecOpts = {
+      mass: { units: 'e+24 kg' },
+      volume: { units: 'e+10 km^3' },
       meanDensity: { units: 'kg/m^3' },
       equatorialRadius: { units: 'km' },
       polarRadius: { units: 'km' },
@@ -24,8 +25,9 @@ export default class Body extends AstroGroup {
       axialTilt: { units: '\u00B0' },
       obliquityToOrbit: { units: '\u00B0' },
       siderealRotationPeriod: { units: 'hrs' },
-      mu: { units: 'km^3/s^2', scalar: 1e+6, desc: 'standard gravitational parameter (mu = G*M)' },
-    });
+      mu: { units: 'e+6 km^3/s^2', desc: 'standard gravitational parameter (mu = G*M)' },
+    };
+    const specs = new Specs(rawSpecs, _defaultsDeep({}, specOpts, defaultSpecOpts));
 
     super({ specs });
 

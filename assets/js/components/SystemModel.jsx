@@ -62,9 +62,27 @@ export default class PlanetModel extends React.Component {
       volumetricMeanRadius: { scalar: bodyScalarFn, scale: bodyScaleFn },
     };
 
+    const semiMajors = orbiting.map(orbit => orbit.semi_major_axis).sort();
+    console.log('semiMajors = %o', semiMajors);
+
+    const aMin = semiMajors[0];
+    const aMax = semiMajors[semiMajors.length - 1];
+    const aMinMaxScalar = aMin / aMax;
+    const orMin = bodyQuantScale(props.specs.polar_radius) + 0.5;
+    // const orMax = orMin + 2;
+    const orMax = 1000;
+
+    console.log('aMin: %o  |  aMax: %o  |  aMinMaxScalar: %o  |  orMin: %o  |  orMax: %o', aMin, aMax, aMinMaxScalar, orMin, orMax);
+
+    const orbitQuantScale = window.orbitQuant = new QuantScale({
+      domain: [aMin, aMax],
+      range: [Math.max(aMinMaxScalar * orMax, orMin), orMax],
+    });
+
     const orbitScaleFn = (x) => {
       console.log('orbit.scale(%o)', x);
-      return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 4);
+      return bodyQuantScale(x) / 200;
+      return orbitQuantScale(x);
     }
 
     this.orbitSpecOpts = {

@@ -81,10 +81,24 @@ const jpl = new JPL();
 const bodyList = [
   { name: 'Mercury', hId: 199, hIdCenter: 'Sun' },
   { name: 'Venus', hId: 299, hIdCenter: 'Sun' },
+
   { name: 'Earth', hId: 399, hIdCenter: 'Sun' },
   { name: 'Luna', hId: 301, hIdCenter: 'Earth' },
+
   { name: 'Mars', hId: 499, hIdCenter: 'Sun' },
+  { name: 'Phobos', hId: 401, hIdCenter: 'Mars' },
+  { name: 'Deimos', hId: 402, hIdCenter: 'Mars' },
+
   { name: 'Jupiter', hId: 599, hIdCenter: 'Sun' },
+  { name: 'Io', hId: 501, hIdCenter: 'Jupiter' },
+  { name: 'Europa', hId: 502, hIdCenter: 'Jupiter' },
+  { name: 'Ganymede', hId: 503, hIdCenter: 'Jupiter' },
+  { name: 'Callisto', hId: 504, hIdCenter: 'Jupiter' },
+  { name: 'Amalthea', hId: 505, hIdCenter: 'Jupiter' },
+  { name: 'Thebe', hId: 514, hIdCenter: 'Jupiter' },
+  { name: 'Adrastea', hId: 515, hIdCenter: 'Jupiter' },
+  { name: 'Metis', hId: 516, hIdCenter: 'Jupiter' },
+
   { name: 'Saturn', hId: 699, hIdCenter: 'Sun' },
   { name: 'Uranus', hId: 799, hIdCenter: 'Sun' },
   { name: 'Neptune', hId: 899, hIdCenter: 'Sun' },
