@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Table } from 'semantic-ui-react';
 
 
@@ -20,7 +21,7 @@ export default class BodiesTable extends React.Component {
         <Table.Body>
           {this.props.bodies.map((body) =>
             <Table.Row key={body.id}>
-              <Table.Cell>{body.name}</Table.Cell>
+              <Table.Cell><Link to={`/bodies/${body.id}`}>{body.name}</Link></Table.Cell>
               <Table.Cell>{body.type}</Table.Cell>
               <Table.Cell>{body.mass} &times; 10<sup>24</sup>kg</Table.Cell>
               <Table.Cell>{body.diameter}km</Table.Cell>

@@ -48,10 +48,10 @@ Does anyone really have a year to watch Earth move around the sun in a simulatio
 
 ## Other Considerations
 
-As I previously mentioned, this is a work in progress. It still has some kinks as well as some missing features. Here are a few things I'm aware of and trying to fix/add:
+As I previously mentioned, this is very much a work in progress. It still has some kinks as well as some missing features. Here are a few things I'm aware of and trying to fix/add:
 
 - oblateness is known from the data, but is yet to be implemented
-- orbits are with one body around another, where it might be more accurate to have bodies orbiting around a common barycenter
+- orbits are with one body around another's center, where it might be more accurate to have bodies orbiting around a common barycenter
 - controls for the scene have yet to be implemented (so users can play with scale, time, etc. in real time)
 - labels and diagrams for the orbit ellipticals, as well as body information, should be accessible in the scene
 - might be nice to get a visual of the position and velocity vectors of an orbiting body, while it's orbiting
