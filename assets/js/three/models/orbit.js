@@ -117,7 +117,7 @@ export default class Orbit extends AstroGroup {
     // now we can think of the orbit as a simple 2D plane
     this[_orbitGroup].add(ellipse);
     this[_orbitGroup].add(this[_orbitingBody]);
-    this[_orbitGroup].rotation.y = this.i;
+    this[_orbitGroup].rotation.y = -this.i;
 
     const fociPivot = new THREE.Group();
     fociPivot.add( this[_orbitGroup] );

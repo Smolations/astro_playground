@@ -36,16 +36,29 @@ bodies = get_in(json, ["bodies"])
 
 mercuryElements = Elements.by_name(bodies, "Mercury")["elements"]
 venusElements = Elements.by_name(bodies, "Venus")["elements"]
+
 earthElements = Elements.by_name(bodies, "Earth")["elements"]
 lunaElements = Elements.by_name(bodies, "Luna")["elements"]
+
 marsElements = Elements.by_name(bodies, "Mars")["elements"]
+phobosElements = Elements.by_name(bodies, "Phobos")["elements"]
+deimosElements = Elements.by_name(bodies, "Deimos")["elements"]
+
 jupiterElements = Elements.by_name(bodies, "Jupiter")["elements"]
+ioElements = Elements.by_name(bodies, "Io")["elements"]
+europaElements = Elements.by_name(bodies, "Europa")["elements"]
+ganymedeElements = Elements.by_name(bodies, "Ganymede")["elements"]
+callistoElements = Elements.by_name(bodies, "Callisto")["elements"]
+amaltheaElements = Elements.by_name(bodies, "Amalthea")["elements"]
+thebeElements = Elements.by_name(bodies, "Thebe")["elements"]
+adrasteaElements = Elements.by_name(bodies, "Adrastea")["elements"]
+metisElements = Elements.by_name(bodies, "Metis")["elements"]
+
 saturnElements = Elements.by_name(bodies, "Saturn")["elements"]
 uranusElements = Elements.by_name(bodies, "Uranus")["elements"]
 neptuneElements = Elements.by_name(bodies, "Neptune")["elements"]
 plutoElements = Elements.by_name(bodies, "Pluto")["elements"]
 
-# IO.inspect earth
 
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
@@ -101,6 +114,7 @@ venus = Repo.insert! %Body{ name: "Venus",
   obliquity_to_orbit: 177.4,
   sidereal_rotation_period: 5832.5,
   mu: 0.32486 }
+
 earth = Repo.insert! %Body{ name: "Earth",
   type: "planet",
   mass: 5.9723,
@@ -127,6 +141,7 @@ luna = Repo.insert! %Body{ name: "Luna",
   obliquity_to_orbit: 6.687,
   sidereal_rotation_period: 655.728,
   mu: 0.0049 }
+
 mars = Repo.insert! %Body{ name: "Mars",
   type: "planet",
   mass: 0.64171,
@@ -140,6 +155,33 @@ mars = Repo.insert! %Body{ name: "Mars",
   obliquity_to_orbit: 25.19,
   sidereal_rotation_period: 24.6229,
   mu: 0.042828 }
+phobos = Repo.insert! %Body{ name: "Phobos",
+  type: "satellite",
+  mass: 0.00000000108,
+  volume: 0.0,
+  mean_density: 1.9,
+  equatorial_radius: 11.0,
+  polar_radius: 11.0,
+  volumetric_mean_radius: 11.0,
+  oblateness: 0.0,
+  axial_tilt: 0.009,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 7.656,
+  mu: 0.0 }
+deimos = Repo.insert! %Body{ name: "Deimos",
+  type: "satellite",
+  mass: 0.0000000018,
+  volume: 0.0,
+  mean_density: 1.76,
+  equatorial_radius: 6.0,
+  polar_radius: 6.0,
+  volumetric_mean_radius: 6.0,
+  oblateness: 0.0,
+  axial_tilt: 0.889,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 30.312,
+  mu: 0.0 }
+
 jupiter = Repo.insert! %Body{ name: "Jupiter",
   type: "planet",
   mass: 1898.19,
@@ -153,6 +195,111 @@ jupiter = Repo.insert! %Body{ name: "Jupiter",
   obliquity_to_orbit: 3.13,
   sidereal_rotation_period: 9.9259,
   mu: 126.687 }
+io = Repo.insert! %Body{ name: "Io",
+  type: "satellite",
+  mass: 0.08933,
+  volume: 0.0,
+  mean_density: 3.53,
+  equatorial_radius: 1821.3,
+  polar_radius: 1821.3,
+  volumetric_mean_radius: 1821.3,
+  oblateness: 0.0,
+  axial_tilt: 0.0,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 42.459312,
+  mu: 0.0 }
+europa = Repo.insert! %Body{ name: "Europa",
+  type: "satellite",
+  mass: 0.04797,
+  volume: 0.0,
+  mean_density: 2.99,
+  equatorial_radius: 1565.0,
+  polar_radius: 1565.0,
+  volumetric_mean_radius: 1565.0,
+  oblateness: 0.0,
+  axial_tilt: 0.016,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 85.24344,
+  mu: 0.0 }
+ganymede = Repo.insert! %Body{ name: "Ganymede",
+  type: "satellite",
+  mass: 0.1482,
+  volume: 0.0,
+  mean_density: 1.94,
+  equatorial_radius: 2634.0,
+  polar_radius: 2634.0,
+  volumetric_mean_radius: 2634.0,
+  oblateness: 0.0,
+  axial_tilt: 0.068,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 171.709272,
+  mu: 0.0 }
+callisto = Repo.insert! %Body{ name: "Callisto",
+  type: "satellite",
+  mass: 0.1076,
+  volume: 0.0,
+  mean_density: 1.851,
+  equatorial_radius: 2403.0,
+  polar_radius: 2403.0,
+  volumetric_mean_radius: 2403.0,
+  oblateness: 0.0,
+  axial_tilt: 0.356,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 400.536432,
+  mu: 0.0 }
+amalthea = Repo.insert! %Body{ name: "Amalthea",
+  type: "satellite",
+  mass: 0.0,
+  volume: 0.0,
+  mean_density: 0.0,
+  equatorial_radius: 73.0,
+  polar_radius: 73.0,
+  volumetric_mean_radius: 73.0,
+  oblateness: 0.0,
+  axial_tilt: 0.0,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 11.956296,
+  mu: 0.0 }
+thebe = Repo.insert! %Body{ name: "Thebe",
+  type: "satellite",
+  mass: 0.0,
+  volume: 0.0,
+  mean_density: 0.0,
+  equatorial_radius: 50.0,
+  polar_radius: 50.0,
+  volumetric_mean_radius: 50.0,
+  oblateness: 0.0,
+  axial_tilt: 0.0,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 16.188,
+  mu: 0.0 }
+adrastea = Repo.insert! %Body{ name: "Adrastea",
+  type: "satellite",
+  mass: 0.0,
+  volume: 0.0,
+  mean_density: 0.0,
+  equatorial_radius: 10.0,
+  polar_radius: 10.0,
+  volumetric_mean_radius: 10.0,
+  oblateness: 0.0,
+  axial_tilt: 0.0,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 7.15824,
+  mu: 0.0 }
+metis = Repo.insert! %Body{ name: "Metis",
+  type: "satellite",
+  mass: 0.0,
+  volume: 0.0,
+  mean_density: 0.0,
+  equatorial_radius: 20.0,
+  polar_radius: 20.0,
+  volumetric_mean_radius: 20.0,
+  oblateness: 0.0,
+  axial_tilt: 0.0,
+  obliquity_to_orbit: 0.0,
+  sidereal_rotation_period: 7.07472,
+  mu: 0.0 }
+
 saturn = Repo.insert! %Body{ name: "Saturn",
   type: "planet",
   mass: 568.34,
@@ -225,21 +372,65 @@ Repo.insert! %Texture{ body_id: venus.id,
   # displacement: "venus_2k_displacement.jpg",
   # normal: "venus_2k_normal.jpg"
 }
+
 Repo.insert! %Texture{ body_id: earth.id,
   map: "earth_daymap_2k_color.jpg",
   # displacement: "earth_2k_displacement.jpg",
   # normal: "earth_2k_normal.jpg"
 }
+Repo.insert! %Texture{ body_id: luna.id,
+  map: "moon_2k_color.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+
 Repo.insert! %Texture{ body_id: mars.id,
   map: "mars_2k_color.jpg",
   # displacement: "mars_2k_displacement.jpg",
   # normal: "mars_2k_normal.jpg"
 }
+Repo.insert! %Texture{ body_id: phobos.id,
+  map: "phobos_1440x720_gray.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+Repo.insert! %Texture{ body_id: deimos.id,
+  map: "deimos_1440x720_gray.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+
 Repo.insert! %Texture{ body_id: jupiter.id,
   map: "jupiter_2k_color.jpg",
   # displacement: "jupiter_2k_displacement.jpg",
   # normal: "jupiter_2k_normal.jpg"
 }
+Repo.insert! %Texture{ body_id: io.id,
+  map: "io_2k_color.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+Repo.insert! %Texture{ body_id: europa.id,
+  map: "europa_2k_color.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+Repo.insert! %Texture{ body_id: ganymede.id,
+  map: "ganymede_1024x512_color.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+Repo.insert! %Texture{ body_id: callisto.id,
+  map: "callisto_1800x900_color.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+Repo.insert! %Texture{ body_id: amalthea.id,
+  map: "amalthea_2k_gray.jpg",
+  # displacement: "neptune_2k_displacement.jpg",
+  # normal: "neptune_2k_normal.jpg"
+}
+
 Repo.insert! %Texture{ body_id: saturn.id,
   map: "saturn_2k_color.jpg",
   # displacement: "saturn_2k_displacement.jpg",
@@ -261,11 +452,8 @@ Repo.insert! %Texture{ body_id: pluto.id,
   # normal: "neptune_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ body_id: luna.id,
-  map: "moon_2k_color.jpg",
-  # displacement: "neptune_2k_displacement.jpg",
-  # normal: "neptune_2k_normal.jpg"
-}
+
+
 
 
 # orbits
@@ -292,6 +480,7 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: venus.id,
   eccentricity: venusElements["EC"],
   ascending_node: venusElements["OM"],
 }
+
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: earth.id,
   semi_major_axis: earthElements["A"],
   sidereal_period: earthElements["PR"],
@@ -314,6 +503,7 @@ Repo.insert! %Orbit{ central_body_id: earth.id, orbiting_body_id: luna.id,
   eccentricity: lunaElements["EC"],
   ascending_node: lunaElements["OM"],
 }
+
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
   semi_major_axis: marsElements["A"],
   sidereal_period: marsElements["PR"],
@@ -325,6 +515,29 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: mars.id,
   eccentricity: marsElements["EC"],
   ascending_node: marsElements["OM"],
 }
+Repo.insert! %Orbit{ central_body_id: mars.id, orbiting_body_id: phobos.id,
+  semi_major_axis: phobosElements["A"],
+  sidereal_period: phobosElements["PR"],
+  periapsis: phobosElements["QR"],
+  apoapsis: phobosElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: phobosElements["IN"],
+  eccentricity: phobosElements["EC"],
+  ascending_node: phobosElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: mars.id, orbiting_body_id: deimos.id,
+  semi_major_axis: deimosElements["A"],
+  sidereal_period: deimosElements["PR"],
+  periapsis: deimosElements["QR"],
+  apoapsis: deimosElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: deimosElements["IN"],
+  eccentricity: deimosElements["EC"],
+  ascending_node: deimosElements["OM"],
+}
+
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
   semi_major_axis: jupiterElements["A"],
   sidereal_period: jupiterElements["PR"],
@@ -336,6 +549,95 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: jupiter.id,
   eccentricity: jupiterElements["EC"],
   ascending_node: jupiterElements["OM"],
 }
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: io.id,
+  semi_major_axis: ioElements["A"],
+  sidereal_period: ioElements["PR"],
+  periapsis: ioElements["QR"],
+  apoapsis: ioElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: ioElements["IN"],
+  eccentricity: ioElements["EC"],
+  ascending_node: ioElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: europa.id,
+  semi_major_axis: europaElements["A"],
+  sidereal_period: europaElements["PR"],
+  periapsis: europaElements["QR"],
+  apoapsis: europaElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: europaElements["IN"],
+  eccentricity: europaElements["EC"],
+  ascending_node: europaElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: ganymede.id,
+  semi_major_axis: ganymedeElements["A"],
+  sidereal_period: ganymedeElements["PR"],
+  periapsis: ganymedeElements["QR"],
+  apoapsis: ganymedeElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: ganymedeElements["IN"],
+  eccentricity: ganymedeElements["EC"],
+  ascending_node: ganymedeElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: callisto.id,
+  semi_major_axis: callistoElements["A"],
+  sidereal_period: callistoElements["PR"],
+  periapsis: callistoElements["QR"],
+  apoapsis: callistoElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: callistoElements["IN"],
+  eccentricity: callistoElements["EC"],
+  ascending_node: callistoElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: amalthea.id,
+  semi_major_axis: amaltheaElements["A"],
+  sidereal_period: amaltheaElements["PR"],
+  periapsis: amaltheaElements["QR"],
+  apoapsis: amaltheaElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: amaltheaElements["IN"],
+  eccentricity: amaltheaElements["EC"],
+  ascending_node: amaltheaElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: thebe.id,
+  semi_major_axis: thebeElements["A"],
+  sidereal_period: thebeElements["PR"],
+  periapsis: thebeElements["QR"],
+  apoapsis: thebeElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: thebeElements["IN"],
+  eccentricity: thebeElements["EC"],
+  ascending_node: thebeElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: adrastea.id,
+  semi_major_axis: adrasteaElements["A"],
+  sidereal_period: adrasteaElements["PR"],
+  periapsis: adrasteaElements["QR"],
+  apoapsis: adrasteaElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: adrasteaElements["IN"],
+  eccentricity: adrasteaElements["EC"],
+  ascending_node: adrasteaElements["OM"],
+}
+Repo.insert! %Orbit{ central_body_id: jupiter.id, orbiting_body_id: metis.id,
+  semi_major_axis: metisElements["A"],
+  sidereal_period: metisElements["PR"],
+  periapsis: metisElements["QR"],
+  apoapsis: metisElements["AD"],
+  min_velocity: 0.0,
+  max_velocity: 0.0,
+  inclination: metisElements["IN"],
+  eccentricity: metisElements["EC"],
+  ascending_node: metisElements["OM"],
+}
+
 Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: saturn.id,
   semi_major_axis: saturnElements["A"],
   sidereal_period: saturnElements["PR"],

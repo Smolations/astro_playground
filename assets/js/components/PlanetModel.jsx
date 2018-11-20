@@ -16,6 +16,12 @@ const _orbitals = Symbol('orbitals');
 
 
 export default class PlanetModel extends React.Component {
+  numSort(a, b) {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  }
+
   constructor(props) {
     super(props);
 
@@ -27,21 +33,19 @@ export default class PlanetModel extends React.Component {
     this.dims = dims;
     this.maps = {};
 
-    const bodyScalarFn = () => 1 / props.specs.polar_radius;
-
     const orbiting = props.orbiting || [];
 
     const bodyRadii = [
       props.specs.polar_radius,
       ...orbiting.map(orbit => orbit.orbiting_body.polar_radius),
-    ].sort();
+    ].sort(this.numSort);
     console.log('bodyRadii = %o', bodyRadii);
 
     const prMin = bodyRadii[0];
     const prMax = bodyRadii[bodyRadii.length - 1];
     const prMinMaxScalar = prMin / prMax;
-    const brMin = 0.25;
-    const brMax = props.specs.type == 'star' ? 5 : 2;
+    const brMin = 0.2;
+    const brMax = props.specs.type == 'star' ? 5 : 3;
 
     console.log('prMin: %o  |  prMax: %o  |  prMinMaxScalar: %o  |  brMin: %o', prMin, prMax, prMinMaxScalar, brMin);
     const bodyQuantScale = window.bodyQuant = new QuantScale({
@@ -55,16 +59,17 @@ export default class PlanetModel extends React.Component {
     }
 
     this.bodyGroupSpecOpts = {
-      mass: { scalar: bodyScalarFn, scale: bodyScaleFn },
-      volume: { scalar: bodyScalarFn, scale: bodyScaleFn },
-      equatorialRadius: { scalar: bodyScalarFn, scale: bodyScaleFn },
-      polarRadius: { scalar: bodyScalarFn, scale: bodyScaleFn },
-      volumetricMeanRadius: { scalar: bodyScalarFn, scale: bodyScaleFn },
+      mass: { scale: bodyScaleFn },
+      volume: { scale: bodyScaleFn },
+      equatorialRadius: { scale: bodyScaleFn },
+      polarRadius: { scale: bodyScaleFn },
+      volumetricMeanRadius: { scale: bodyScaleFn },
     };
 
     const orbitScaleFn = (x) => {
       console.log('orbit.scale(%o)', x);
-      return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 4);
+      // return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 4); // works for earth/moon
+      return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 1); // works for mars/phobos/deimos
     }
 
     this.orbitSpecOpts = {
@@ -149,14 +154,6 @@ export default class PlanetModel extends React.Component {
         ...orbiting_body,
       });
 
-      const scalar = () => this.bodyGroupSpecOpts.mass.scalar() / 4;
-
-      const orbitSpecOpts = {
-        semiMajorAxis: { scalar },
-        periapsis: { scalar },
-        apoapsis: { scalar },
-      };
-
       const orbital = new Orbit({
         orbitingBody,
         centralBody: this[_body],
@@ -240,16 +237,18 @@ export default class PlanetModel extends React.Component {
     const maps = {};
     let promise;
 
-    for (const [textureType, texturePath] of Object.entries(texture)) {
-      if (texturePath && !textureType.endsWith('id')) {
-        promise = util.loadTexture(`${path}/${texturePath}`)
-          .then((map) => {
-            const key = (textureType !== 'map') ? `${textureType}Map` : textureType;
-            console.log(`adding maps.${key} = %o`, map);
-            maps[key] = map;
-          });
+    if (texture) {
+      for (const [textureType, texturePath] of Object.entries(texture)) {
+        if (texturePath && !textureType.endsWith('id')) {
+          promise = util.loadTexture(`${path}/${texturePath}`)
+            .then((map) => {
+              const key = (textureType !== 'map') ? `${textureType}Map` : textureType;
+              console.log(`adding maps.${key} = %o`, map);
+              maps[key] = map;
+            });
 
-        toLoad.push(promise);
+          toLoad.push(promise);
+        }
       }
     }
 

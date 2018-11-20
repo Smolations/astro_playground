@@ -8,6 +8,7 @@
     "test": "test"
   },
   "scripts": {
+    "postinstall": "node horizons.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Resir",

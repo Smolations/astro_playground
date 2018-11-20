@@ -52,10 +52,11 @@ As I previously mentioned, this is very much a work in progress. It still has so
 
 - oblateness is known from the data, but is yet to be implemented
 - orbits are with one body around another's center, where it might be more accurate to have bodies orbiting around a common barycenter
+- non-spherical moons are shown as spherical
+- the scaling is currently linear, but looking into non-linear functions to define scale transformations
 - controls for the scene have yet to be implemented (so users can play with scale, time, etc. in real time)
 - labels and diagrams for the orbit ellipticals, as well as body information, should be accessible in the scene
 - might be nice to get a visual of the position and velocity vectors of an orbiting body, while it's orbiting
-- the scaling is currently linear, but looking into non-linear functions to define scale transformations
 - camera controls are needed to help navigate a scene. currently the camera focus stays on the chosen, central body even if it has satellites.
 - lighting and scales need to change when a star is the central body
 - probably much more...
