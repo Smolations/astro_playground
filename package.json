@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@wildpeaks/three-webpack-plugin": "^2.0.0",
+    "dat.gui": "^0.7.3",
     "history": "^4.7.2",
     "lodash": "^4.17.11",
     "phoenix": "file:deps/phoenix",

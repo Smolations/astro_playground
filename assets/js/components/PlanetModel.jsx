@@ -1,4 +1,5 @@
 import React from 'react';
+import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 // import { STLLoader } from 'three/examples/js/loaders/STLLoader';
@@ -9,6 +10,7 @@ import Body from '../three/models/body';
 import Orbit from '../three/models/orbit';
 import Specs from '../three/lib/specs';
 import QuantScale from '../three/lib/quant-scale';
+import windowResize from '../three/lib/window-resize';
 
 
 const _body = Symbol('body');
@@ -25,7 +27,9 @@ export default class PlanetModel extends React.Component {
   constructor(props) {
     super(props);
 
-    const dims = { x: 1127, y: 1127 };
+    const SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+    // const dims = { x: 1127, y: 1127 };
+    const dims = { x: SCREEN_WIDTH, y: SCREEN_HEIGHT };
 
     THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 0, 1 );
 
@@ -90,6 +94,8 @@ export default class PlanetModel extends React.Component {
 
     this.camera = this.configureCamera();
     this.renderer = this.configureRenderer();
+    this.params = this.configureGUI();
+    this.windowResize = windowResize(this.renderer, this.camera);
 
     this.drawAxes();
     this.addLighting();
@@ -209,6 +215,35 @@ export default class PlanetModel extends React.Component {
     return controls;
   }
 
+  configureGUI() {
+    const gui = window.gui = new dat.GUI({
+      name: 'Astro Playground',
+    });
+    // https://github.com/dataarts/dat.gui/blob/master/API.md
+    // {
+    //   a: 200, // numeric
+    //   b: 200, // numeric slider
+    //   c: "Hello, GUI!", // string
+    //   d: false, // boolean (checkbox)
+    //   e: "#ff8800", // color (hex)
+    //   f: function() { alert("Hello!") },
+    //   g: function() { alert( parameters.c ) },
+    //   v : 0,    // dummy value, only type is important
+    //   w: "...", // dummy value, only type is important
+    //   x: 0, y: 0, z: 0
+    // };
+    const params = {
+      timeScale: 10,
+    };
+
+
+    gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
+
+    gui.open();
+
+    return params;
+  }
+
   configureRenderer() {
     const canvas = this.canvasRef.current;
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -273,7 +308,7 @@ export default class PlanetModel extends React.Component {
 
       // Update animated elements
       this[_body].updatePosition(t);
-      this[_orbitals].forEach(orbit => orbit.updatePosition(t * 10));
+      this[_orbitals].forEach(orbit => orbit.updatePosition(t * this.params.timeScale));
 
       // Render the scene/camera combnation
       this.renderer.render(this.scene, this.camera);

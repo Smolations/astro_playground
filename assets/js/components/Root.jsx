@@ -2,13 +2,10 @@ import React from 'react';
 import { Container, Header, Image } from 'semantic-ui-react';
 
 
-export default class Root extends React.Component {
+export default class ConstrainedLayout extends React.Component {
   render() {
     return (
-      <Container>
-        <Header dividing>
-          <Image src='/images/phoenix.png' centered />
-        </Header>
+      <Container fluid={true}>
         {this.props.children}
       </Container>
     );

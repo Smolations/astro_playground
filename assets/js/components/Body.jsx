@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Sticky } from 'semantic-ui-react';
+
 import BodiesTable from './BodiesTable';
-import ChristmasModel from './ChristmasModel';
 import PlanetModel from './PlanetModel';
 
 
@@ -26,9 +27,6 @@ export default class Body extends React.Component {
         .then((data) => {
           console.log('fetched orbiting: %o', data.data);
           if (data.data && data.data.length) {
-            // just to test with earth/moon
-            const orbit = data.data[0];
-            // orbit.eccentricity = 0.6;
             this.setState({ orbiting: data.data });
           }
         }),
@@ -45,15 +43,17 @@ export default class Body extends React.Component {
       ? <p><em>Loading...</em></p>
       : (
         <div>
-          <BodiesTable bodies={[body]} />
-          <br /><br />
           <PlanetModel specs={body} orbiting={orbiting} />
+          {/*<Sticky>
+                    </Sticky>*/}
+            <BodiesTable bodies={[body]} />
         </div>
       );
 
+    return content;
+
     return (
       <div>
-        <h1>Single Heavenly Body</h1>
         {content}
         <p><Link to="/">Back to home</Link></p>
       </div>
