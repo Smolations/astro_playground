@@ -17,6 +17,9 @@ defmodule AstroPlaygroundWeb.Router do
   scope "/api", AstroPlaygroundWeb do
     pipe_through :api
 
+    post "/et", SpiceyController, :show
+    post "/get_state", SpiceyController, :show
+
     resources "/bodies", BodyController, except: [:new, :edit] do
       resources "/textures", TextureController, only: [:index]
       get "/orbits", OrbitController, :orbits_index

@@ -55,6 +55,14 @@ const util = {
       loader.load(url, resolve, onProgress, reject);
     });
   },
+
+  // simple number sorting because floats/non-floats won't sort
+  // correctly without the explicit </> comparison
+  numSort(a, b) {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  }
 };
 
 

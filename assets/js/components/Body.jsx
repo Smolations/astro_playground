@@ -1,18 +1,49 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sticky } from 'semantic-ui-react';
+import {
+  Button,
+  Container,
+  Icon,
+  Segment,
+  Sidebar,
+  Sticky,
+} from 'semantic-ui-react';
 
 import BodiesTable from './BodiesTable';
+import BodySidebarTable from './BodySidebarTable';
 import PlanetModel from './PlanetModel';
 
 
 export default class Body extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { body: {}, texture: {}, orbiting: [], loading: true };
+    this.state = {
+      body: {},
+      texture: {},
+      orbiting: [],
+      loading: true,
+      sidebar: false,
+    };
 
     const bodyId = props.match.params.id;
     const bodyUri = `/api/bodies/${bodyId}`;
+
+    // test api endpoints
+    const payload = {
+      date: '2018-11-29T00:00:00',
+      observer: 'SUN',
+      target: 'MERCURY',
+      frame: 'J2000',
+    };
+
+    fetch('/api/get_state', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    // /test
 
     // Get the data from our API.
     Promise.all([
@@ -37,26 +68,51 @@ export default class Body extends React.Component {
       });
   }
 
+  handleSidebarToggle = () => {
+    return this.setState({ sidebar: !this.state.sidebar });
+  }
+
   render() {
-    const { body, orbiting } = this.state;
+    const { body, orbiting, sidebar } = this.state;
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
       : (
         <div>
-          <PlanetModel specs={body} orbiting={orbiting} />
-          {/*<Sticky>
-                    </Sticky>*/}
-            <BodiesTable bodies={[body]} />
+          <Button.Group className="buttons">
+            <Link to="/bodies">
+              <Button icon labelPosition='left'>
+                <Icon name='arrow left' />
+                Back
+              </Button>
+            </Link>
+            <Button.Or/>
+            <Button toggle icon labelPosition='right' active={sidebar} onClick={this.handleSidebarToggle}>
+              <Icon name='info' />
+              Info
+            </Button>
+          </Button.Group>
+          <Sidebar.Pushable as={Segment}>
+            <Sidebar
+              className="info_sidebar"
+              animation="overlay"
+              icon="labeled"
+              inverted="true"
+              vertical="true"
+              visible={sidebar}
+              width="wide"
+            >
+              <BodySidebarTable body={body} />
+            </Sidebar>
+
+            <Sidebar.Pusher>
+              <Segment basic>
+                <PlanetModel specs={body} orbiting={orbiting} />
+              </Segment>
+            </Sidebar.Pusher>
+          </Sidebar.Pushable>
         </div>
       );
 
     return content;
-
-    return (
-      <div>
-        {content}
-        <p><Link to="/">Back to home</Link></p>
-      </div>
-    );
   }
 };

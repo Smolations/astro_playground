@@ -53,9 +53,8 @@ export default class Orbit extends AstroGroup {
   get v0Vec() { return this[_v0Vec]; }
 
 
-  constructor({ centralBody, orbitingBody, groupScalars = [], specOpts = {}, ...rawSpecs }) {
+  constructor({ centralBody, orbitingBody, specOpts = {}, ...rawSpecs }) {
     const defaultSpecOpts = {
-      // groupScalars,
       semiMajorAxis: { units: 'km' },
       siderealPeriod: { units: 'days' },
       periapsis: { units: 'km' },
@@ -90,7 +89,7 @@ export default class Orbit extends AstroGroup {
     this[_vVec] = this.vVecFromAngle(0);
 
     // store references for animation, etc.
-    this[_orbitGroup] = new THREE.Group();
+    this[_orbitGroup] = this.orbitGroup = new THREE.Group();
     this[_centralBody] = centralBody;
     this[_orbitingBody] = orbitingBody;
 
@@ -119,7 +118,7 @@ export default class Orbit extends AstroGroup {
     this[_orbitGroup].add(this[_orbitingBody]);
     this[_orbitGroup].rotation.y = -this.i;
 
-    const fociPivot = new THREE.Group();
+    const fociPivot = this.fociPivot = new THREE.Group();
     fociPivot.add( this[_orbitGroup] );
 
     // enforce longitude of periapsis
@@ -260,7 +259,7 @@ export default class Orbit extends AstroGroup {
 
     this.solveKeplers(t);
 
-    orbitingBody.position.copy(this.rVec);
+    orbitingBody.position.copy(this.rVec);//console.log('rVec: %o', this.rVec);
 
     orbitingBody.updatePosition(t);
   }

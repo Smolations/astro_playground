@@ -13,24 +13,24 @@ import QuantScale from '../three/lib/quant-scale';
 import windowResize from '../three/lib/window-resize';
 
 
+const _axesHelper = Symbol('axesHelper');
+const _bodies = Symbol('bodies');
 const _body = Symbol('body');
 const _orbitals = Symbol('orbitals');
 
 
 export default class PlanetModel extends React.Component {
-  numSort(a, b) {
-    if (a < b) return -1;
-    if (a > b) return 1;
-    return 0;
-  }
 
   constructor(props) {
     super(props);
 
-    const SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-    // const dims = { x: 1127, y: 1127 };
+    const SCREEN_WIDTH = window.innerWidth;
+    const SCREEN_HEIGHT = window.innerHeight;
     const dims = { x: SCREEN_WIDTH, y: SCREEN_HEIGHT };
 
+    // tell camera that axes orientation rotates 90deg away from eyes.
+    // this more closely matches the rectangular reference frame
+    // in astrodynamics. often set on the camera instance itself.
     THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 0, 1 );
 
     this.canvasRef = React.createRef();
@@ -42,14 +42,20 @@ export default class PlanetModel extends React.Component {
     const bodyRadii = [
       props.specs.polar_radius,
       ...orbiting.map(orbit => orbit.orbiting_body.polar_radius),
-    ].sort(this.numSort);
+    ].sort(util.numSort);
     console.log('bodyRadii = %o', bodyRadii);
 
     const prMin = bodyRadii[0];
     const prMax = bodyRadii[bodyRadii.length - 1];
     const prMinMaxScalar = prMin / prMax;
     const brMin = 0.2;
-    const brMax = props.specs.type == 'star' ? 5 : 3;
+    const brMax = 50;
+
+    this.bodyType = props.specs.type;
+    this.bodyScale = {
+      min: brMin,
+      max: brMax,
+    };
 
     console.log('prMin: %o  |  prMax: %o  |  prMinMaxScalar: %o  |  brMin: %o', prMin, prMax, prMinMaxScalar, brMin);
     const bodyQuantScale = window.bodyQuant = new QuantScale({
@@ -71,9 +77,9 @@ export default class PlanetModel extends React.Component {
     };
 
     const orbitScaleFn = (x) => {
-      console.log('orbit.scale(%o)', x);
+      // console.log('orbit.scale(%o)', x);
       // return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 4); // works for earth/moon
-      return bodyQuantScale(x) / (props.specs.type == 'star' ? 250 : 1); // works for mars/phobos/deimos
+      return bodyQuantScale(x) / (props.specs.type == 'star' ? 25 : 1); // works for mars/phobos/deimos
     }
 
     this.orbitSpecOpts = {
@@ -83,8 +89,10 @@ export default class PlanetModel extends React.Component {
     };
 
     this[_orbitals] = [];
+    this[_bodies] = [];
 
     this.scene = new THREE.Scene();
+    this.scene2 = new THREE.Scene();
   }
 
 
@@ -93,51 +101,35 @@ export default class PlanetModel extends React.Component {
     this.maps = await this.loadMaps(this.props.specs.texture);
 
     this.camera = this.configureCamera();
+    this.cameraStartPos = this.camera.position.clone();console.log('cameraStartPos: %o', this.cameraStartPos);
     this.renderer = this.configureRenderer();
-    this.params = this.configureGUI();
     this.windowResize = windowResize(this.renderer, this.camera);
 
-    this.drawAxes();
-    this.addLighting();
-    this.addBody();
-    this.addOrbitals();
+    this[_axesHelper] = this.getAxesHelper();
+    this[_body] = this.getBody(); console.log(this[_body].toString());
+    this[_bodies].push(this[_body]);
+
+    await this.addOrbitals();
+
+    if (this.bodyType === 'star') {
+      this.scene2.add( this[_axesHelper] );
+      this.scene2.add( this[_body] );
+      this.scene2.add( this.getStarAmbientLight() );
+      this.scene.add( this.getStarPointLight() );
+    } else {
+      this.scene.add( this[_axesHelper] );
+      this.scene.add( this[_body] );
+      this.scene.add( this.getVernalEquinoxDirectionalLight() );
+    }
 
     this.controls = this.configureControls();
+    this.params = this.configureGUI();
     this.renderScene();
-  }
-
-  addBody() {
-    const { specs } = this.props;
-    const { maps } = this;
-
-    const body = new Body({
-      maps,
-      specOpts: this.bodyGroupSpecOpts,
-      ...specs,
-    });
-    console.log(body.toString());
-
-    this[_body] = body;
-    this.scene.add( body );
-  }
-
-  addLighting() {
-    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-
-    // enforces initial vernal equinox position
-    directionalLight.position.set(-10, 0, 0);
-    directionalLight.castShadow = true;
-
-    this.scene.add(directionalLight);
   }
 
   async addOrbitals() {
     const orbits = this.props.orbiting;
     const maps = {};
-
-    // const [aMin, aMax] = orbits.reduce((pair, orbit) => {
-    //   if (orbit.semiMajorAxis < pair[0])
-    // }, [Infinity, -Infinity]);
 
     const promises = orbits.map((orbit, ndx) => {
       return this.loadMaps(orbit.orbiting_body.texture)
@@ -145,11 +137,6 @@ export default class PlanetModel extends React.Component {
     });
 
     await Promise.all(promises);
-
-    // new QuantScale({
-    //   domain: [1738, props.specs.polar_radius],
-    //   range: [0.25, 2],
-    // });
 
     orbits.forEach((orbit, ndx) => {
       const { central_body, orbiting_body, ...rawSpecs } = orbit;
@@ -168,12 +155,12 @@ export default class PlanetModel extends React.Component {
       });
 
       console.log(orbitingBody.toString());
-      // console.log(orbital);
       console.log(orbital.toString());
 
       this.scene.add( orbital );
 
       this[_orbitals].push(orbital);
+      this[_bodies].push(orbitingBody);
     });
   }
 
@@ -182,19 +169,24 @@ export default class PlanetModel extends React.Component {
       70,                         // field of view
       this.dims.x / this.dims.y,  // aspect ratio
       0.1,                        // near clipping pane
-      1000                        // far clipping pane
+      10000                       // far clipping pane
     );
 
     // Reposition the camera at an angle where axes markers would be
     // visible, and where sunlight is visible
-    camera.position.set(-5, -10, 5);
+    const yDist = {
+      star: this.bodyScale.max * 2,
+      planet: this.bodyScale.max * 2.5,
+      dwarf_planet: this.bodyScale.max * 3, // eventually
+      satellite: this.bodyScale.max * 5,
+    }
+    const camX = -5;
+    const camY = -yDist[this.bodyType];
+    const camZ = 3;
 
-    // tell camera that axes orientation rotates 90deg away from eyes.
-    // this more closely matches the rectangular reference frame
-    // in astrodynamics.
-    // camera.up = new THREE.Vector3(0, 0, 1);
+    camera.position.set(camX, camY, camZ);
 
-    // Point the camera at a given coordinate
+    // Point the camera at the central body (origin)
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     return camera;
@@ -233,11 +225,20 @@ export default class PlanetModel extends React.Component {
     //   x: 0, y: 0, z: 0
     // };
     const params = {
+      animate: true,
       timeScale: 10,
+      lookAt: 0,
     };
 
+    const bodies = this[_bodies].reduce((opts, body, ndx) => {
+      opts[body.name] = ndx;
+      return opts;
+    }, {});
 
-    gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
+
+    gui.add( params, 'animate' ).name('Animate?');
+    // gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
+    gui.add( params, 'lookAt', bodies ).name('Look at:');
 
     gui.open();
 
@@ -260,10 +261,62 @@ export default class PlanetModel extends React.Component {
     return renderer;
   }
 
-  drawAxes() {
+  getAxesHelper() {
     // x-axis: red, y-axis: green, z-axis: blue
-    const axesHelper = new THREE.AxesHelper( 5 );
-    this.scene.add( axesHelper );
+    return new THREE.AxesHelper( this.bodyScale.max * 2 );
+  }
+
+  getBody() {
+    const { specs } = this.props;
+    const { maps } = this;
+
+    const body = new Body({
+      maps,
+      specOpts: this.bodyGroupSpecOpts,
+      ...specs,
+    });
+
+    return body;
+  }
+
+  getMaxOrbitalDistance() {
+    return this[_orbitals].reduce((max, orbit) => {
+      const a = orbit.specs.semiMajorAxis; console.log('a: %o', a);
+      return max < a ? a : max;
+    }, 0);
+  }
+
+  getStarAmbientLight() {
+    // light the star evenly
+    return new THREE.AmbientLight( 0xffffff );
+  }
+
+  getStarPointLight() {
+    const pointLight = new THREE.PointLight( 0xffffff, 1.2, Infinity );
+
+    // initial far clipping pane for the light's shadow is 500, but some
+    // objects are thousands of units away
+    const maxDistance = this.getMaxOrbitalDistance() || 500;
+    const lightShadowCam = new THREE.PerspectiveCamera( 90, 1, 0.5, maxDistance + this.bodyScale.max );
+
+    pointLight.shadow = new THREE.LightShadow( lightShadowCam );
+
+    pointLight.position.set(0, 0, 0);
+    pointLight.castShadow = true;
+    pointLight.shadow.mapSize.width = 1024;
+    pointLight.shadow.mapSize.height = 1024;
+
+    return pointLight;
+  }
+
+  getVernalEquinoxDirectionalLight() {
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+
+    // enforces initial vernal equinox position
+    directionalLight.position.set(-10, 0, 0);
+    directionalLight.castShadow = true;
+
+    return directionalLight;
   }
 
   async loadMaps(texture) {
@@ -302,20 +355,49 @@ export default class PlanetModel extends React.Component {
     const clock = new THREE.Clock();
 
     const render = () => {
-      const t = clock.getElapsedTime();
+      if (!this.params.animate) {
+        this.controls.update();
 
-      this.controls.update();
+      } else {
+        const t = clock.getElapsedTime();
 
-      // Update animated elements
-      this[_body].updatePosition(t);
-      this[_orbitals].forEach(orbit => orbit.updatePosition(t * this.params.timeScale));
+        const lookAt = this.params.lookAt;
+        const targetBody = this[_bodies][lookAt];
+        const targetCamPos = this.camera.position;
+        let targetBodyPos;
 
-      // Render the scene/camera combnation
+        if (lookAt === 0) {
+          targetBodyPos = this[_body].position.clone();
+
+        } else {
+          targetBodyPos = new THREE.Vector3();
+          // console.log('targetBodyPos: %o', targetBodyPos);
+
+          targetBody.getWorldPosition(targetBodyPos);
+          // console.log('(targetBodyPos): %o', targetBodyPos);
+        }
+
+        this.camera.position.set( targetCamPos.x, targetCamPos.y, targetCamPos.z );
+        this.camera.lookAt( targetBodyPos );
+
+        this.controls.target = targetBodyPos;
+
+        // Update animated elements
+        this[_body].updatePosition(t);
+        this[_orbitals].forEach(orbit => orbit.updatePosition(t / this.params.timeScale));
+      }
+
+
+      // Render the scene/camera combination
+      this.renderer.clear();
       this.renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene2, this.camera);
 
       // Repeat
       requestAnimationFrame(render);
     };
+
+    this.renderer.autoClear = false;
 
     requestAnimationFrame(render);
   }

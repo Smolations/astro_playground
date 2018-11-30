@@ -53,7 +53,7 @@ export default class QuantScale {
       const xDiff = x - xMin;
       const pts = xDiff / (domainMag || xDiff || 1);
 
-      console.log(`pts(${pts}) = ((${x - xMin}) / ${domainMag}) || 1`);
+      // console.log(`pts(${pts}) = ((${x - xMin}) / ${domainMag}) || 1`);
 
       return rangeLinearFunc(pts);
     };

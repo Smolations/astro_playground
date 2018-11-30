@@ -4,6 +4,7 @@ import _defaultsDeep from 'lodash/defaultsDeep';
 import AstroGroup from '../lib/astro-group';
 import Specs from '../lib/specs';
 
+const _glowSphere = Symbol('glowSphere');
 const _polarAxis = Symbol('polarAxis');
 const _satellites = Symbol('satellites');
 const _sphere = Symbol('sphere');
@@ -13,6 +14,36 @@ const _specs = Symbol('specs');
 export default class Body extends AstroGroup {
   // gravitational constant
   get G() { return this.specs.mu / this.specs.mass; }
+
+  get glowVertexShader() {
+    return `
+      uniform vec3 viewVector;
+      uniform float c;
+      uniform float p;
+      varying float intensity;
+      void main()
+      {
+        vec3 vNormal = normalize( normalMatrix * normal );
+        vec3 vNormel = normalize( normalMatrix * viewVector );
+        intensity = pow( c - dot(vNormal, vNormel), p );
+
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+      }
+    `;
+  }
+
+  // aka pixel shader
+  get glowFragmentShader() {
+    return `
+      uniform vec3 glowColor;
+      varying float intensity;
+      void main()
+      {
+        vec3 glow = glowColor * intensity;
+          gl_FragColor = vec4( glow, 1.0 );
+      }
+    `;
+  }
 
   constructor({ maps = {}, specOpts = {}, ...rawSpecs }) {
     const defaultSpecOpts = {
@@ -57,10 +88,11 @@ export default class Body extends AstroGroup {
   }
 
   getSphere(radius, maps) {
-    const geometry = new THREE.SphereGeometry( radius, 128, 128 );
+    const isStar = this.specs.type === 'star';
+    const geometry = new THREE.SphereBufferGeometry( radius, 64, 64 );
     const matOpts = {
-      color: 0xeeeeee,
-      metalness: 0,
+      color: 0xffffff,
+      metalness: 0.1,
       roughness: 1,
     };
 
@@ -73,16 +105,43 @@ export default class Body extends AstroGroup {
     }
     if (maps.normalMap) {
       matOpts.normalMap = maps.normalMap;
-      matOpts.normalScale = new THREE.Vector2(0.5, 0.5);
+      matOpts.normalScale = new THREE.Vector2( 0.5, 0.5 );
     }
 
-    const material = new THREE.MeshStandardMaterial(matOpts);
+    const material = new THREE.MeshStandardMaterial( matOpts );
     const sphere = new THREE.Mesh( geometry, material );
 
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
+    sphere.castShadow = !isStar;
+    sphere.receiveShadow = !isStar;
 
     return sphere;
+  }
+
+  // http://stemkoski.github.io/Three.js/Shader-Glow.html
+  getGlowSphere(originalSphere) {
+    // create custom material from the shader code above
+    //   that is within specially labeled script tags
+    const customMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        "c": { type: "f", value: 0.2 },
+        "p": { type: "f", value: 1.9 },
+        glowColor: { type: "c", value: new THREE.Color( 0xffff00 ) },
+        // viewVector: { type: "v3", value: camera.position },
+        viewVector: { type: "v3", value: new THREE.Vector3( -5, -6, 3 ) },
+      },
+      vertexShader:   this.glowVertexShader,
+      fragmentShader: this.glowFragmentShader,
+      side: THREE.FrontSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+
+    const glowSphere = new THREE.Mesh( originalSphere.geometry.clone(), customMaterial.clone() );
+
+    glowSphere.position.copy( originalSphere.position );
+    glowSphere.scale.multiplyScalar(1.2);
+
+    return glowSphere;
   }
 
   updatePosition() {
