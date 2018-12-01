@@ -1,62 +1,75 @@
-import os, sys
-import spiceypy, meta_kernel
+import argparse
+import spiceypy
 
-args = sys.argv
+import mod_dir
+import naif
+import elixir_format as fmt
 
-# args parsing
-date = args[1]
-state = args[2].split(',')
-velocity = args[3].split(',')
-mu = float(args[4])
+from meta_kernel import load as load_mk, unload as unload_mk
 
-# spiceypy method requires a 6-element array (e.g. returned by get_state.py)
-state.extend(velocity)
 
-# replace string elements with float equivalents
-for num in state[:]:
-    state.remove(num)
-    state.append(float(num))
+epi = "\n".join([
+    'Outputs an Elixir map with the following keys:',
+    '  pa   Perifocal distance. (periapsis)',
+    '  e    Eccentricity.',
+    '  i    Inclination.',
+    '  O    Longitude of the ascending node.',
+    '  w    Argument of periapsis.',
+    '  M    Mean anomaly at epoch.',
+    '  t0   Epoch.',
+    '  mu   Gravitational parameter.',
+    '  nu   True anomaly at epoch.',
+    '  a    Semi-major axis. A is set to zero if',
+    '       it is not computable.',
+    '  T    Orbital period. Applicable only for',
+    '       elliptical orbits. Set to zero otherwise.',
+    '',
+    'The epoch of the elements is the epoch of the input',
+    'state. Units are km, rad, rad/sec. The same elements',
+    'are used to describe all three types (elliptic,',
+    'hyperbolic, and parabolic) of conic orbits.',
+])
+
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description='Get orbital elements for given observer and target bodies.',
+    epilog=epi
+)
+parser.add_argument('date', metavar='date',
+                    help='a utc date')
+parser.add_argument('obs', metavar='observer',
+                    help='name of primary (observing) body/barycenter')
+parser.add_argument('targ', metavar='target',
+                    help='name of orbiting (target) body/barycenter')
+parser.add_argument('--frame', default='J2000',
+                    help='frame of reference')
+parser.add_argument('--abcorr', default='LT+S',
+                    choices=['NONE', 'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'],
+                    help='aberrational correction method')
+
+args = parser.parse_args()
+
+
+meta_kernel_name = 'meta_kernel'
 
 
 def orbital_elements():
-    #
-    # Local parameters
-    #
-    METAKR = meta_kernel.path()
+    load_mk( meta_kernel_name )
 
-    #
-    # Load the kernels that this program requires.  We
-    # will need:
-    #
-    spiceypy.furnsh( METAKR )
+    # get elements
+    elements = naif.orbital_elements( args.date, args.obs, args.targ,
+                                      args.frame, args.abcorr         )
 
-    #
-    # Convert utctim to ET.
-    #
-    et = spiceypy.str2et( date )
-    mu = spiceypy.bodvrd('EARTH', 'GM', 1)[1][0]
-    print(mu)
+    # grab output
+    elements_map = fmt.orbital_elements_map( elements )
 
-    #
-    # Compute the apparent state of target as seen from
-    # observer in the J2000 frame.
-    #
-    elements = spiceypy.oscltx(state, et, mu)
-    print(','.join(map(str, elements)))
     #
     # Display the results.
     #
-    # print( '%{' )
-    # print( ' x: {:19.6f},'.format(state[0]) )
-    # print( ' y: {:19.6f},'.format(state[1]) )
-    # print( ' z: {:19.6f},'.format(state[2]) )
-    # print( 'dx: {:19.6f},'.format(state[3]) )
-    # print( 'dy: {:19.6f},'.format(state[4]) )
-    # print( 'dz: {:19.6f},'.format(state[5]) )
-    # print( '}' )
+    print( elements_map )
 
+    unload_mk( meta_kernel_name )
 
-    spiceypy.unload( METAKR )
 
 if __name__ == '__main__':
     orbital_elements()
