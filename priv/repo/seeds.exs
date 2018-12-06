@@ -913,17 +913,113 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
 }
 
 
-pwd = File.cwd!
-url_root = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels"
-file = "fk/planets/aareadme.txt"
-dest_prefix = "priv/kernels"
+# download naif files
+files = [
+  "fk/planets/aareadme.txt",
+  "fk/planets/earth_assoc_itrf93.tf",
+  "fk/satellites/aareadme.txt",
+  "fk/satellites/moon_080317.tf",
+  "fk/satellites/moon_assoc_me.tf",
+  "fk/satellites/moon_assoc_pa.tf",
+  "fk/stations/dss_17_prelim_itrf93_161110.tf",
+  "fk/stations/dss_35_36_prelim_itrf93_140620.tf",
+  "fk/stations/earth_topo_050714.tf",
+  "fk/stations/ndosl_140530_v01.tf",
 
-url = Path.join([url_root, file])
-dest = Path.join([pwd, dest_prefix, file])
+  "lsk/aareadme.txt",
+  "lsk/naif0012.tls",
 
-IO.puts url
-IO.puts "  -->  " <> dest
+  "pck/Gravity.tpc",
+  "pck/aareadme.txt",
+  "pck/de-403-masses.tpc",
+  "pck/earth_000101_190220_181129.bpc",
+  "pck/earth_070425_370426_predict.bpc",
+  "pck/earth_720101_070426.bpc",
+  "pck/earth_fixed.tf",
+  "pck/earth_latest_high_prec.bpc",
+  "pck/geophysical.ker",
+  "pck/gm_de431.tpc",
+  "pck/moon_pa_de403_1950-2198.bpc",
+  "pck/moon_pa_de418_1950-2050.bpc",
+  "pck/moon_pa_de421_1900-2050.bpc",
+  "pck/pck00010.tpc",
 
-result = Download.from(url, [path: dest])
-# result = Download.from(url)
-IO.inspect result
+  "spk/asteroids/AAREADME_Asteroids_SPKs.txt",
+  "spk/asteroids/aa_spk_production_dates_by-alpha.txt",
+  "spk/asteroids/aa_spk_production_dates_by-date.txt",
+  "spk/asteroids/aa_summaries.txt",
+  "spk/asteroids/codes_300ast_20100725.bsp",
+  "spk/asteroids/codes_300ast_20100725.cmt",
+  "spk/asteroids/codes_300ast_20100725.tf",
+  "spk/comets/C_G_1000012_2012_2017.bsp",
+  "spk/comets/aa_summaries.txt",
+  "spk/comets/c2013a1_s105_merged.bsp",
+  "spk/comets/ison.bsp",
+  "spk/comets/ison.lbl",
+  "spk/comets/siding_spring.lbl",
+  "spk/comets/siding_spring_8-19-14.bsp",
+  "spk/comets/siding_spring_s46.bsp",
+  "spk/lagrange_point/AAREADME_Lagrange_point_SPKs.txt",
+  "spk/lagrange_point/L1_de431.bsp",
+  "spk/lagrange_point/L2_de431.bsp",
+  "spk/lagrange_point/L4_de431.bsp",
+  "spk/lagrange_point/L5_de431.bsp",
+  "spk/lagrange_point/aa_spk_production_dates_by-alpha.txt",
+  "spk/lagrange_point/aa_spk_production_dates_by-date.txt",
+  "spk/lagrange_point/aa_summaries.txt",
+  "spk/planets/aa_spk_production_dates_by-alpha.txt",
+  "spk/planets/aa_spk_production_dates_by-date.txt",
+  "spk/planets/aa_summaries.txt",
+  "spk/planets/aareadme_de430-de431.txt",
+  "spk/planets/aareadme_de432s.txt",
+  "spk/planets/de432_tech-comments.txt",
+  "spk/planets/de432s.bsp",
+  "spk/satellites/AAREADME_Satellite_SPKs.txt",
+  "spk/satellites/aa_spk_production_by_alpha.txt",
+  "spk/satellites/aa_summaries.txt",
+  "spk/satellites/aa_summaries_by_date.txt",
+  "spk/satellites/jup310.bsp",
+  "spk/satellites/jup341.bsp",
+  "spk/satellites/mar097.bsp",
+  "spk/satellites/nep081.bsp",
+  "spk/satellites/nep086.bsp",
+  "spk/satellites/nep087.bsp",
+  "spk/satellites/nep088.bsp",
+  "spk/satellites/plu055.bsp",
+  "spk/satellites/sat319.bsp",
+  "spk/satellites/sat375.bsp",
+  "spk/satellites/sat393-rocks_pan.bsp",
+  "spk/satellites/sat393.bsp",
+  "spk/satellites/sat393_daphnis.bsp",
+  "spk/satellites/ura091-rocks-merge.bsp",
+  "spk/satellites/ura111.bsp",
+  "spk/satellites/ura112.bsp",
+  "spk/stations/aa_spk_production_dates_by-alpha.txt",
+  "spk/stations/aa_spk_production_dates_by-date.txt",
+  "spk/stations/aa_summaries.txt",
+  "spk/stations/dss_17_prelim_itrf93_161110.bsp",
+  "spk/stations/dss_35_36_prelim_itrf93_140620.bsp",
+  "spk/stations/earthstns_fx_050714.bsp",
+  "spk/stations/earthstns_itrf93_050714.bsp",
+  "spk/stations/ndosl_140530_v01.bsp",
+]
+
+
+defmodule NaifFiles do
+
+  def get(file) do
+    pwd = File.cwd!
+    url_root = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels"
+    dest_prefix = "priv/kernels"
+
+    url = Path.join([url_root, file])
+    dest = Path.join([pwd, dest_prefix, file])
+
+    IO.puts file <> "  -->  " <> dest
+    result = Download.from(url, [path: dest])
+    IO.inspect result
+  end
+
+end
+
+Enum.map(files, &NaifFiles.get/1)

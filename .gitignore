@@ -25,5 +25,12 @@ erl_crash.dump
 assets/static/images
 
 # naif files
-kernels/**/*.txt
-kernels/**/*.pck
+/priv/kernels/**/*.bpc
+/priv/kernels/**/*.bsp
+/priv/kernels/**/*.cmt
+/priv/kernels/**/*.ker
+/priv/kernels/**/*.lbl
+/priv/kernels/**/*.tf
+/priv/kernels/**/*.tls
+/priv/kernels/**/*.tpc
+/priv/kernels/**/*.txt
