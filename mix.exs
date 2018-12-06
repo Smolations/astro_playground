@@ -20,7 +20,7 @@ defmodule PhoenixReactPlayground.Mixfile do
   def application do
     [
       mod: {AstroPlayground.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :download]
     ]
   end
 
@@ -41,7 +41,8 @@ defmodule PhoenixReactPlayground.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:gettext, "~> 0.11"},
       {:plug_cowboy, "~> 1.0"},
-      {:react_render, "~> 2.0.0"}
+      {:react_render, "~> 2.0.0"},
+      {:download, "~> 0.0.0"}
     ]
   end
 

@@ -15,6 +15,8 @@ alias AstroPlayground.Orbits.Orbit
 alias AstroPlayground.Spicey.Object, as: SpiceObject
 alias AstroPlayground.Textures.Texture
 
+
+
 defmodule Elements do
   def get_json(filename) do
     with {:ok, body} <- File.read(filename),
@@ -286,9 +288,6 @@ _styx = Repo.insert! %SpiceObject{ name: "Styx",
 #   spice_name: "",
 #   type: "" }
 
-git filter-branch --force --index-filter \
-'git rm --cached --ignore-unmatch priv/kernels/*' \
---prune-empty --tag-name-filter cat -- --all
 
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
@@ -912,3 +911,19 @@ Repo.insert! %Orbit{ central_body_id: sun.id, orbiting_body_id: pluto.id,
   eccentricity: plutoElements["EC"],
   ascending_node: plutoElements["OM"],
 }
+
+
+pwd = File.cwd!
+url_root = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels"
+file = "fk/planets/aareadme.txt"
+dest_prefix = "priv/kernels"
+
+url = Path.join([url_root, file])
+dest = Path.join([pwd, dest_prefix, file])
+
+IO.puts url
+IO.puts "  -->  " <> dest
+
+result = Download.from(url, [path: dest])
+# result = Download.from(url)
+IO.inspect result
