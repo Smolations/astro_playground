@@ -2,6 +2,7 @@ import _camelCase from 'lodash/camelCase';
 import _defaults from 'lodash/defaults';
 import _isFunction from 'lodash/isFunction';
 import _isNumber from 'lodash/isNumber';
+import _mapKeys from 'lodash/mapKeys';
 
 const _groupScalars = Symbol('groupScalars');
 const _specs = Symbol('specs');
@@ -39,22 +40,10 @@ export default class Specs {
   }
 
 
-  camelCaseKeys(obj = {}) {
-    const newObj = {};
-    const objEntries = Object.entries(obj);
-
-    // should there be an option to omit entries?
-    for (let [key, val] of objEntries) {
-      newObj[_camelCase(key)] = val;
-    }
-
-    return newObj;
-  }
-
   getSpecMap(partialMap = {}) {
     const specMap = {};
-    const camelSpecs = this.camelCaseKeys(this[_specs]);
-    const camelPartial = this.camelCaseKeys(partialMap);
+    const camelSpecs = this._camelCaseKeys(this[_specs]);
+    const camelPartial = this._camelCaseKeys(partialMap);
     const specsEntries = Object.entries(camelSpecs);
 
     for (let [key, val] of specsEntries) {
@@ -96,6 +85,10 @@ export default class Specs {
 
   toRad(key) {
     return this[_specsMap][key].value * Math.PI / 180;
+  }
+
+  _camelCaseKeys(obj = {}) {
+    return _mapKeys(obj, (val, key) => _camelCase(key));
   }
 
   _getScalarFn(scalar = 1) {

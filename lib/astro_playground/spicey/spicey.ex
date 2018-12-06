@@ -4,7 +4,8 @@ defmodule AstroPlayground.Spicey do
 
   # [, date, observer, target, frame] = args
   def get_state(date, observer, target, frame \\ "J2000") do
-    sys_cmd "get_state", [date, observer, target, frame]
+    # sys_cmd "get_state", [date, observer, target, "--frame " <> frame]
+    sys_cmd "get_state", [date, observer, target]
   end
 
   def orbital_elements(date) do

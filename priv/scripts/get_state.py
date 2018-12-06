@@ -42,7 +42,7 @@ def get_state():
     load_mk( meta_kernel_name )
 
     # get state
-    state = naif.get_state( date, observer, target )
+    state = naif.get_state( args.date, args.obs, args.targ )
 
     #
     # Display the results.

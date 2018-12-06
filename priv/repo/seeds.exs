@@ -12,6 +12,7 @@
 alias AstroPlayground.Repo
 alias AstroPlayground.Bodies.Body
 alias AstroPlayground.Orbits.Orbit
+alias AstroPlayground.Spicey.Object, as: SpiceObject
 alias AstroPlayground.Textures.Texture
 
 defmodule Elements do
@@ -59,6 +60,235 @@ uranusElements = Elements.by_name(bodies, "Uranus")["elements"]
 neptuneElements = Elements.by_name(bodies, "Neptune")["elements"]
 plutoElements = Elements.by_name(bodies, "Pluto")["elements"]
 
+# barycenters
+sol_bc = Repo.insert! %SpiceObject{ name: "Solar System Barycenter",
+  spice_id: 0,
+  spice_name: "Solar System Barycenter",
+  type: "barycenter" }
+mercury_bc = Repo.insert! %SpiceObject{ name: "Mercury Barycenter",
+  spice_id: 1,
+  spice_name: "Mercury Barycenter",
+  type: "barycenter" }
+venus_bc = Repo.insert! %SpiceObject{ name: "Venus Barycenter",
+  spice_id: 2,
+  spice_name: "Venus Barycenter",
+  type: "barycenter" }
+earth_bc = Repo.insert! %SpiceObject{ name: "Earth Barycenter",
+  spice_id: 3,
+  spice_name: "Earth-Moon Barycenter",
+  type: "barycenter" }
+mars_bc = Repo.insert! %SpiceObject{ name: "Mars Barycenter",
+  spice_id: 4,
+  spice_name: "Mars Barycenter",
+  type: "barycenter" }
+jupiter_bc = Repo.insert! %SpiceObject{ name: "Jupiter Barycenter",
+  spice_id: 5,
+  spice_name: "Jupiter Barycenter",
+  type: "barycenter" }
+saturn_bc = Repo.insert! %SpiceObject{ name: "Saturn Barycenter",
+  spice_id: 6,
+  spice_name: "Saturn Barycenter",
+  type: "barycenter" }
+uranus_bc = Repo.insert! %SpiceObject{ name: "Uranus Barycenter",
+  spice_id: 7,
+  spice_name: "Uranus Barycenter",
+  type: "barycenter" }
+neptune_bc = Repo.insert! %SpiceObject{ name: "Neptune Barycenter",
+  spice_id: 8,
+  spice_name: "Neptune Barycenter",
+  type: "barycenter" }
+pluto_bc = Repo.insert! %SpiceObject{ name: "Pluto Barycenter",
+  spice_id: 9,
+  spice_name: "Pluto Barycenter",
+  type: "barycenter" }
+
+# stars
+sol = Repo.insert! %SpiceObject{ name: "Sol",
+  spice_id: 10,
+  spice_name: "Sun",
+  type: "star" }
+
+# planets
+_mercury = Repo.insert! %SpiceObject{ name: "Mercury",
+  spice_id: 199,
+  spice_name: "Mercury",
+  type: "planet" }
+_venus = Repo.insert! %SpiceObject{ name: "Venus",
+  spice_id: 299,
+  spice_name: "Venus",
+  type: "planet" }
+_earth = Repo.insert! %SpiceObject{ name: "Earth",
+  spice_id: 399,
+  spice_name: "Earth",
+  type: "planet" }
+_mars = Repo.insert! %SpiceObject{ name: "Mars",
+  spice_id: 499,
+  spice_name: "Mars",
+  type: "planet" }
+_jupiter = Repo.insert! %SpiceObject{ name: "Jupiter",
+  spice_id: 599,
+  spice_name: "Jupiter",
+  type: "planet" }
+_saturn = Repo.insert! %SpiceObject{ name: "Saturn",
+  spice_id: 699,
+  spice_name: "Saturn",
+  type: "planet" }
+_uranus = Repo.insert! %SpiceObject{ name: "Uranus",
+  spice_id: 799,
+  spice_name: "Uranus",
+  type: "planet" }
+_neptune = Repo.insert! %SpiceObject{ name: "Neptune",
+  spice_id: 899,
+  spice_name: "Neptune",
+  type: "planet" }
+_pluto = Repo.insert! %SpiceObject{ name: "Pluto",
+  spice_id: 999,
+  spice_name: "Pluto",
+  type: "dwarf planet" }
+
+# moons (aka satellites)
+# // earth
+_luna = Repo.insert! %SpiceObject{ name: "Luna",
+  spice_id: 301,
+  spice_name: "Moon",
+  type: "satellite" }
+
+# // mars
+_phobos = Repo.insert! %SpiceObject{ name: "Phobos",
+  spice_id: 401,
+  spice_name: "Phobos",
+  type: "satellite" }
+_deimos = Repo.insert! %SpiceObject{ name: "Deimos",
+  spice_id: 402,
+  spice_name: "Deimos",
+  type: "satellite" }
+
+# // jupiter
+_io = Repo.insert! %SpiceObject{ name: "Io",
+  spice_id: 501,
+  spice_name: "Io",
+  type: "satellite" }
+_europa = Repo.insert! %SpiceObject{ name: "Europa",
+  spice_id: 502,
+  spice_name: "Europa",
+  type: "satellite" }
+_ganymede = Repo.insert! %SpiceObject{ name: "Ganymede",
+  spice_id: 503,
+  spice_name: "Ganymede",
+  type: "satellite" }
+_callisto = Repo.insert! %SpiceObject{ name: "Callisto",
+  spice_id: 504,
+  spice_name: "Callisto",
+  type: "satellite" }
+_amalthea = Repo.insert! %SpiceObject{ name: "Amalthea",
+  spice_id: 505,
+  spice_name: "Amalthea",
+  type: "satellite" }
+_thebe = Repo.insert! %SpiceObject{ name: "Thebe",
+  spice_id: 514,
+  spice_name: "Thebe",
+  type: "satellite" }
+_adrastea = Repo.insert! %SpiceObject{ name: "Adrastea",
+  spice_id: 515,
+  spice_name: "Adrastea",
+  type: "satellite" }
+_metis = Repo.insert! %SpiceObject{ name: "Metis",
+  spice_id: 516,
+  spice_name: "Metis",
+  type: "satellite" }
+
+# // saturn
+# mimas
+# enceladus
+# tethys
+# dione
+# rhea
+# titan
+# hyperion
+# iapetus
+# phoebe
+# janus
+# epimetheus
+# helene
+# telesto
+# calypso
+# atlas
+# prometheus
+# pandora
+# pan
+# methone
+# pallene
+# polydeuces
+# daphnis
+# anthe
+# aegaeon
+# _ = Repo.insert! %SpiceObject{ name: "",
+#   spice_id: 9,
+#   spice_name: "",
+#   type: "" }
+
+# // uranus
+_ariel = Repo.insert! %SpiceObject{ name: "Ariel",
+  spice_id: 701,
+  spice_name: "Ariel",
+  type: "satellite" }
+_umbriel = Repo.insert! %SpiceObject{ name: "Umbriel",
+  spice_id: 702,
+  spice_name: "Umbriel",
+  type: "satellite" }
+_titania = Repo.insert! %SpiceObject{ name: "Titania",
+  spice_id: 703,
+  spice_name: "Titania",
+  type: "satellite" }
+_oberon = Repo.insert! %SpiceObject{ name: "Oberon",
+  spice_id: 704,
+  spice_name: "Oberon",
+  type: "satellite" }
+_miranda = Repo.insert! %SpiceObject{ name: "Miranda",
+  spice_id: 705,
+  spice_name: "Miranda",
+  type: "satellite" }
+
+# // neptune
+_triton = Repo.insert! %SpiceObject{ name: "Triton",
+  spice_id: 801,
+  spice_name: "Triton",
+  type: "satellite" }
+_nereid = Repo.insert! %SpiceObject{ name: "Nereid",
+  spice_id: 802,
+  spice_name: "Nereid",
+  type: "satellite" }
+
+# // pluto
+_charon = Repo.insert! %SpiceObject{ name: "Charon",
+  spice_id: 901,
+  spice_name: "Charon",
+  type: "satellite" }
+_nix = Repo.insert! %SpiceObject{ name: "Nix",
+  spice_id: 902,
+  spice_name: "Nix",
+  type: "satellite" }
+_hydra = Repo.insert! %SpiceObject{ name: "Hydra",
+  spice_id: 903,
+  spice_name: "Hydra",
+  type: "satellite" }
+_kerberos = Repo.insert! %SpiceObject{ name: "Kerberos",
+  spice_id: 904,
+  spice_name: "Kerberos",
+  type: "satellite" }
+_styx = Repo.insert! %SpiceObject{ name: "Styx",
+  spice_id: 905,
+  spice_name: "Styx",
+  type: "satellite" }
+
+# _ = Repo.insert! %SpiceObject{ name: "",
+#   spice_id: 9,
+#   spice_name: "",
+#   type: "" }
+
+git filter-branch --force --index-filter \
+'git rm --cached --ignore-unmatch priv/kernels/*' \
+--prune-empty --tag-name-filter cat -- --all
 
 # source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
