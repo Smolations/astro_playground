@@ -9,11 +9,11 @@ defmodule AstroPlayground.Repo.Migrations.CreateTextures do
       add :emissive, :string
       add :map, :string
       add :normal, :string
-      add :body_id, references(:bodies, on_delete: :delete_all), null: false
+      add :spicey_object_id, references(:spicey_objects, on_delete: :delete_all), null: false
 
       timestamps()
     end
 
-    create index(:textures, [:body_id])
+    create index(:textures, [:spicey_object_id])
   end
 end

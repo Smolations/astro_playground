@@ -11,7 +11,7 @@ defmodule AstroPlayground.Textures.Texture do
     field :map, :string
     field :normal, :string
 
-    belongs_to :body, AstroPlayground.Bodies.Body
+    belongs_to :spicey_object, AstroPlayground.Spicey.Object
 
     timestamps()
   end
