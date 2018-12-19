@@ -1,6 +1,7 @@
 defmodule AstroPlayground.SpiceObjects.SpiceObject do
   use Ecto.Schema
   import Ecto.Changeset
+  alias AstroPlayground.EctoEnums.SpiceObjectTypeEnum
 
 
   schema "spice_objects" do

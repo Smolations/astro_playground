@@ -1,5 +1,6 @@
 defmodule AstroPlayground.Repo.Migrations.CreateSpiceObjects do
   use Ecto.Migration
+  alias AstroPlayground.EctoEnums.SpiceObjectTypeEnum
 
   def change do
     SpiceObjectTypeEnum.create_type

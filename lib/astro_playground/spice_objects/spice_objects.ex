@@ -14,11 +14,27 @@ defmodule AstroPlayground.SpiceObjects do
   ## Examples
 
       iex> list_objects()
-      [%Object{}, ...]
+      [%SpiceObject{}, ...]
 
   """
   def list_objects do
     SpiceObject
+    |> Repo.all()
+    |> Repo.preload(:texture)
+  end
+
+  @doc """
+  Returns the list of objects filtered by a valid type.
+
+  ## Examples
+
+      iex> list_objects_by_type(:planet)
+      [%SpiceyObject{}, ...]
+
+  """
+  def list_objects_by_type(type) do
+    SpiceObject
+    |> where(type: ^type)
     |> Repo.all()
     |> Repo.preload(:texture)
   end
@@ -31,7 +47,7 @@ defmodule AstroPlayground.SpiceObjects do
   ## Examples
 
       iex> get_object!(123)
-      %Object{}
+      %SpiceObject{}
 
       iex> get_object!(456)
       ** (Ecto.NoResultsError)
@@ -49,7 +65,7 @@ defmodule AstroPlayground.SpiceObjects do
   ## Examples
 
       iex> create_object(%{field: value})
-      {:ok, %Object{}}
+      {:ok, %SpiceObject{}}
 
       iex> create_object(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
@@ -67,7 +83,7 @@ defmodule AstroPlayground.SpiceObjects do
   ## Examples
 
       iex> update_object(object, %{field: new_value})
-      {:ok, %Object{}}
+      {:ok, %SpiceObject{}}
 
       iex> update_object(object, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
@@ -101,7 +117,7 @@ defmodule AstroPlayground.SpiceObjects do
   ## Examples
 
       iex> change_object(object)
-      %Ecto.Changeset{source: %Object{}}
+      %Ecto.Changeset{source: %SpiceObject{}}
 
   """
   def change_object(%SpiceObject{} = object) do

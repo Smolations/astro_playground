@@ -6,6 +6,12 @@ defmodule AstroPlaygroundWeb.SpiceObjectController do
 
   action_fallback AstroPlaygroundWeb.FallbackController
 
+
+  def index(conn, %{"type" => type}) do
+    objects = SpiceObjects.list_objects_by_type(type)
+    render(conn, "index.json", spice_objects: objects)
+  end
+
   def index(conn, _params) do
     objects = SpiceObjects.list_objects()
     render(conn, "index.json", spice_objects: objects)
