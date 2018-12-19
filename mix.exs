@@ -42,6 +42,7 @@ defmodule PhoenixReactPlayground.Mixfile do
       {:gettext, "~> 0.11"},
       {:plug_cowboy, "~> 1.0"},
       {:react_render, "~> 2.0.0"},
+      {:ecto_enum, "~> 1.0"},
       {:download, "~> 0.0.0"}
     ]
   end

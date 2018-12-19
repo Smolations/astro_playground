@@ -7,7 +7,7 @@ defmodule AstroPlayground.SpiceObjects.SpiceObject do
     field :name, :string
     field :spice_id, :integer
     field :spice_name, :string
-    field :type, :string
+    field :type, SpiceObjectTypeEnum
 
     has_one :texture, AstroPlayground.Textures.Texture
     has_many :orbit, AstroPlayground.Orbits.Orbit, foreign_key: :orbiting_id

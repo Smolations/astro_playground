@@ -16,6 +16,7 @@ defmodule AstroPlaygroundWeb.SpiceObjectView do
     %{
       id: spice_object.id,
       name: spice_object.name,
+      type: spice_object.type,
       spice_id: spice_object.spice_id,
       spice_name: spice_object.spice_name,
       texture: texture,
