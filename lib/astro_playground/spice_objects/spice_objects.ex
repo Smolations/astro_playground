@@ -6,7 +6,6 @@ defmodule AstroPlayground.SpiceObjects do
   import Ecto.Query, warn: false
 
   alias AstroPlayground.Repo
-  alias AstroPlayground.Textures
   alias AstroPlayground.SpiceObjects.SpiceObject
 
   @doc """

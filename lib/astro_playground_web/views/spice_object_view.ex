@@ -2,22 +2,22 @@ defmodule AstroPlaygroundWeb.SpiceObjectView do
   use AstroPlaygroundWeb, :view
   alias AstroPlaygroundWeb.{SpiceObjectView, TextureView}
 
-  def render("index.json", %{objects: objects}) do
-    %{data: render_many(objects, SpiceObjectView, "object.json")}
+  def render("index.json", %{spice_objects: spice_objects}) do
+    %{data: render_many(spice_objects, SpiceObjectView, "object.json")}
   end
 
-  def render("show.json", %{object: object}) do
-    %{data: render_one(object, SpiceObjectView, "object.json")}
+  def render("show.json", %{spice_object: spice_object}) do
+    %{data: render_one(spice_object, SpiceObjectView, "object.json")}
   end
 
-  def render("object.json", %{object: object}) do
+  def render("object.json", %{spice_object: spice_object}) do
     # IO.inspect object
-    texture = render_one(object.texture, TextureView, "texture.json")
+    texture = render_one(spice_object.texture, TextureView, "texture.json")
     %{
-      id: object.id,
-      spice_id: object.spice_id,
-      name: object.name,
-      spice_name: object.spice_name,
+      id: spice_object.id,
+      name: spice_object.name,
+      spice_id: spice_object.spice_id,
+      spice_name: spice_object.spice_name,
       texture: texture,
     }
   end
