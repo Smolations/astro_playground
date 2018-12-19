@@ -12,15 +12,15 @@ defmodule AstroPlayground.Orbits do
 
   ## Examples
 
-      iex> find_orbits()
+      iex> find_orbits(2)
       [%Orbit{}, ...]
 
   """
-  def find_orbits(body_id) do
+  def find_orbits(object_id) do
     query = from o in Orbit,
-            where: o.orbiting_body_id == ^body_id
+            where: o.orbiting_id == ^object_id
     Repo.all(query)
-    |> Repo.preload([central_body: [:texture]])
+    |> Repo.preload([barycenter: [:texture]])
   end
 
   @doc """
@@ -28,15 +28,15 @@ defmodule AstroPlayground.Orbits do
 
   ## Examples
 
-      iex> find_orbiting()
+      iex> find_orbiting(3)
       [%Orbit{}, ...]
 
   """
-  def find_orbiting(body_id) do
+  def find_orbiting(object_id) do
     query = from o in Orbit,
-            where: o.central_body_id == ^body_id
+            where: o.barycenter_id == ^object_id
     Repo.all(query)
-    |> Repo.preload([orbiting_body: [:texture]])
+    |> Repo.preload([orbiting: [:texture]])
   end
 
   @doc """

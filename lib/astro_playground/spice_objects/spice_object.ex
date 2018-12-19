@@ -1,13 +1,17 @@
-defmodule AstroPlayground.Spicey.Object do
+defmodule AstroPlayground.SpiceObjects.SpiceObject do
   use Ecto.Schema
   import Ecto.Changeset
 
 
-  schema "spicey_objects" do
+  schema "spice_objects" do
     field :name, :string
     field :spice_id, :integer
     field :spice_name, :string
     field :type, :string
+
+    has_one :texture, AstroPlayground.Textures.Texture
+    has_many :orbit, AstroPlayground.Orbits.Orbit, foreign_key: :orbiting_id
+    has_many :orbiting, AstroPlayground.Orbits.Orbit, foreign_key: :barycenter_id
 
     timestamps()
   end

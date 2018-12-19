@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 alias AstroPlayground.Repo
 alias AstroPlayground.Orbits.Orbit
-alias AstroPlayground.Spicey.Object, as: SpiceObject
+alias AstroPlayground.SpiceObjects.SpiceObject
 alias AstroPlayground.Textures.Texture
 
 
@@ -246,97 +246,97 @@ styx = Repo.insert! %SpiceObject{ name: "Styx",
 
 # textures
 
-Repo.insert! %Texture{ spicey_object: sol,
+Repo.insert! %Texture{ spice_object: sol,
   map: "sun_2k_color.jpg",
   # displacement: "sun_2k_displacement.jpg",
   # normal: "sun_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ spicey_object: mercury,
+Repo.insert! %Texture{ spice_object: mercury,
   map: "mercury_2k_color.jpg",
   # displacement: "mercury_2k_displacement.jpg",
   # normal: "mercury_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: venus,
+Repo.insert! %Texture{ spice_object: venus,
   map: "venus_2k_color.jpg",
   # displacement: "venus_2k_displacement.jpg",
   # normal: "venus_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ spicey_object: earth,
+Repo.insert! %Texture{ spice_object: earth,
   map: "earth_daymap_2k_color.jpg",
   # displacement: "earth_2k_displacement.jpg",
   # normal: "earth_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: luna,
+Repo.insert! %Texture{ spice_object: luna,
   map: "moon_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ spicey_object: mars,
+Repo.insert! %Texture{ spice_object: mars,
   map: "mars_2k_color.jpg",
   # displacement: "mars_2k_displacement.jpg",
   # normal: "mars_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: phobos,
+Repo.insert! %Texture{ spice_object: phobos,
   map: "phobos_1440x720_gray.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: deimos,
+Repo.insert! %Texture{ spice_object: deimos,
   map: "deimos_1440x720_gray.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ spicey_object: jupiter,
+Repo.insert! %Texture{ spice_object: jupiter,
   map: "jupiter_2k_color.jpg",
   # displacement: "jupiter_2k_displacement.jpg",
   # normal: "jupiter_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: io,
+Repo.insert! %Texture{ spice_object: io,
   map: "io_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: europa,
+Repo.insert! %Texture{ spice_object: europa,
   map: "europa_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: ganymede,
+Repo.insert! %Texture{ spice_object: ganymede,
   map: "ganymede_1024x512_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: callisto,
+Repo.insert! %Texture{ spice_object: callisto,
   map: "callisto_1800x900_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: amalthea,
+Repo.insert! %Texture{ spice_object: amalthea,
   map: "amalthea_2k_gray.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
 
-Repo.insert! %Texture{ spicey_object: saturn,
+Repo.insert! %Texture{ spice_object: saturn,
   map: "saturn_2k_color.jpg",
   # displacement: "saturn_2k_displacement.jpg",
   # normal: "saturn_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: uranus,
+Repo.insert! %Texture{ spice_object: uranus,
   map: "uranus_2k_color.jpg",
   # displacement: "uranus_2k_displacement.jpg",
   # normal: "uranus_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: neptune,
+Repo.insert! %Texture{ spice_object: neptune,
   map: "neptune_2k_color.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
 }
-Repo.insert! %Texture{ spicey_object: pluto,
+Repo.insert! %Texture{ spice_object: pluto,
   map: "pluto_1k_grayscale.jpg",
   # displacement: "neptune_2k_displacement.jpg",
   # normal: "neptune_2k_normal.jpg"
@@ -347,25 +347,47 @@ Repo.insert! %Texture{ spicey_object: pluto,
 
 
 # orbits
-
-Repo.insert! %Orbit{ barycenter: sol, orbiting: mercury,
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: sol,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: mercury,
 }
 Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: venus,
 }
-
 Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: earth,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: mars,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: jupiter,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: saturn,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: uranus,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: neptune,
+}
+Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: pluto,
+}
+
+
+Repo.insert! %Orbit{ barycenter: mercury_bc, orbiting: mercury,
+}
+
+Repo.insert! %Orbit{ barycenter: venus_bc, orbiting: venus,
+}
+
+Repo.insert! %Orbit{ barycenter: earth_bc, orbiting: earth,
 }
 Repo.insert! %Orbit{ barycenter: earth_bc, orbiting: luna,
 }
 
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: mars,
+Repo.insert! %Orbit{ barycenter: mars_bc, orbiting: mars,
 }
 Repo.insert! %Orbit{ barycenter: mars_bc, orbiting: phobos,
 }
 Repo.insert! %Orbit{ barycenter: mars_bc, orbiting: deimos,
 }
 
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: jupiter,
+Repo.insert! %Orbit{ barycenter: jupiter_bc, orbiting: jupiter,
 }
 Repo.insert! %Orbit{ barycenter: jupiter_bc, orbiting: io,
 }
@@ -384,111 +406,143 @@ Repo.insert! %Orbit{ barycenter: jupiter_bc, orbiting: adrastea,
 Repo.insert! %Orbit{ barycenter: jupiter_bc, orbiting: metis,
 }
 
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: saturn,
-}
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: uranus,
-}
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: neptune,
-}
-Repo.insert! %Orbit{ barycenter: sol_bc, orbiting: pluto,
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: saturn,
 }
 
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: uranus,
+}
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: ariel,
+}
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: umbriel,
+}
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: titania,
+}
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: oberon,
+}
+Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: miranda,
+}
 
-# download naif files
-files = [
-  "fk/planets/aareadme.txt",
-  "fk/planets/earth_assoc_itrf93.tf",
-  "fk/satellites/aareadme.txt",
-  "fk/satellites/moon_080317.tf",
-  "fk/satellites/moon_assoc_me.tf",
-  "fk/satellites/moon_assoc_pa.tf",
-  # "fk/stations/dss_17_prelim_itrf93_161110.tf",
-  # "fk/stations/dss_35_36_prelim_itrf93_140620.tf",
-  # "fk/stations/earth_topo_050714.tf",
-  # "fk/stations/ndosl_140530_v01.tf",
+Repo.insert! %Orbit{ barycenter: neptune_bc, orbiting: neptune,
+}
+Repo.insert! %Orbit{ barycenter: neptune_bc, orbiting: triton,
+}
+Repo.insert! %Orbit{ barycenter: neptune_bc, orbiting: nereid,
+}
 
-  "lsk/aareadme.txt",
-  "lsk/naif0012.tls",
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: pluto,
+}
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: charon,
+}
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: nix,
+}
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: hydra,
+}
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: kerberos,
+}
+Repo.insert! %Orbit{ barycenter: pluto_bc, orbiting: styx,
+}
 
-  "pck/Gravity.tpc",
-  "pck/aareadme.txt",
-  "pck/de-403-masses.tpc",
-  "pck/earth_000101_190227_181206.bpc",
-  "pck/earth_070425_370426_predict.bpc",
-  "pck/earth_720101_070426.bpc",
-  "pck/earth_fixed.tf",
-  "pck/earth_latest_high_prec.bpc",
-  "pck/geophysical.ker",
-  "pck/gm_de431.tpc",
-  "pck/moon_pa_de403_1950-2198.bpc",
-  "pck/moon_pa_de418_1950-2050.bpc",
-  "pck/moon_pa_de421_1900-2050.bpc",
-  "pck/pck00010.tpc",
 
-  # "spk/asteroids/AAREADME_Asteroids_SPKs.txt",
-  # "spk/asteroids/aa_spk_production_dates_by-alpha.txt",
-  # "spk/asteroids/aa_spk_production_dates_by-date.txt",
-  # "spk/asteroids/aa_summaries.txt",
-  # "spk/asteroids/codes_300ast_20100725.bsp",
-  # "spk/asteroids/codes_300ast_20100725.cmt",
-  # "spk/asteroids/codes_300ast_20100725.tf",
-  # "spk/comets/C_G_1000012_2012_2017.bsp",
-  # "spk/comets/aa_summaries.txt",
-  # "spk/comets/c2013a1_s105_merged.bsp",
-  # "spk/comets/ison.bsp",
-  # "spk/comets/ison.lbl",
-  # "spk/comets/siding_spring.lbl",
-  # "spk/comets/siding_spring_8-19-14.bsp",
-  # "spk/comets/siding_spring_s46.bsp",
-  # "spk/lagrange_point/AAREADME_Lagrange_point_SPKs.txt",
-  # "spk/lagrange_point/L1_de431.bsp",
-  # "spk/lagrange_point/L2_de431.bsp",
-  # "spk/lagrange_point/L4_de431.bsp",
-  # "spk/lagrange_point/L5_de431.bsp",
-  # "spk/lagrange_point/aa_spk_production_dates_by-alpha.txt",
-  # "spk/lagrange_point/aa_spk_production_dates_by-date.txt",
-  # "spk/lagrange_point/aa_summaries.txt",
-  "spk/planets/aa_spk_production_dates_by-alpha.txt",
-  "spk/planets/aa_spk_production_dates_by-date.txt",
-  "spk/planets/aa_summaries.txt",
-  "spk/planets/aareadme_de430-de431.txt",
-  "spk/planets/aareadme_de432s.txt",
-  "spk/planets/de432_tech-comments.txt",
-  "spk/planets/de432s.bsp",
-  "spk/satellites/AAREADME_Satellite_SPKs",
-  "spk/satellites/aa_spk_production_by_alpha.txt",
-  "spk/satellites/aa_summaries.txt",
-  "spk/satellites/aa_summaries_by_date.txt",
-  "spk/satellites/jup310.bsp",
-  "spk/satellites/jup341.bsp",
-  "spk/satellites/mar097.bsp",
-  "spk/satellites/nep081.bsp",
-  "spk/satellites/nep086.bsp",
-  "spk/satellites/nep087.bsp",
-  "spk/satellites/nep088.bsp",
-  "spk/satellites/plu055.bsp",
-  "spk/satellites/sat319.bsp",
-  "spk/satellites/sat375.bsp",
-  "spk/satellites/sat393-rocks_pan.bsp",
-  "spk/satellites/sat393.bsp",
-  "spk/satellites/sat393_daphnis.bsp",
-  "spk/satellites/ura091-rocks-merge.bsp",
-  "spk/satellites/ura111.bsp",
-  "spk/satellites/ura112.bsp",
-  # "spk/stations/aa_spk_production_dates_by-alpha.txt",
-  # "spk/stations/aa_spk_production_dates_by-date.txt",
-  # "spk/stations/aa_summaries.txt",
-  # "spk/stations/dss_17_prelim_itrf93_161110.bsp",
-  # "spk/stations/dss_35_36_prelim_itrf93_140620.bsp",
-  # "spk/stations/earthstns_fx_050714.bsp",
-  # "spk/stations/earthstns_itrf93_050714.bsp",
-  # "spk/stations/ndosl_140530_v01.bsp",
-]
 
 
 defmodule NaifFiles do
 
-  def get(file) do
+  @files [
+    "fk/planets/aareadme.txt",
+    "fk/planets/earth_assoc_itrf93.tf",
+    "fk/satellites/aareadme.txt",
+    "fk/satellites/moon_080317.tf",
+    "fk/satellites/moon_assoc_me.tf",
+    "fk/satellites/moon_assoc_pa.tf",
+    # "fk/stations/dss_17_prelim_itrf93_161110.tf",
+    # "fk/stations/dss_35_36_prelim_itrf93_140620.tf",
+    # "fk/stations/earth_topo_050714.tf",
+    # "fk/stations/ndosl_140530_v01.tf",
+
+    "lsk/aareadme.txt",
+    "lsk/naif0012.tls",
+
+    "pck/Gravity.tpc",
+    "pck/aareadme.txt",
+    "pck/de-403-masses.tpc",
+    "pck/earth_000101_190227_181206.bpc",
+    "pck/earth_070425_370426_predict.bpc",
+    "pck/earth_720101_070426.bpc",
+    "pck/earth_fixed.tf",
+    "pck/earth_latest_high_prec.bpc",
+    "pck/geophysical.ker",
+    "pck/gm_de431.tpc",
+    "pck/moon_pa_de403_1950-2198.bpc",
+    "pck/moon_pa_de418_1950-2050.bpc",
+    "pck/moon_pa_de421_1900-2050.bpc",
+    "pck/pck00010.tpc",
+
+    # "spk/asteroids/AAREADME_Asteroids_SPKs.txt",
+    # "spk/asteroids/aa_spk_production_dates_by-alpha.txt",
+    # "spk/asteroids/aa_spk_production_dates_by-date.txt",
+    # "spk/asteroids/aa_summaries.txt",
+    # "spk/asteroids/codes_300ast_20100725.bsp",
+    # "spk/asteroids/codes_300ast_20100725.cmt",
+    # "spk/asteroids/codes_300ast_20100725.tf",
+    # "spk/comets/C_G_1000012_2012_2017.bsp",
+    # "spk/comets/aa_summaries.txt",
+    # "spk/comets/c2013a1_s105_merged.bsp",
+    # "spk/comets/ison.bsp",
+    # "spk/comets/ison.lbl",
+    # "spk/comets/siding_spring.lbl",
+    # "spk/comets/siding_spring_8-19-14.bsp",
+    # "spk/comets/siding_spring_s46.bsp",
+    # "spk/lagrange_point/AAREADME_Lagrange_point_SPKs.txt",
+    # "spk/lagrange_point/L1_de431.bsp",
+    # "spk/lagrange_point/L2_de431.bsp",
+    # "spk/lagrange_point/L4_de431.bsp",
+    # "spk/lagrange_point/L5_de431.bsp",
+    # "spk/lagrange_point/aa_spk_production_dates_by-alpha.txt",
+    # "spk/lagrange_point/aa_spk_production_dates_by-date.txt",
+    # "spk/lagrange_point/aa_summaries.txt",
+    "spk/planets/aa_spk_production_dates_by-alpha.txt",
+    "spk/planets/aa_spk_production_dates_by-date.txt",
+    "spk/planets/aa_summaries.txt",
+    "spk/planets/aareadme_de430-de431.txt",
+    "spk/planets/aareadme_de432s.txt",
+    "spk/planets/de432_tech-comments.txt",
+    "spk/planets/de432s.bsp",
+    "spk/satellites/AAREADME_Satellite_SPKs",
+    "spk/satellites/aa_spk_production_by_alpha.txt",
+    "spk/satellites/aa_summaries.txt",
+    "spk/satellites/aa_summaries_by_date.txt",
+    "spk/satellites/jup310.bsp",
+    "spk/satellites/jup341.bsp",
+    "spk/satellites/mar097.bsp",
+    "spk/satellites/nep081.bsp",
+    "spk/satellites/nep086.bsp",
+    "spk/satellites/nep087.bsp",
+    "spk/satellites/nep088.bsp",
+    "spk/satellites/plu055.bsp",
+    "spk/satellites/sat319.bsp",
+    "spk/satellites/sat375.bsp",
+    "spk/satellites/sat393-rocks_pan.bsp",
+    "spk/satellites/sat393.bsp",
+    "spk/satellites/sat393_daphnis.bsp",
+    "spk/satellites/ura091-rocks-merge.bsp",
+    "spk/satellites/ura111.bsp",
+    "spk/satellites/ura112.bsp",
+    # "spk/stations/aa_spk_production_dates_by-alpha.txt",
+    # "spk/stations/aa_spk_production_dates_by-date.txt",
+    # "spk/stations/aa_summaries.txt",
+    # "spk/stations/dss_17_prelim_itrf93_161110.bsp",
+    # "spk/stations/dss_35_36_prelim_itrf93_140620.bsp",
+    # "spk/stations/earthstns_fx_050714.bsp",
+    # "spk/stations/earthstns_itrf93_050714.bsp",
+    # "spk/stations/ndosl_140530_v01.bsp",
+  ]
+
+
+  def fetch() do
+    Enum.map(@files, &get_file(&1))
+  end
+
+  def get_file(file) do
     pwd = File.cwd!
     url_root = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels"
     dest_prefix = "priv/kernels"
@@ -497,7 +551,7 @@ defmodule NaifFiles do
     dest = Path.join([pwd, dest_prefix, file])
 
     # IO.puts file <> "  -->  " <> dest
-    result = Download.from(url, [path: dest])
+    result = Download.from(url, [path: dest, max_file_size: 1024 * 1024 * 1200])
 
     case result do
       {:ok, path} ->
@@ -517,4 +571,4 @@ defmodule NaifFiles do
 end
 
 IO.puts "\nDownloading NAIF files..."
-Enum.map(files, &NaifFiles.get/1)
+NaifFiles.fetch

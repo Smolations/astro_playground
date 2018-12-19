@@ -25,8 +25,8 @@ export default class Body extends React.Component {
       sidebar: false,
     };
 
-    const bodyId = props.match.params.id;
-    const bodyUri = `/api/bodies/${bodyId}`;
+    const objectId = props.match.params.id;
+    const bodyUri = `/api/objects/${objectId}`;
 
     // test api endpoints
     const payload = {

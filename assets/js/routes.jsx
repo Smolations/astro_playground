@@ -13,8 +13,8 @@ import Body from './components/Body';
 export const routes = (
   <Root>
     <Switch>
-      <UnconstrainedLayoutRoute path="/bodies/:id" component={ Body } />
-      <ConstrainedLayoutRoute exact path="/bodies" component={ Bodies } />
+      <UnconstrainedLayoutRoute path="/objects/:id" component={ Body } />
+      <ConstrainedLayoutRoute exact path="/objects" component={ Bodies } />
       <ConstrainedLayoutRoute exact path="/" component={ Home } />
     </Switch>
   </Root>

@@ -13,14 +13,14 @@ defmodule AstroPlaygroundWeb.Router do
     plug :accepts, ["json"]
   end
 
+
   # Other scopes may use custom stacks.
   scope "/api", AstroPlaygroundWeb do
     pipe_through :api
 
-    post "/et", SpiceyController, :show
     post "/get_state", SpiceyController, :show
 
-    resources "/bodies", BodyController, except: [:new, :edit] do
+    resources "/objects", SpiceObjectController, except: [:new, :edit] do
       resources "/textures", TextureController, only: [:index]
       get "/orbits", OrbitController, :orbits_index
       get "/orbiting", OrbitController, :orbiting_index
@@ -28,6 +28,7 @@ defmodule AstroPlaygroundWeb.Router do
 
     resources "/textures", TextureController, except: [:new, :edit]
   end
+
 
   scope "/", AstroPlaygroundWeb do
     pipe_through :browser # Use the default browser stack
