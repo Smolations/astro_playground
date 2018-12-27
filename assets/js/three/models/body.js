@@ -13,7 +13,9 @@ const _specs = Symbol('specs');
 
 export default class Body extends AstroGroup {
   // gravitational constant
-  get G() { return this.specs.mu / this.specs.mass; }
+  // (6.67408 × 10^-11 m^3 kg^-1 s^-2)
+  // (6.67408 × 10^-20 km^3 kg^-1 s^-2)
+  get G() { return 6.67408e-20; }
 
   get glowVertexShader() {
     return `
@@ -47,7 +49,7 @@ export default class Body extends AstroGroup {
 
   constructor({ maps = {}, specOpts = {}, ...rawSpecs }) {
     const defaultSpecOpts = {
-      mass: { units: 'e+24 kg' },
+      mass: { units: 'kg' },
       volume: { units: 'e+10 km^3' },
       meanDensity: { units: 'kg/m^3' },
       equatorialRadius: { units: 'km' },
@@ -56,8 +58,15 @@ export default class Body extends AstroGroup {
       axialTilt: { units: '\u00B0' },
       obliquityToOrbit: { units: '\u00B0' },
       siderealRotationPeriod: { units: 'hrs' },
-      mu: { units: 'e+6 km^3/s^2', desc: 'standard gravitational parameter (mu = G*M)' },
+      mu: { units: 'km^3/s^2', desc: 'standard gravitational parameter (mu = G*M)' },
     };
+
+    const polarRadius = rawSpecs.polar_radius;
+    const equatorialRadius = rawSpecs.equatorial_radius;
+
+    const volume = (4/3) * Math.PI * Math.pow(polarRadius, 2) * equatorialRadius;
+    const density = rawSpecs.mass / volume;
+
     const specs = new Specs(rawSpecs, _defaultsDeep({}, specOpts, defaultSpecOpts));
 
     super({ specs });

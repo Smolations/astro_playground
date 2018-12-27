@@ -12,6 +12,10 @@ defmodule AstroPlayground.Spicey do
     sys_cmd "orbital_elements", [date]
   end
 
+  def size_and_shape(id) do
+    sys_cmd "size_and_shape", [id]
+  end
+
   def str2et(date) do
     sys_cmd "str2et", [date]
   end

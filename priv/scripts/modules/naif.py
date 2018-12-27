@@ -1,6 +1,24 @@
 import spiceypy
 
 
+# Fetch from the kernel pool the double precision values of an item
+# associated with a body, where the body is specified by an integer
+# ID code.
+# spiceypy.spiceypy.bodvcd(bodyid, item, maxn)
+def get_size_and_shape(body_id):
+    data = []
+
+    [dim, radii] = spiceypy.bodvcd( body_id, "RADII", 3 )
+    data.extend(radii)
+
+    [dim, mu] = spiceypy.bodvcd( body_id, "GM", 1 )
+    data.extend(mu)
+
+
+    return data
+    return mu
+
+
 def get_state(date, observer, target, frame='J2000', abcorr='LT+S'):
     et = spiceypy.str2et( date )
 

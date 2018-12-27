@@ -6,7 +6,7 @@ import UnconstrainedLayoutRoute from './components/UnconstrainedLayoutRoute';
 import Root from './components/Root';
 
 import Home from './components/Home';
-import Bodies from './components/Bodies';
+import SpiceObjects from './components/SpiceObjects';
 import Body from './components/Body';
 
 
@@ -14,7 +14,7 @@ export const routes = (
   <Root>
     <Switch>
       <UnconstrainedLayoutRoute path="/objects/:id" component={ Body } />
-      <ConstrainedLayoutRoute exact path="/objects" component={ Bodies } />
+      <ConstrainedLayoutRoute exact path="/objects" component={ SpiceObjects } />
       <ConstrainedLayoutRoute exact path="/" component={ Home } />
     </Switch>
   </Root>

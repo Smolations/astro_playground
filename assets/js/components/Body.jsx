@@ -9,7 +9,6 @@ import {
   Sticky,
 } from 'semantic-ui-react';
 
-import BodiesTable from './BodiesTable';
 import BodySidebarTable from './BodySidebarTable';
 import PlanetModel from './PlanetModel';
 
@@ -18,7 +17,7 @@ export default class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      body: {},
+      spiceObject: {},
       texture: {},
       orbiting: [],
       loading: true,
@@ -50,8 +49,8 @@ export default class Body extends React.Component {
       fetch(bodyUri)
         .then((response) => response.json())
         .then((data) => {
-          // console.log('fetched body: %o', data);
-          this.setState({ body: data.data });
+          console.log('fetched spiceObject: %o', data.data);
+          this.setState({ spiceObject: data.data });
         }),
       fetch(`${bodyUri}/orbiting`)
         .then((response) => response.json())
@@ -79,15 +78,15 @@ export default class Body extends React.Component {
       : (
         <div>
           <Button.Group className="buttons">
-            <Link to="/bodies">
-              <Button icon labelPosition='left'>
-                <Icon name='arrow left' />
+            <Link to="/objects">
+              <Button icon labelPosition="left">
+                <Icon name="arrow left" />
                 Back
               </Button>
             </Link>
             <Button.Or/>
-            <Button toggle icon labelPosition='right' active={sidebar} onClick={this.handleSidebarToggle}>
-              <Icon name='info' />
+            <Button toggle icon labelPosition="right" active={sidebar} onClick={this.handleSidebarToggle}>
+              <Icon name="info" />
               Info
             </Button>
           </Button.Group>
@@ -106,7 +105,7 @@ export default class Body extends React.Component {
 
             <Sidebar.Pusher>
               <Segment basic>
-                <PlanetModel specs={body} orbiting={orbiting} />
+                {/*<PlanetModel specs={body} orbiting={orbiting} />*/}
               </Segment>
             </Sidebar.Pusher>
           </Sidebar.Pushable>

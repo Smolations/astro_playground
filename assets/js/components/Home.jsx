@@ -7,7 +7,7 @@ export default class Home extends React.Component {
     return (
       <List>
         <List.Item><Link to="/counter">Counter Example</Link></List.Item>
-        <List.Item><Link to="/bodies">Heavenly Bodies</Link></List.Item>
+        <List.Item><Link to="/objects">Solar System Barycenters</Link></List.Item>
       </List>
     );
   }
