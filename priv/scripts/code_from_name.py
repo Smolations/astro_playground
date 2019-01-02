@@ -9,25 +9,24 @@ import naif
 
 parser = argparse.ArgumentParser(
   formatter_class=argparse.RawDescriptionHelpFormatter,
-  description='Get the name of a body from a given integer code.',
+  description='Get the integer code of a body from a given name.',
 )
-parser.add_argument('code', metavar='code',
-                    type=int,
-                    help='a numeric body code')
+parser.add_argument('name', metavar='name',
+                    help='the name of a body')
 
 args = parser.parse_args()
 
 meta_kernel_name = 'codes_and_names'
 
 
-def name_from_code():
+def code_from_name():
     #
     # Load the kernels that this program requires.
     #
     meta_kernel.load(meta_kernel_name)
 
     try:
-      print( naif.get_name( args.code ) )
+      print( naif.get_code( args.name ) )
 
     except SpiceyError as err:
       print( 'ERROR:', err )
@@ -37,4 +36,4 @@ def name_from_code():
 
 
 if __name__ == '__main__':
-    name_from_code()
+    code_from_name()

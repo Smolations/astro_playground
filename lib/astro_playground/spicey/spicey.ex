@@ -20,6 +20,22 @@ defmodule AstroPlayground.Spicey do
     sys_cmd "str2et", [date]
   end
 
+  def code_from_name(name) do
+    {result, 0} = sys_cmd "code_from_name", [name]
+    cond do
+      Regex.match?(~r/^ERROR/, result) ->
+        nil
+      true ->
+        {id, _} = Integer.parse(String.trim(result))
+        id
+    end
+  end
+
+  def name_from_code(code) do
+    {result, 0} = sys_cmd "name_from_code", [code]
+    if Regex.match?(~r/^ERROR/, result), do: nil, else: String.trim(result)
+  end
+
 
   defp sys_cmd(script_name, _params \\ []) do
     System.cmd(@cmd,

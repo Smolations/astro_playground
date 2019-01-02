@@ -12,6 +12,16 @@ defmodule AstroPlaygroundWeb.SpiceObjectController do
     render(conn, "index.json", spice_objects: objects)
   end
 
+  def index(conn, %{"spice_id" => spice_id}) do
+    objects = SpiceObjects.get_object_by_spice_id!(spice_id)
+    render(conn, "index.json", spice_objects: objects)
+  end
+
+  def index(conn, %{"spice_name" => spice_name}) do
+    objects = SpiceObjects.list_objects_by_spice_name(spice_name)
+    render(conn, "index.json", spice_objects: objects)
+  end
+
   def index(conn, _params) do
     objects = SpiceObjects.list_objects()
     render(conn, "index.json", spice_objects: objects)

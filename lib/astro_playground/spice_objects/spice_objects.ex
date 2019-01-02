@@ -39,6 +39,14 @@ defmodule AstroPlayground.SpiceObjects do
     |> Repo.preload(:texture)
   end
 
+  def list_objects_by_spice_name(spice_name) do
+    query = "%#{spice_name}%"
+    SpiceObject
+    |> where([s], ilike(s.spice_name, ^query))
+    |> Repo.all()
+    |> Repo.preload(:texture)
+  end
+
   @doc """
   Gets a single object.
 
@@ -56,6 +64,13 @@ defmodule AstroPlayground.SpiceObjects do
   def get_object!(id) do
     SpiceObject
     |> Repo.get!(id)
+    |> Repo.preload(:texture)
+  end
+
+  def get_object_by_spice_id!(spice_id) do
+    SpiceObject
+    |> where(spice_id: ^spice_id)
+    |> Repo.all()
     |> Repo.preload(:texture)
   end
 

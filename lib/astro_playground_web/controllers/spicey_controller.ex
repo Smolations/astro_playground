@@ -16,4 +16,14 @@ defmodule AstroPlaygroundWeb.SpiceyController do
     et = %{given: date, et: String.trim(result)}
     render conn, "et.json", %{et: et}
   end
+
+  def identify_code(conn, %{"code" => code}) do
+    result = Spicey.name_from_code(code)
+    render conn, "result.json", %{query: code, result: result}
+  end
+
+  def identify_name(conn, %{"name" => name}) do
+    result = Spicey.code_from_name(name)
+    render conn, "result.json", %{query: name, result: result}
+  end
 end

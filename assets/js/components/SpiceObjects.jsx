@@ -1,13 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Container } from 'semantic-ui-react';
 import SpiceObjectsTable from './SpiceObjectsTable';
+import ObjectSearch from './ObjectSearch';
 
 
 export default class SpiceObjects extends React.Component {
   constructor() {
     super();
     this.state = { spiceObjects: [], loading: true };
+  }
 
+  componentDidMount() {
     // Get the data from our API.
     fetch('/api/objects?type=barycenter')
       .then((response) => response.json())
@@ -17,9 +21,15 @@ export default class SpiceObjects extends React.Component {
   }
 
   render() {
+    const objectContent = (
+      <Container>
+        <SpiceObjectsTable spiceObjects={this.state.spiceObjects}/>
+        <ObjectSearch/>
+      </Container>
+    );
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
-      : <SpiceObjectsTable spiceObjects={this.state.spiceObjects}/>;
+      : objectContent;
 
     return (
       <div>

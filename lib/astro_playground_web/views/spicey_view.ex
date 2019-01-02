@@ -18,6 +18,13 @@ defmodule AstroPlaygroundWeb.SpiceyView do
     }
   end
 
+  def render("result.json", %{query: code, result: result}) do
+    %{
+      query: code,
+      result: result,
+    }
+  end
+
   def render("state.json", %{state: state}) do
     # %{
     #   given: et.given,
