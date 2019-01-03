@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container } from 'semantic-ui-react';
-import SpiceObjectsTable from './SpiceObjectsTable';
-import ObjectSearch from './ObjectSearch';
+
+import SpiceObjectsTable from '../components/SpiceObjectsTable';
+import ObjectSearch from '../components/ObjectSearch';
 
 
 export default class SpiceObjects extends React.Component {

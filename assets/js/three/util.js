@@ -3,6 +3,15 @@ import * as THREE from 'three';
 
 const util = {
   /**
+   *  Gravitational constant.
+   *  (6.67408 × 10^-11 m^3 kg^-1 s^-2)
+   *  (6.67408 × 10^-20 km^3 kg^-1 s^-2)
+   *
+   *  @type float
+   */
+  get G() { return 6.67408e-20; }
+
+  /**
    *  Helper function to add random noise to geometry vertixes
    *
    *  @param geometry The geometry to alter

@@ -9,17 +9,17 @@ import {
   Sticky,
 } from 'semantic-ui-react';
 
-import BodySidebarTable from './BodySidebarTable';
-import PlanetModel from './PlanetModel';
+import BodySidebarTable from '../components/BodySidebarTable';
+import SpheroidModel from '../components/SpheroidModel';
 
 
-export default class Body extends React.Component {
+export default class Spheroid extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       spiceObject: {},
+      specs: {},
       texture: {},
-      orbiting: [],
       loading: true,
       sidebar: false,
     };
@@ -27,22 +27,6 @@ export default class Body extends React.Component {
     const objectId = props.match.params.id;
     const bodyUri = `/api/objects/${objectId}`;
 
-    // test api endpoints
-    const payload = {
-      date: '2018-11-29T00:00:00',
-      observer: 'SUN',
-      target: 'MERCURY',
-      frame: 'J2000',
-    };
-
-    fetch('/api/get_state', {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    // /test
 
     // Get the data from our API.
     Promise.all([
@@ -52,14 +36,20 @@ export default class Body extends React.Component {
           console.log('fetched spiceObject: %o', data.data);
           this.setState({ spiceObject: data.data });
         }),
-      fetch(`${bodyUri}/orbiting`)
+      fetch(`${bodyUri}/size_and_shape`)
         .then((response) => response.json())
         .then((data) => {
-          console.log('fetched orbiting: %o', data.data);
-          if (data.data && data.data.length) {
-            this.setState({ orbiting: data.data });
-          }
+          console.log('fetched size_and_shape: %o', data);
+          this.setState({ specs: data });
         }),
+      // fetch(`${bodyUri}/orbiting`)
+      //   .then((response) => response.json())
+      //   .then((data) => {
+      //     console.log('fetched orbiting: %o', data.data);
+      //     if (data.data && data.data.length) {
+      //       this.setState({ orbiting: data.data });
+      //     }
+      //   }),
     ])
       .then(() => {
         // console.log('setting loading state...')
@@ -72,7 +62,7 @@ export default class Body extends React.Component {
   }
 
   render() {
-    const { body, orbiting, sidebar } = this.state;
+    const { spiceObject, sidebar, specs } = this.state;
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
       : (
@@ -100,12 +90,12 @@ export default class Body extends React.Component {
               visible={sidebar}
               width="wide"
             >
-              <BodySidebarTable body={body} />
+              <BodySidebarTable body={spiceObject} />
             </Sidebar>
 
             <Sidebar.Pusher>
               <Segment basic>
-                {/*<PlanetModel specs={body} orbiting={orbiting} />*/}
+                <SpheroidModel info={spiceObject} specs={specs} texture={spiceObject.texture} />
               </Segment>
             </Sidebar.Pusher>
           </Sidebar.Pushable>

@@ -9,8 +9,8 @@ import {
   Sticky,
 } from 'semantic-ui-react';
 
-import BodySidebarTable from './BodySidebarTable';
-import PlanetModel from './PlanetModel';
+import BodySidebarTable from '../components/BodySidebarTable';
+import PlanetModel from '../components/PlanetModel';
 
 
 export default class Body extends React.Component {

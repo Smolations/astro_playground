@@ -3,20 +3,15 @@ import _defaultsDeep from 'lodash/defaultsDeep';
 
 import AstroGroup from '../lib/astro-group';
 import Specs from '../lib/specs';
+import util from '../util';
 
 const _glowSphere = Symbol('glowSphere');
 const _polarAxis = Symbol('polarAxis');
-const _satellites = Symbol('satellites');
-const _sphere = Symbol('sphere');
+const _spheroid = Symbol('spheroid');
 const _specs = Symbol('specs');
 
 
 export default class Spheroid extends AstroGroup {
-  // gravitational constant
-  // (6.67408 × 10^-11 m^3 kg^-1 s^-2)
-  // (6.67408 × 10^-20 km^3 kg^-1 s^-2)
-  get G() { return 6.67408e-20; }
-
   get glowVertexShader() {
     return `
       uniform vec3 viewVector;
@@ -48,7 +43,24 @@ export default class Spheroid extends AstroGroup {
   }
 
   constructor({ maps = {}, specOpts = {}, ...rawSpecs }) {
-    rawSpecs.mass = rawSpecs.mu / 6.67408e-20;
+    // maybe worth computing within python script?
+    const mass = rawSpecs.mu / util.G;
+
+    const polarRadius = rawSpecs.polar_radius;
+    const equatorialRadius = rawSpecs.equatorial_radius_large;
+
+    const volume = (4/3) * Math.PI * Math.pow(polarRadius, 2) * equatorialRadius;
+    const density = mass / volume;
+
+    // temporary until it can be figured out. greater than zero
+    // simply to allow for the z-axis to be visible
+    rawSpecs.obliquity_to_orbit = 15;
+
+    Object.assign(rawSpecs, {
+      mass,
+      volume,
+      density,
+    });
 
     const defaultSpecOpts = {
       mass: { units: 'kg' },
@@ -59,19 +71,10 @@ export default class Spheroid extends AstroGroup {
       polarRadius: { units: 'km' },
       // volumetricMeanRadius: { units: 'km' },
       // axialTilt: { units: '\u00B0' },
-      // obliquityToOrbit: { units: '\u00B0' },
+      obliquityToOrbit: { units: '\u00B0' },
       // siderealRotationPeriod: { units: 'hrs' },
       mu: { units: 'km^3/s^2', desc: 'standard gravitational parameter (mu = G*M)' },
     };
-
-    const polarRadius = rawSpecs.polar_radius;
-    const equatorialRadius = rawSpecs.equatorial_radius_large;
-
-    const volume = (4/3) * Math.PI * Math.pow(polarRadius, 2) * equatorialRadius;
-    const density = rawSpecs.mass / volume;
-
-    rawSpecs.volume = volume;
-    rawSpecs.density = density;
 
     const specs = new Specs(rawSpecs, _defaultsDeep({}, specOpts, defaultSpecOpts));
 
@@ -79,14 +82,19 @@ export default class Spheroid extends AstroGroup {
     console.log(this.specs)
 
     this[_polarAxis] = this.getPolarAxis(this.specs.polarRadius);
-    this[_sphere] = this.getSphere(this.specs.polarRadius, maps);
+    this[_spheroid] = this.getSpheroid(
+      this.specs.equatorialRadiusLarge,
+      this.specs.polarRadius,
+      this.specs.equatorialRadiusSmall,
+      maps
+    );
 
-    this.add(this[_sphere]);
+    this.add(this[_spheroid]);
     this.add(this[_polarAxis]);
 
     // rotate so north pole is up, then apply the axial tilt
-    // this.rotation.x = Math.PI / 2 + this.specs.toRad('obliquityToOrbit');
-    this.rotation.x = Math.PI / 2;
+    this.rotation.x = Math.PI / 2 + this.specs.toRad('obliquityToOrbit');
+    // this.rotation.x = Math.PI / 2;
   }
 
   getPolarAxis(radius) {
@@ -104,14 +112,25 @@ export default class Spheroid extends AstroGroup {
     return new THREE.Line( geometry, material );
   }
 
-  getSphere(radius, maps) {
+  getSpheroid(xRadius, yRadius, zRadius, maps) {
     const isStar = this.specs.type === 'star';
-    const geometry = new THREE.SphereBufferGeometry( radius, 64, 64 );
+
+    // this is the "vertical" or polar radius. since planets bulge
+    // at the equator, we will modify those scales later
+    const geometry = new THREE.SphereBufferGeometry( yRadius, 64, 64 );
+
     const matOpts = {
       color: 0xffffff,
       metalness: 0.1,
       roughness: 1,
     };
+
+    // use this to make the "triaxial ellipsoid"
+    // remember that we end up rotating so treat y-axis as polar axis
+    const xScale = xRadius / yRadius;
+    const yScale = yRadius / yRadius; // yea, yea...i know  =]
+    const zScale = zRadius / yRadius;
+    geometry.applyMatrix( new THREE.Matrix4().makeScale( xScale, yScale, zScale ) );
 
     if (maps.map) {
       matOpts.map = maps.map;
@@ -128,6 +147,7 @@ export default class Spheroid extends AstroGroup {
     const material = new THREE.MeshStandardMaterial( matOpts );
     const sphere = new THREE.Mesh( geometry, material );
 
+    // maybe create accessors for these?
     sphere.castShadow = !isStar;
     sphere.receiveShadow = !isStar;
 
@@ -167,7 +187,7 @@ export default class Spheroid extends AstroGroup {
     const rotationPeriod = 0;
     const sign = rotationPeriod == 0 ? 1 : rotationPeriod / Math.abs(rotationPeriod);
 
-    // coincides with sphere's original orientation where y is up
-    this[_sphere].rotation.y += sign * 0.001;
+    // coincides with spheroid's original orientation where y is up
+    this[_spheroid].rotation.y += sign * 0.001;
   }
 };

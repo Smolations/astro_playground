@@ -1,15 +1,15 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 
-import ConstrainedLayoutRoute from './components/ConstrainedLayoutRoute';
-import UnconstrainedLayoutRoute from './components/UnconstrainedLayoutRoute';
+import ConstrainedLayoutRoute from './routes/ConstrainedLayoutRoute';
+import UnconstrainedLayoutRoute from './routes/UnconstrainedLayoutRoute';
 import Root from './components/Root';
 
-import Home from './components/Home';
-import SpiceObjects from './components/SpiceObjects';
-import Barycenter from './components/Barycenter';
-import Body from './components/Body';
-import Spheroid from './components/Spheroid';
+import Home from './routes/Home';
+import Barycenter from './routes/Barycenter';
+import Body from './routes/Body';
+import Spheroid from './routes/Spheroid';
+import SpiceObjects from './routes/SpiceObjects';
 
 
 export const routes = (

@@ -45,7 +45,7 @@ export default class SpheroidModel extends React.Component {
     const prMax = bodyRadii[bodyRadii.length - 1];
     const prMinMaxScalar = prMin / prMax;
     const brMin = 0.2;
-    const brMax = 50;
+    const brMax = 5;
 
     this.bodyType = props.info.type;
     this.bodyScale = {

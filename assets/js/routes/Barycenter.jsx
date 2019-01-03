@@ -9,11 +9,11 @@ import {
   Sticky,
 } from 'semantic-ui-react';
 
-import BodySidebarTable from './BodySidebarTable';
-import SpheroidModel from './SpheroidModel';
+import BodySidebarTable from '../components/BodySidebarTable';
+import SpheroidModel from '../components/SpheroidModel';
 
 
-export default class Spheroid extends React.Component {
+export default class Barycenter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -95,7 +95,7 @@ export default class Spheroid extends React.Component {
 
             <Sidebar.Pusher>
               <Segment basic>
-                <SpheroidModel info={spiceObject} specs={specs} texture={spiceObject.texture} />
+                <BarycenterModel info={spiceObject} specs={specs} texture={spiceObject.texture} />
               </Segment>
             </Sidebar.Pusher>
           </Sidebar.Pushable>
