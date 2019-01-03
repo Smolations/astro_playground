@@ -25,11 +25,11 @@ defmodule AstroPlaygroundWeb.SpiceyView do
     }
   end
 
+  def render("size_and_shape.json", %{id: id, data: data}) do
+    Map.put(data, :spice_id, id)
+  end
+
   def render("state.json", %{state: state}) do
-    # %{
-    #   given: et.given,
-    #   et: et.et,
-    # }
     state
   end
 end

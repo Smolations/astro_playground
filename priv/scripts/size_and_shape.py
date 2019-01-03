@@ -35,13 +35,12 @@ def size_and_shape():
     # get data
     # args.id.isnumeric()
     data = naif.get_size_and_shape( int(args.id) )
-    print( data )
+    # print( data )
 
     #
     # Display the results.
     #
-    # print(equatorial_radius_lg)
-    # print( fmt.attrs_map(data) )
+    print( fmt.attrs_map(data) )
 
 
     unload_mk( meta_kernel_name )

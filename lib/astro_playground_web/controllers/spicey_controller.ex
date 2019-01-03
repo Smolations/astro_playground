@@ -1,6 +1,7 @@
 defmodule AstroPlaygroundWeb.SpiceyController do
   use AstroPlaygroundWeb, :controller
   alias AstroPlayground.Spicey
+  alias AstroPlayground.SpiceObjects
 
   action_fallback AstroPlaygroundWeb.FallbackController
 
@@ -25,5 +26,12 @@ defmodule AstroPlaygroundWeb.SpiceyController do
   def identify_name(conn, %{"name" => name}) do
     result = Spicey.code_from_name(name)
     render conn, "result.json", %{query: name, result: result}
+  end
+
+  def get_size_and_shape(conn, %{"spice_object_id" => spice_object_id}) do
+    object = SpiceObjects.get_object!(spice_object_id)
+    {result, 0} = Spicey.size_and_shape(object.spice_id)
+    {data, []} = Code.eval_string(result)
+    render(conn, "size_and_shape.json", %{id: object.spice_id, data: data})
   end
 end

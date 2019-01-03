@@ -1,9 +1,10 @@
 import React from 'react';
+import { Link, withRouter } from 'react-router-dom'
 import { Container, Grid, List, Search } from 'semantic-ui-react';
 import _debounce from 'lodash/debounce';
 
 
-export default class ObjectSearch extends React.Component {
+class ObjectSearch extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -36,19 +37,25 @@ export default class ObjectSearch extends React.Component {
   };
 
   handleResultSelect = (e, { result }) => {
-    console.log('selected: ', result)
+    const { id, type } = result;
+    const uri = `/${type}s/${id}`;
+    this.props.history.push(uri);
   };
 
   resetComponent = () => this.setState({ loading: false, objects: [], value: '' });
 
-  render() {
-    const { loading, value, objects } = this.state;
-
-    const resultRenderer = ({ spice_name, type }) => (
+  resultRenderer = ({ spice_name, type }) => {
+    return (
       <List>
-        <List.Item><strong>{spice_name}</strong> ({type})</List.Item>
+        <List.Item>
+          <strong>{spice_name}</strong> ({type})
+        </List.Item>
       </List>
     );
+  };
+
+  render() {
+    const { loading, value, objects } = this.state;
 
     return (
       <Grid centered columns={2}>
@@ -61,13 +68,15 @@ export default class ObjectSearch extends React.Component {
               onResultSelect={this.handleResultSelect}
               onSearchChange={_debounce(this.handleSearchChange, 500, { leading: true })}
               results={objects}
-              resultRenderer={resultRenderer}
+              resultRenderer={this.resultRenderer}
               value={value}
-              {...this.props}
             />
           </Container>
         </Grid.Column>
       </Grid>
     );
   }
-};
+}
+
+
+export default withRouter(ObjectSearch);
