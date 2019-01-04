@@ -9,7 +9,7 @@ const util = {
    *
    *  @type float
    */
-  get G() { return 6.67408e-20; }
+  get G() { return 6.67408e-20; },
 
   /**
    *  Helper function to add random noise to geometry vertixes

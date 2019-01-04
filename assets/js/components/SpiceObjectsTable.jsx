@@ -18,7 +18,7 @@ export default class SpiceObjectsTable extends React.Component {
         <Table.Body>
           {this.props.spiceObjects.map((spiceObj) =>
             <Table.Row key={spiceObj.id}>
-              <Table.Cell><Link to={`/objects/${spiceObj.id}`}>{spiceObj.name}</Link></Table.Cell>
+              <Table.Cell><Link to={`/${spiceObj.type}s/${spiceObj.id}`}>{spiceObj.name}</Link></Table.Cell>
               <Table.Cell>{spiceObj.type}</Table.Cell>
               <Table.Cell>{spiceObj.spice_name}</Table.Cell>
               <Table.Cell>{spiceObj.spice_id}</Table.Cell>

@@ -10,7 +10,7 @@ import {
 } from 'semantic-ui-react';
 
 import BodySidebarTable from '../components/BodySidebarTable';
-import SpheroidModel from '../components/SpheroidModel';
+import BarycenterModel from '../components/BarycenterModel';
 
 
 export default class Barycenter extends React.Component {
@@ -18,15 +18,16 @@ export default class Barycenter extends React.Component {
     super(props);
     this.state = {
       spiceObject: {},
+      orbiting: [],
       specs: {},
-      texture: {},
       loading: true,
       sidebar: false,
     };
+  }
 
-    const objectId = props.match.params.id;
+  componentDidMount() {
+    const objectId = this.props.match.params.id;
     const bodyUri = `/api/objects/${objectId}`;
-
 
     // Get the data from our API.
     Promise.all([
@@ -36,20 +37,14 @@ export default class Barycenter extends React.Component {
           console.log('fetched spiceObject: %o', data.data);
           this.setState({ spiceObject: data.data });
         }),
-      fetch(`${bodyUri}/size_and_shape`)
+      fetch(`${bodyUri}/orbiting`)
         .then((response) => response.json())
         .then((data) => {
-          console.log('fetched size_and_shape: %o', data);
-          this.setState({ specs: data });
+          console.log('fetched orbiting: %o', data.data);
+          if (data.data && data.data.length) {
+            this.setState({ orbiting: data.data });
+          }
         }),
-      // fetch(`${bodyUri}/orbiting`)
-      //   .then((response) => response.json())
-      //   .then((data) => {
-      //     console.log('fetched orbiting: %o', data.data);
-      //     if (data.data && data.data.length) {
-      //       this.setState({ orbiting: data.data });
-      //     }
-      //   }),
     ])
       .then(() => {
         // console.log('setting loading state...')
@@ -62,7 +57,7 @@ export default class Barycenter extends React.Component {
   }
 
   render() {
-    const { spiceObject, sidebar, specs } = this.state;
+    const { orbiting, spiceObject, sidebar, specs } = this.state; console.log('spiceObject %o', spiceObject)
     const content = this.state.loading
       ? <p><em>Loading...</em></p>
       : (
@@ -95,7 +90,10 @@ export default class Barycenter extends React.Component {
 
             <Sidebar.Pusher>
               <Segment basic>
-                <BarycenterModel info={spiceObject} specs={specs} texture={spiceObject.texture} />
+                <BarycenterModel
+                  model={spiceObject}
+                  orbiting={orbiting}
+                />
               </Segment>
             </Sidebar.Pusher>
           </Sidebar.Pushable>

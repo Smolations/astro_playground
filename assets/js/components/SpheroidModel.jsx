@@ -85,12 +85,13 @@ export default class SpheroidModel extends React.Component {
     this.maps = await this.loadMaps(this.props.texture);
 
     this.camera = this.configureCamera();
-    this.cameraStartPos = this.camera.position.clone();console.log('cameraStartPos: %o', this.cameraStartPos);
+    this.cameraStartPos = this.camera.position.clone();
     this.renderer = this.configureRenderer();
     this.windowResize = windowResize(this.renderer, this.camera);
 
     this[_axesHelper] = this.getAxesHelper();
-    this[_body] = this.getBody(); console.log(this[_body].toString());
+    this[_body] = this.getBody();
+    console.log(this[_body].toString());
 
     this.scene.add( this[_axesHelper] );
     this.scene.add( this[_body] );
@@ -99,6 +100,11 @@ export default class SpheroidModel extends React.Component {
     this.controls = this.configureControls();
     this.params = this.configureGUI();
     this.renderScene();
+  }
+
+  componentWillUnmount() {
+    // kill gui
+    // stop requesting animation frame?
   }
 
 
