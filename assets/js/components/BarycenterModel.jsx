@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 // const loader = new STLLoader();console.log(loader);
 
 import Specs from '../three/lib/specs';
-import SpiceObjectModel from './SpiceObjectModel';
+import ThreeModel from './ThreeModel';
 import Spheroid from '../three/models/spheroid';
 import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
@@ -27,6 +27,8 @@ export default class BarycenterModel extends React.Component {
     this.state = {
       loading: true,
     };
+
+    this.baryScene = new THREE.Scene();
   }
 
 
@@ -34,6 +36,11 @@ export default class BarycenterModel extends React.Component {
     console.log('BarycenterModel.componentDidMount: props %o', this.props);
     // this.maps = await this.loadMaps(this.props.texture);
     this.setState({ loading: false });
+  }
+
+  getAmbientLight() {
+    const ambientLight = new THREE.AmbientLight( 0xffffff, 1 );
+    return ambientLight;
   }
 
   getAxesHelper({ length = 2 } = {}) {
@@ -54,49 +61,11 @@ export default class BarycenterModel extends React.Component {
     return body;
   }
 
-  getVernalEquinoxDirectionalLight() {
-    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-
-    // enforces initial vernal equinox position
-    directionalLight.position.set(-10, 0, 0);
-    directionalLight.castShadow = true;
-
-    return directionalLight;
-  }
-
-  preRender = ({ scene }) => {
-    console.log('BarycenterModel preRender()');
-    const axesHelper = this.getAxesHelper(); console.log(axesHelper);
-    const directionalLight = this.getVernalEquinoxDirectionalLight(); console.log(directionalLight);
-    const axis = this.getPolarAxis(2);
-    const sphere = this.getSphere();
-
-    scene.add( directionalLight );
-    scene.add( axesHelper  );
-    scene.add( axis  );
-    scene.add( sphere  );
-  }
-
-  getPolarAxis(radius) {
-    const material = new THREE.LineBasicMaterial();
-    const geometry = new THREE.Geometry();
-    const diameter = radius * 2;
-
-    // maybe use values from a given sphere to make
-    // sure axis goes through the center?
-    geometry.vertices.push(
-      new THREE.Vector3( 0, -1 * diameter, 0 ),
-      new THREE.Vector3( 0, 1 * diameter, 0 )
-    );
-
-    return new THREE.Line( geometry, material );
-  }
-
   getSphere() {
     const geometry = new THREE.SphereBufferGeometry( 1, 32, 32 );
 
     const matOpts = {
-      color: 0xffffff,
+      color: 0xaec7fd,
       metalness: 0.1,
       roughness: 1,
     };
@@ -111,12 +80,23 @@ export default class BarycenterModel extends React.Component {
     return sphere;
   }
 
+  preRender = ({ scene }) => {
+    console.log('BarycenterModel preRender()');
+    const axesHelper = this.getAxesHelper();
+    const ambientLight = this.getAmbientLight();
+    const sphere = this.getSphere();
+
+    scene.add( axesHelper  );
+
+    this.baryScene.add( sphere  );
+    this.baryScene.add( ambientLight );
+  }
+
   render() {
     return this.state.loading
       ? <p>Loading...</p>
       : (
-          <SpiceObjectModel
-            model={{}}
+          <ThreeModel
             cameraParams={{}}
             rendererParams={{}}
             controlsParams={{}}
@@ -127,7 +107,7 @@ export default class BarycenterModel extends React.Component {
         );
 
     return (
-      <SpiceObjectModel
+      <ThreeModel
         model={{}}
         cameraParams={{}}
         cameraConfigurator={() => {}}
@@ -141,17 +121,22 @@ export default class BarycenterModel extends React.Component {
     );
   }
 
-  renderScene({ scene, camera, controls, renderer }) {
+  renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
     console.log('BarycenterModel renderScene %o', { scene, camera, controls, renderer });
 
     const render = () => {
       controls.update();
 
+      renderer.clear();
       renderer.render(scene, camera);
+      renderer.render(this.baryScene, camera);
 
       requestAnimationFrame(render);
     }
+
+    // needed for multiple scenes
+    renderer.autoClear = false;
 
     requestAnimationFrame(render);
   }

@@ -1,5 +1,6 @@
 import _defaults from 'lodash/defaults';
 import _identity from 'lodash/identity';
+
 import React from 'react';
 import * as dat from 'dat.gui';
 import * as THREE from 'three';
@@ -7,16 +8,10 @@ import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 // import { STLLoader } from 'three/examples/js/loaders/STLLoader';
 // const loader = new STLLoader();console.log(loader);
 
-import util from '../three/util';
-import Specs from '../three/lib/specs';
-import Spheroid from '../three/models/spheroid';
-import QuantScale from '../three/lib/quant-scale';
 import windowResize from '../three/lib/window-resize';
 
-const _axesHelper = Symbol('axesHelper');
 
-
-export default class SpiceObjectModel extends React.Component {
+export default class ThreeModel extends React.Component {
 
   constructor(props) {
     super(props);
@@ -50,7 +45,7 @@ export default class SpiceObjectModel extends React.Component {
 
 
   componentDidMount() {
-    console.log('SpiceObjectModel.componentDidMount: props %o', this.props);
+    console.log('ThreeModel.componentDidMount: props %o', this.props);
 
     const camera = this.getCamera(this.props.cameraParams);
     this.something.camera = this.cameraConfigurator(camera);
@@ -90,7 +85,7 @@ export default class SpiceObjectModel extends React.Component {
     this.windowResize.stop();
 
     // kill gui
-    this.something.gui.destroy();
+    this.something.gui && this.something.gui.destroy();
 
     // stop requesting animation frame?
   }
