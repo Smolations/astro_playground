@@ -39,7 +39,6 @@ export default class ThreeModel extends React.Component {
       renderer: null,
       controls: null,
       gui: null,
-      guiSettings: {},
     };
   }
 
@@ -59,18 +58,10 @@ export default class ThreeModel extends React.Component {
     this.something.controls = this.controlsConfigurator(controls);
 
     // simply creating the instance creates an overlay so must make
-    // it conditional. here, the `guiParams` are params given to the
-    // dat.GUI constructor while the `guiSettings` is the dictionary
-    // object properties the GUI sections control.
+    // it conditional.
     if (this.props.guiConfigurator) {
-      const _gui = this.getGUI(this.props.guiParams);
-      const { gui, settings } = this.props.guiConfigurator({
-        gui: _gui,
-        settings: this.something.guiSettings,
-      });
-
-      this.something.gui = gui;
-      this.something.guiSettings = settings;
+      const gui = this.getGUI(this.props.guiParams);
+      this.something.gui = this.props.guiConfigurator(gui);
     }
 
     // this allows for other components to add their own stuff to the

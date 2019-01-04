@@ -5,11 +5,11 @@ import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
 // import { STLLoader } from 'three/examples/js/loaders/STLLoader';
 // const loader = new STLLoader();console.log(loader);
 
-import util from '../three/util';
 import Specs from '../three/lib/specs';
 import Spheroid from '../three/models/spheroid';
+import ThreeModel from './ThreeModel';
 import QuantScale from '../three/lib/quant-scale';
-import windowResize from '../three/lib/window-resize';
+import util from '../three/util';
 
 
 const _axesHelper = Symbol('axesHelper');
@@ -23,18 +23,12 @@ export default class SpheroidModel extends React.Component {
   constructor(props) {
     super(props);
 
-    const SCREEN_WIDTH = window.innerWidth;
-    const SCREEN_HEIGHT = window.innerHeight;
-    const dims = { x: SCREEN_WIDTH, y: SCREEN_HEIGHT };
+    this.state = {
+      loading: true,
+    };
 
-    // tell camera that axes orientation rotates 90deg away from eyes.
-    // this more closely matches the rectangular reference frame
-    // in astrodynamics. often set on the camera instance itself.
-    THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 0, 1 );
-
-    this.canvasRef = React.createRef();
-    this.dims = dims;
     this.maps = {};
+    this.guiSettings = {};
 
     const bodyRadii = [
       props.specs.polar_radius,
@@ -72,11 +66,6 @@ export default class SpheroidModel extends React.Component {
       equatorialRadiusSmall: { scale: bodyScaleFn },
       polarRadius: { scale: bodyScaleFn },
     };
-
-    // this[_bodies] = [];
-
-    this.scene = new THREE.Scene();
-    // this.scene2 = new THREE.Scene();
   }
 
 
@@ -84,38 +73,11 @@ export default class SpheroidModel extends React.Component {
     console.log('SpheroidModel.componentDidMount: props %o', this.props);
     this.maps = await this.loadMaps(this.props.texture);
 
-    this.camera = this.configureCamera();
-    this.cameraStartPos = this.camera.position.clone();
-    this.renderer = this.configureRenderer();
-    this.windowResize = windowResize(this.renderer, this.camera);
-
-    this[_axesHelper] = this.getAxesHelper();
-    this[_body] = this.getBody();
-    console.log(this[_body].toString());
-
-    this.scene.add( this[_axesHelper] );
-    this.scene.add( this[_body] );
-    this.scene.add( this.getVernalEquinoxDirectionalLight() );
-
-    this.controls = this.configureControls();
-    this.params = this.configureGUI();
-    this.renderScene();
-  }
-
-  componentWillUnmount() {
-    // kill gui
-    // stop requesting animation frame?
+    this.setState({ loading: false });
   }
 
 
-  configureCamera() {
-    const camera = new THREE.PerspectiveCamera(
-      70,                         // field of view
-      this.dims.x / this.dims.y,  // aspect ratio
-      0.1,                        // near clipping pane
-      10000                       // far clipping pane
-    );
-
+  configureCamera = (camera) => {
     // Reposition the camera at an angle where axes markers would be
     // visible, and where sunlight is visible
     const yDist = {
@@ -131,78 +93,27 @@ export default class SpheroidModel extends React.Component {
     camera.position.set(camX, camY, camZ);
 
     // Point the camera at the central body (origin)
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    // camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     return camera;
   }
 
-  configureControls() {
-    // Add an orbit control which allows us to move around the scene.
-    const controls = new OrbitControls(this.camera, this.canvasRef.current );
+  configureGUI = (gui) => {
+    this.guiSettings.animate = true;
+    this.guiSettings.timeScale = 10;
 
-    controls.target = new THREE.Vector3(0, 0, 0);
-    controls.maxPolarAngle = Math.PI;
-    controls.minDistance = 1;
-    controls.maxDistance = 999;
-
-    // add this only if there is no animation loop (requestAnimationFrame)
-    // controls.addEventListener('change', () => this.renderScene());
-
-    return controls;
-  }
-
-  configureGUI() {
-    const gui = window.gui = new dat.GUI({
-      name: 'Astro Playground',
-    });
-    // https://github.com/dataarts/dat.gui/blob/master/API.md
-    // {
-    //   a: 200, // numeric
-    //   b: 200, // numeric slider
-    //   c: "Hello, GUI!", // string
-    //   d: false, // boolean (checkbox)
-    //   e: "#ff8800", // color (hex)
-    //   f: function() { alert("Hello!") },
-    //   g: function() { alert( parameters.c ) },
-    //   v : 0,    // dummy value, only type is important
-    //   w: "...", // dummy value, only type is important
-    //   x: 0, y: 0, z: 0
-    // };
-    const params = {
-      animate: true,
-      timeScale: 10,
-    };
-
-
-
-    gui.add( params, 'animate' ).name('Animate?');
+    gui.add( this.guiSettings, 'animate' ).name('Animate?');
     // gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
     // gui.add( params, 'lookAt', bodies ).name('Look at:');
 
     gui.open();
 
-    return params;
+    return gui;
   }
 
-  configureRenderer() {
-    const canvas = this.canvasRef.current;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-
-    // match the size of the canvas
-    renderer.setSize(this.dims.x, this.dims.y);
-
-    // Set a near white clear color (default is black)
-    // renderer.setClearColor( 0xfff6e6 );
-
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    return renderer;
-  }
-
-  getAxesHelper() {
+  getAxesHelper({ length = 2 } = {}) {
     // x-axis: red, y-axis: green, z-axis: blue
-    return new THREE.AxesHelper( this.bodyScale.max * 2 );
+    return new THREE.AxesHelper( length );
   }
 
   getBody() {
@@ -254,46 +165,50 @@ export default class SpheroidModel extends React.Component {
       .then(() => maps);
   }
 
-  render() {
-    return (
-      <canvas width="{this.dims.x}" height="{this.dims.y}" id="myCanvas" ref={this.canvasRef}></canvas>
-    );
+
+  preRender = ({ scene }) => {
+    this[_axesHelper] = this.getAxesHelper({ length: this.bodyScale.max * 2 });
+    this[_body] = this.getBody();
+    console.log(this[_body].toString());
+
+    scene.add( this[_axesHelper] );
+    scene.add( this[_body] );
+    scene.add( this.getVernalEquinoxDirectionalLight() );
   }
 
-  renderScene() {
+  render() {
+    return this.state.loading
+      ? <p>Loading...</p>
+      : (
+          <ThreeModel
+            cameraParams={{}}
+            cameraConfigurator={this.configureCamera}
+            rendererParams={{}}
+            controlsParams={{}}
+            guiParams={{}}
+            guiConfigurator={this.configureGUI}
+            preRender={this.preRender}
+            renderScene={this.renderScene}
+          />
+        );
+  }
+
+  renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
 
     const render = () => {
-      if (!this.params.animate) {
-        this.controls.update();
+      if (!this.guiSettings.animate) {
+        controls.update();
 
       } else {
         const t = clock.getElapsedTime();
-
-        // const targetBody = this[_body];
-        // const targetCamPos = this.camera.position;
-        // let targetBodyPos;
-
-        // targetBodyPos = new THREE.Vector3();
-        // console.log('targetBodyPos: %o', targetBodyPos);
-
-        // targetBody.getWorldPosition(targetBodyPos);
-        // console.log('(targetBodyPos): %o', targetBodyPos);
-
-        // this.camera.position.set( targetCamPos.x, targetCamPos.y, targetCamPos.z );
-        // this.camera.lookAt( targetBodyPos );
-
-        // this.controls.target = targetBodyPos;
 
         // Update animated elements
         this[_body].updatePosition(t);
       }
 
-
       // Render the scene/camera combination
-      // this.renderer.clear();
-      this.renderer.render(this.scene, this.camera);
-      // this.renderer.render(this.scene2, this.camera);
+      renderer.render(scene, camera);
 
       // Repeat
       requestAnimationFrame(render);

@@ -62,18 +62,18 @@ export default class BarycenterModel extends React.Component {
   }
 
   getSphere() {
-    const geometry = new THREE.SphereBufferGeometry( 1, 32, 32 );
+    const geometry = new THREE.SphereBufferGeometry( 1, 8, 8 );
 
     const matOpts = {
       color: 0xaec7fd,
       metalness: 0.1,
       roughness: 1,
+      wireframe: true,
     };
 
     const material = new THREE.MeshStandardMaterial( matOpts );
     const sphere = new THREE.Mesh( geometry, material );
 
-    // maybe create accessors for these?
     sphere.castShadow = false;
     sphere.receiveShadow = false;
 
