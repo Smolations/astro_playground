@@ -6,5 +6,6 @@ KERNELS_TO_LOAD = (
                   '$KERNELS/pck/gm_de431.tpc',
                   '$KERNELS/pck/pck00010.tpc',
                   '$KERNELS/spk/planets/de432s.bsp',
+                  '$KERNELS/spk/satellites/jup365.bsp',
                   )
 \begintext

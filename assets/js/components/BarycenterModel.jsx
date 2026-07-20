@@ -22,6 +22,13 @@ const SECONDS_PER_ORBIT = 60;
 // Prefetch the next window once this fraction of the current one is left.
 const PREFETCH_FRACTION = 0.4;
 
+// Treat a non-2xx response (e.g. a 500 HTML error page) as a failure rather
+// than trying to JSON.parse "<!DOCTYPE ...".
+function okJson(r) {
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
 
 export default class BarycenterModel extends React.Component {
   constructor(props) {
@@ -43,41 +50,46 @@ export default class BarycenterModel extends React.Component {
     try {
       const barycenter = this.props.model;
       this.observer = String(barycenter.spice_id);
-      this.bodyList = (this.props.orbiting || []).map((o) => o.orbiting);
+      const orbiting = (this.props.orbiting || []).map((o) => o.orbiting);
 
-      // Initial window + per-body size and texture.
-      const { stopUtc, trajectories } = await this.fetchWindow(START_UTC);
-      this.currentStopUtc = stopUtc;
+      const start = START_UTC;
+      const stop = this.windowStop(start);
+      this.currentStopUtc = stop;
 
-      const [specsList, maps] = await Promise.all([
-        Promise.all(
-          this.bodyList.map((b) =>
-            fetch(`/api/objects/${b.id}/size_and_shape`).then((r) => r.json())
-          )
-        ),
-        Promise.all(
-          this.bodyList.map((b) =>
-            b.texture && b.texture.map
-              ? util.loadTexture(`/images/${b.texture.map}`).catch(() => null)
-              : null
-          )
-        ),
-      ]);
+      // Load each body independently and skip any whose trajectory or size
+      // fails (tiny moons with no measured radii, or bodies with no loaded
+      // ephemeris kernel) — one missing body shouldn't blank the whole system.
+      const loaded = await Promise.all(
+        orbiting.map(async (body) => {
+          try {
+            const traj = await this.fetchTrajectory(body, start, stop);
+            if (!traj || !traj.samples || !traj.samples.length) return null;
+
+            const specs = await fetch(`/api/objects/${body.id}/size_and_shape`).then(okJson);
+            const map =
+              body.texture && body.texture.map
+                ? await util.loadTexture(`/images/${body.texture.map}`).catch(() => null)
+                : null;
+
+            return { body, traj, specs, map };
+          } catch (e) {
+            console.warn(`Skipping ${body.name} in system view:`, String(e));
+            return null;
+          }
+        })
+      );
+
+      this.data = loaded.filter(Boolean);
+      this.bodyList = this.data.map((d) => d.body);
+      if (!this.data.length) throw new Error('no renderable bodies in this system');
 
       // True-proportion scale from the largest orbit radius in the system.
       const maxR = Math.max(
-        ...trajectories.flatMap((t) => t.samples.map((s) => Math.hypot(s.x, s.y, s.z)))
+        ...this.data.flatMap((d) => d.traj.samples.map((s) => Math.hypot(s.x, s.y, s.z)))
       );
       this.scale = TARGET_SCENE_RADIUS / maxR;
 
-      this.data = this.bodyList.map((body, i) => ({
-        body,
-        traj: trajectories[i],
-        specs: specsList[i],
-        map: maps[i],
-      }));
-
-      this.et = trajectories[0].samples[0].et;
+      this.et = this.data[0].traj.samples[0].et;
       this.setState({ loading: false });
     } catch (err) {
       console.error('BarycenterModel load failed', err);
@@ -85,31 +97,34 @@ export default class BarycenterModel extends React.Component {
     }
   }
 
-  // Fetch one contiguous window (close=false) for every orbiting body, aligned
-  // to this.bodyList. Windows are contiguous in UTC so playback never jumps.
-  fetchWindow = async (startUtc) => {
-    const stopUtc = new Date(Date.parse(startUtc) + WINDOW_DAYS * 86400 * 1000)
+  windowStop(startUtc) {
+    return new Date(Date.parse(startUtc) + WINDOW_DAYS * 86400 * 1000)
       .toISOString()
       .replace(/\.\d+Z$/, '');
+  }
 
+  // One contiguous window (close=false) for a single body.
+  fetchTrajectory = (body, startUtc, stopUtc) =>
+    fetch('/api/trajectory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        observer: this.observer,
+        target: String(body.spice_id),
+        start: startUtc,
+        stop: stopUtc,
+        steps: SAMPLES,
+        frame: 'ECLIPJ2000',
+        close: false,
+      }),
+    }).then(okJson);
+
+  // Streaming: next contiguous window for the (already-filtered) body list.
+  fetchWindow = async (startUtc) => {
+    const stopUtc = this.windowStop(startUtc);
     const trajectories = await Promise.all(
-      this.bodyList.map((body) =>
-        fetch('/api/trajectory', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            observer: this.observer,
-            target: String(body.spice_id),
-            start: startUtc,
-            stop: stopUtc,
-            steps: SAMPLES,
-            frame: 'ECLIPJ2000',
-            close: false, // contiguous samples for continuous playback
-          }),
-        }).then((r) => r.json())
-      )
+      this.bodyList.map((body) => this.fetchTrajectory(body, startUtc, stopUtc))
     );
-
     return { stopUtc, trajectories };
   };
 
