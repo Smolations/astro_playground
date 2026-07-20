@@ -491,11 +491,15 @@ defmodule NaifFiles do
     "spk/satellites/aa_spk_production_by_alpha.txt",
     "spk/satellites/aa_summaries.txt",
     "spk/satellites/aa_summaries_by_date.txt",
-    # Jupiter's moons (Galilean + inner), loaded by the meta-kernel. The 2018
-    # filenames (jup310, mar097, plu055, ura111, nep08x, ...) were superseded on
-    # the NAIF server; other systems' current kernels get added here as each is
-    # wired into the meta-kernel.
-    "spk/satellites/jup365.bsp",
+    # Satellite ephemerides loaded by the meta-kernel. The 2018 filenames
+    # (jup310, mar097, plu055, ...) were superseded on the NAIF server.
+    "spk/satellites/jup365.bsp",   # Jupiter: Galilean + inner moons
+    "spk/satellites/mar099s.bsp",  # Mars: Phobos, Deimos
+    "spk/satellites/plu060.bsp",   # Pluto: Charon, Nix, Hydra, Kerberos, Styx
+    "spk/satellites/nep097.bsp",   # Neptune: Triton
+    # Uranus majors (701-705) and Nereid (802) only exist as multi-GB kernels
+    # (ura111xl-70x ~2 GB each; nep101xl-802 ~767 MB) — deferred; those moons
+    # gracefully skip until added.
     # "spk/stations/aa_spk_production_dates_by-alpha.txt",
     # "spk/stations/aa_spk_production_dates_by-date.txt",
     # "spk/stations/aa_summaries.txt",
