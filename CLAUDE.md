@@ -96,6 +96,12 @@ window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-R
   warn. Run it standalone with **`mix astro.preflight`** (no download, no DB).
   **`mix astro.doctor`** is the on-demand health check (required kernels on disk +
   DB seed counts).
+- **Version check**: **`mix astro.kernels.check [year]`** queries NAIF for newer
+  same-family kernels and uses each `.cmt` to confirm it still covers the current
+  kernel's bodies + epoch (rejects newer-but-narrower ones — the ura116xl-dropped-
+  the-majors trap). **`mix astro.kernels.upgrade OLD NEW`** is the opt-in adopt:
+  verifies coverage, downloads, swaps refs in `meta_kernel.tm` + the manifest,
+  keeps the old file. Never automatic.
 - **NAIF renames/supersedes filenames constantly.** The 2018 names (jup310,
   mar097, plu055...) 404. Current: `jup365`, `mar099s`, `plu060`, `nep097`
   (Triton), `nep105` (Nereid), `ura111` (Uranus majors, from `a_old_versions/`),
