@@ -1,62 +1,59 @@
-defmodule PhoenixReactPlayground.Mixfile do
+defmodule AstroPlayground.MixProject do
   use Mix.Project
 
   def project do
     [
       app: :astro_playground,
       version: "0.0.1",
-      elixir: "~> 1.4",
-      elixirc_paths: elixirc_paths(Mix.env),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers,
-      start_permanent: Mix.env == :prod,
+      elixir: "~> 1.15",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
     ]
   end
 
   # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {AstroPlayground.Application, []},
-      extra_applications: [:logger, :runtime_tools, :download]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.3.4"},
-      {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix_ecto, "~> 3.2"},
+      {:phoenix, "~> 1.7.14"},
+      {:phoenix_pubsub, "~> 2.1"},
+      {:phoenix_ecto, "~> 4.6"},
+      {:ecto_sql, "~> 3.12"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 2.10"},
-      {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:gettext, "~> 0.11"},
-      {:plug_cowboy, "~> 1.0"},
-      {:react_render, "~> 2.0.0"},
-      {:download, "~> 0.0.0"}
+      {:phoenix_html, "~> 4.1"},
+      # Keep the existing *View modules (JSON + the SPA shell) rendering via
+      # Phoenix.View instead of rewriting them to 1.7 JSON/Component modules.
+      {:phoenix_view, "~> 2.0"},
+      {:phoenix_live_reload, "~> 1.5", only: :dev},
+      {:gettext, "~> 0.24"},
+      {:jason, "~> 1.4"},
+      {:bandit, "~> 1.5"},
+      {:ecto_enum, "~> 1.4"},
+      # Used by seeds to fetch NAIF kernels. Replaces the legacy `download`
+      # package, whose httpoison/hackney/ssl_verify_fun chain won't build on
+      # modern OTP.
+      {:req, "~> 0.5"}
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to create, migrate and run the seeds file at once:
-  #
-  #     $ mix ecto.setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      "test": ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 end

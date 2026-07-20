@@ -1,45 +1,43 @@
 defmodule AstroPlaygroundWeb do
   @moduledoc """
-  The entrypoint for defining your web interface, such
-  as controllers, views, channels and so on.
+  The entrypoint for defining your web interface, such as controllers, views,
+  channels and so on.
 
   This can be used in your application as:
 
       use AstroPlaygroundWeb, :controller
       use AstroPlaygroundWeb, :view
 
-  The definitions below will be executed for every view,
-  controller, etc, so keep them short and clean, focused
-  on imports, uses and aliases.
-
-  Do NOT define functions inside the quoted expressions
-  below. Instead, define any helper function in modules
-  and import those modules here.
+  The definitions below will be executed for every view, controller, etc, so
+  keep them short and clean, focused on imports, uses and aliases.
   """
 
   def controller do
     quote do
       use Phoenix.Controller, namespace: AstroPlaygroundWeb
       import Plug.Conn
-      import AstroPlaygroundWeb.Router.Helpers
       import AstroPlaygroundWeb.Gettext
+      import AstroPlaygroundWeb.Router.Helpers
+      alias AstroPlaygroundWeb.Router.Helpers, as: Routes
     end
   end
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/astro_playground_web/templates",
-                        namespace: AstroPlaygroundWeb
+      use Phoenix.View,
+        root: "lib/astro_playground_web/templates",
+        namespace: AstroPlaygroundWeb
 
       # Import convenience functions from controllers
-      import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
+      import Phoenix.Controller, only: [view_module: 1, view_template: 1]
 
-      # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
+      # HTML escaping / safe helpers (forms moved to phoenix_html_helpers in v4;
+      # unneeded here — this is a JSON API plus a single static SPA shell).
+      import Phoenix.HTML
 
-      import AstroPlaygroundWeb.Router.Helpers
       import AstroPlaygroundWeb.ErrorHelpers
       import AstroPlaygroundWeb.Gettext
+      alias AstroPlaygroundWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -48,13 +46,6 @@ defmodule AstroPlaygroundWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
-    end
-  end
-
-  def channel do
-    quote do
-      use Phoenix.Channel
-      import AstroPlaygroundWeb.Gettext
     end
   end
 

@@ -16,9 +16,9 @@ defmodule AstroPlayground.Textures do
       [%Texture{}, ...]
 
   """
-  def find_textures(body_id) do
+  def find_textures(object_id) do
     query = from t in Texture,
-            where: t.body_id == ^body_id
+            where: t.spice_object_id == ^object_id
     Repo.all(query)
   end
 

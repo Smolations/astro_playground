@@ -2,17 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Table } from 'semantic-ui-react';
 
+import FidelityBadge from './FidelityBadge';
+
 
 export default class BodySidebarTable extends React.Component {
   render() {
     const { body } = this.props;
+    const texture = body.texture;
 
     return (
       <Table className={'body_sidebar_table'}>
         <Table.Body>
           <Table.Row>
             <Table.Cell>Body Name</Table.Cell>
-            <Table.Cell><Link to={`/bodies/${body.id}`}>{body.name}</Link></Table.Cell>
+            <Table.Cell><Link to={`/${body.type}s/${body.id}`}>{body.name}</Link></Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>Type</Table.Cell>
@@ -42,6 +45,28 @@ export default class BodySidebarTable extends React.Component {
             <Table.Cell>Rotation Period</Table.Cell>
             <Table.Cell>{body.sidereal_rotation_period}h</Table.Cell>
           </Table.Row>
+
+          {texture && (
+            <React.Fragment>
+              <Table.Row>
+                <Table.Cell>Texture</Table.Cell>
+                <Table.Cell><FidelityBadge texture={texture} /></Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell>Resolution</Table.Cell>
+                <Table.Cell>{texture.resolution}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell>Credit</Table.Cell>
+                <Table.Cell>
+                  {texture.source_url
+                    ? <a href={texture.source_url} target="_blank" rel="noreferrer">{texture.attribution}</a>
+                    : texture.attribution}
+                  {texture.license ? ` · ${texture.license}` : ''}
+                </Table.Cell>
+              </Table.Row>
+            </React.Fragment>
+          )}
         </Table.Body>
       </Table>
     )

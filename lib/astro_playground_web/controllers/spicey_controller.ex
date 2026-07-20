@@ -1,6 +1,7 @@
 defmodule AstroPlaygroundWeb.SpiceyController do
   use AstroPlaygroundWeb, :controller
   alias AstroPlayground.Spicey
+  alias AstroPlayground.SpiceObjects
 
   action_fallback AstroPlaygroundWeb.FallbackController
 
@@ -15,5 +16,40 @@ defmodule AstroPlaygroundWeb.SpiceyController do
     {result, 0} = Spicey.str2et(date)
     et = %{given: date, et: String.trim(result)}
     render conn, "et.json", %{et: et}
+  end
+
+  def identify_code(conn, %{"code" => code}) do
+    result = Spicey.name_from_code(code)
+    render conn, "result.json", %{query: code, result: result}
+  end
+
+  def identify_name(conn, %{"name" => name}) do
+    result = Spicey.code_from_name(name)
+    render conn, "result.json", %{query: name, result: result}
+  end
+
+  def get_size_and_shape(conn, %{"spice_object_id" => spice_object_id}) do
+    object = SpiceObjects.get_object!(spice_object_id)
+    {result, 0} = Spicey.size_and_shape(object.spice_id)
+    {data, []} = Code.eval_string(result)
+    render(conn, "size_and_shape.json", %{id: object.spice_id, data: data})
+  end
+
+  def get_orientation(conn, %{"spice_object_id" => spice_object_id}) do
+    object = SpiceObjects.get_object!(spice_object_id)
+    {result, 0} = Spicey.orientation(object.spice_id)
+    json(conn, Jason.decode!(result))
+  end
+
+  def trajectory(conn, %{"observer" => observer, "target" => target, "start" => start, "stop" => stop} = params) do
+    steps = Map.get(params, "steps", 200)
+    # Default to the ecliptic plane (ECLIPJ2000) so orbit inclinations are
+    # expressed relative to the ecliptic, the natural reference for a
+    # solar-system view. SPICE performs the frame rotation internally.
+    frame = Map.get(params, "frame", "ECLIPJ2000")
+    # Trim to exactly one revolution by default so orbit paths are clean loops.
+    close = Map.get(params, "close", true)
+    {result, 0} = Spicey.trajectory(observer, target, start, stop, steps, frame, close)
+    json(conn, Jason.decode!(result))
   end
 end

@@ -1,0 +1,9 @@
+# Project toolchain (mise). Frontend is active now; backend runtimes are
+# resolved in Phase 1b once a C toolchain (gcc/make/autoconf) is available
+# to build Erlang, or a precompiled OTP is used.
+[tools]
+node = "22"
+
+# Phase 1b targets (uncomment once Erlang build prereqs are in place):
+# erlang = "27"
+# elixir = "1.18"

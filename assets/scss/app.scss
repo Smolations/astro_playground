@@ -10,6 +10,14 @@
   z-index: 10;
 }
 
+// Texture fidelity badge, docked just below the Back/Info buttons.
+.scene_fidelity {
+  position: fixed;
+  top: 48px;
+  left: 5px;
+  z-index: 10;
+}
+
 .ui {
   &.header {
     &.dividing {

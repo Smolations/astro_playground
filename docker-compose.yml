@@ -1,0 +1,74 @@
+# Full Docker dev stack: Postgres + Elixir/Phoenix (API) + Vite (React SPA).
+#
+#   docker compose up                 # db + app (API :4000) + assets (SPA :5173)
+#   docker compose run --rm app mix ecto.setup   # one-time DB create/migrate/seed
+#
+# Develop against the Vite server at http://localhost:5173 — it has HMR and
+# proxies /api and /images to the Phoenix app. `mix ecto.setup` runs seeds, which
+# download NAIF kernels (large) — run it deliberately, not on every boot.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: astro_playground_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: db
+      MIX_ENV: dev
+    ports:
+      - "4000:4000"
+    working_dir: /app
+    volumes:
+      - .:/app             # live source
+      - deps:/app/deps     # keep deps/_build container-only (native artifacts)
+      - build:/app/_build
+    command: sh -c "mix deps.get && mix phx.server"
+
+  assets:
+    image: node:22-bookworm-slim
+    depends_on:
+      - app
+    working_dir: /app/assets
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - assets_node_modules:/app/assets/node_modules  # container-only node_modules
+    command: sh -c "npm install && npm run dev"
+
+  # One-shot texture tooling (GDAL + ImageMagick + numpy). Not started by
+  # `docker compose up` — it lives behind the "tools" profile:
+  #   docker compose run --rm textures --list
+  #   docker compose run --rm textures --tier 1
+  textures:
+    build:
+      context: .
+      dockerfile: docker/textures.Dockerfile
+    profiles: ["tools"]
+    working_dir: /app
+    volumes:
+      - .:/app
+
+volumes:
+  pgdata:
+  deps:
+  build:
+  assets_node_modules:

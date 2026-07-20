@@ -1,274 +1,249 @@
 import * as THREE from 'three';
-import _camelCase from 'lodash/camelCase';
-import _defaultsDeep from 'lodash/defaultsDeep';
 
-import AstroGroup from '../lib/astro-group';
-import Specs from '../lib/specs';
+// A body's orbit, driven by real SPICE ephemeris samples rather than a
+// propagated ellipse.
+//
+// Real orbits don't close (they precess), so instead of looping a fixed arc
+// (which teleports at the seam) we play continuous real time: the owner streams
+// contiguous sample windows via setBuffer(), and the orbit renders a *trail*
+// that follows the body. Precession then shows up naturally as the trail drifts.
+//
+// The optional guide is the best-fit focus-at-origin ellipse of the current
+// samples (a mu-free least-squares fit), i.e. the "ideal" ellipse the real path
+// departs from — an honest depiction of perturbations, off by default.
+export default class Orbit {
+  constructor({ scale, color = 0x5588ff, guideColor = 0xff3399, trailSeconds } = {}) {
+    this.scale = scale;
+    this.buffer = null;         // contiguous [{et,x,y,z,...}]
+    this._trail = [];           // rolling [{et, v:Vector3}]
+    this._trailSpanEt = null;   // ~one period; set from the first buffer
+    this._trailSecondsOverride = trailSeconds;
+    this._trailColor = new THREE.Color(color);
 
-const _centralBody = Symbol('centralBody');
-const _orbitGroup = Symbol('orbitGroup');
-const _orbitingBody = Symbol('orbitingBody');
-const _sphere = Symbol('sphere');
-const _specs = Symbol('specs');
-
-const _ascendingNode = Symbol('ascendingNode');
-const _eccentricity = Symbol('eccentricity');
-const _focus = Symbol('focus');
-const _gravitationalParam = Symbol('gravitationalParam');
-const _inclination = Symbol('inclination');
-const _semiLatusRectum = Symbol('semiLatusRectum');
-const _semiMinorAxis = Symbol('semiMinorAxis');
-const _semiMajorAxis = Symbol('semiMajorAxis');
-const _specificAngularMomentum = Symbol('specificAngularMomentum');
-
-const _r0Vec = Symbol('r0Vec');
-const _rVec = Symbol('rVec');
-const _v0Vec = Symbol('v0Vec');
-const _vVec = Symbol('vVec');
-const _rootMu = Symbol('rootMu');
-
-
-
-export default class Orbit extends AstroGroup {
-
-  get a() { return this[_semiMajorAxis]; }
-  get b() { return this[_semiMinorAxis]; }
-  get c() { return this[_focus]; } // foci at (-c, 0) and (c, 0)
-  get e() { return this[_eccentricity]; }
-  get h() { return this[_specificAngularMomentum]; }
-  get i() { return this[_inclination]; }
-  get p() { return this[_semiLatusRectum]; }
-  get μ() { return this[_gravitationalParam]; }
-  get Ω() { return this[_ascendingNode]; }
-  get rootMu() { return this[_rootMu]; }
-
-  // position vector
-  get rVec() { return this[_rVec]; }
-  // velocity vector
-  get vVec() { return this[_vVec]; }
-
-  // initial position vector
-  get r0Vec() { return this[_r0Vec]; }
-  // initial velocity vector
-  get v0Vec() { return this[_v0Vec]; }
-
-
-  constructor({ centralBody, orbitingBody, specOpts = {}, ...rawSpecs }) {
-    const defaultSpecOpts = {
-      semiMajorAxis: { units: 'km' },
-      siderealPeriod: { units: 'days' },
-      periapsis: { units: 'km' },
-      apoapsis: { units: 'km' },
-      minVelocity: { units: 'km/s' },
-      maxVelocity: { units: 'km/s' },
-      inclination: { units: '\u00B0' },
-      eccentricity: { required: true },
-      ascendingNode: { units: '\u00B0' },
-    };
-
-    const specs = new Specs(rawSpecs, _defaultsDeep({}, specOpts, defaultSpecOpts));
-
-    super({ specs });
-
-    // set up constants (order matters)
-    this[_gravitationalParam] = 1; // this.μ
-    this[_rootMu] = Math.sqrt( this.μ );
-    this[_eccentricity] = this.specs.eccentricity; // this.e
-    this[_inclination] = this.specs.toRad('inclination'); // this.i
-    this[_ascendingNode] = this.specs.toRad('ascendingNode'); // this.Ω
-    this[_semiMajorAxis] = this.specs.semiMajorAxis; // this.a
-    this[_focus] = this.a * this.e; // this.c
-    this[_semiLatusRectum] = this.a * ( 1 - Math.pow(this.e, 2) ); // this.p
-    this[_semiMinorAxis] = Math.sqrt(Math.pow(this.a, 2) - Math.pow(this.c, 2)); // this.b
-    this[_specificAngularMomentum] = Math.sqrt( this.p * this.μ ); // this.h
-    this[_r0Vec] = this.rVecFromAngle(0);
-    this[_v0Vec] = this.vVecFromAngle(0);
-
-    // set up initial dynamic values
-    this[_rVec] = this.rVecFromAngle(0);
-    this[_vVec] = this.vVecFromAngle(0);
-
-    // store references for animation, etc.
-    this[_orbitGroup] = this.orbitGroup = new THREE.Group();
-    this[_centralBody] = centralBody;
-    this[_orbitingBody] = orbitingBody;
-
-    // get stuffs added to group
-    this.drawOrbit();
-  }
-
-  drawOrbit() {
-    // we'll rotate the container
-    const curve = new THREE.EllipseCurve(
-      -this.c,  0,      // ax, aY
-      this.a, this.b,   // xRadius, yRadius
-      0,  2 * Math.PI,  // aStartAngle, aEndAngle
-      false,            // aClockwise
-      0                 // aRotation
+    // Pre-allocate dynamic position + colour buffers and a draw range. three's
+    // setFromPoints reuses an existing attribute and won't grow it, so a static
+    // geometry would freeze at its first size; we manage the buffers ourselves.
+    // Per-vertex colour lets the tail fade toward black (= into the black
+    // background): LineBasicMaterial has no per-vertex alpha, but fading RGB
+    // reads as translucent and lets the guide show through the faded tail.
+    this._trailMax = 2000;
+    const trailGeo = new THREE.BufferGeometry();
+    trailGeo.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(this._trailMax * 3), 3).setUsage(THREE.DynamicDrawUsage)
     );
+    trailGeo.setAttribute(
+      'color',
+      new THREE.BufferAttribute(new Float32Array(this._trailMax * 3), 3).setUsage(THREE.DynamicDrawUsage)
+    );
+    trailGeo.setDrawRange(0, 0);
+    this.trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.trail.frustumCulled = false;
 
-    const points = curve.getPoints( 360 );
-    const geometry = new THREE.BufferGeometry().setFromPoints( points );
-    const material = new THREE.LineBasicMaterial( { color : 0xffffff } );
-
-    const ellipse = new THREE.Line( geometry, material );
-
-    // now we can think of the orbit as a simple 2D plane
-    this[_orbitGroup].add(ellipse);
-    this[_orbitGroup].add(this[_orbitingBody]);
-    this[_orbitGroup].rotation.y = -this.i;
-
-    const fociPivot = this.fociPivot = new THREE.Group();
-    fociPivot.add( this[_orbitGroup] );
-
-    // enforce longitude of periapsis
-    fociPivot.rotation.z = this.Ω;
-
-    this.add( fociPivot );
+    this.guide = new THREE.LineLoop(
+      new THREE.BufferGeometry(),
+      new THREE.LineBasicMaterial({ color: guideColor, transparent: true, opacity: 0.7 })
+    );
+    this.guide.frustumCulled = false;
+    this.guide.visible = false;
   }
 
-  rVecFromAngle(theta) {
-    const rVec = new THREE.Vector3( Math.cos(theta), Math.sin(theta), 0 );
-    return rVec.multiplyScalar( this.r(theta) );
+  get object3ds() {
+    return [this.guide, this.trail];
   }
 
-  vVecFromAngle(theta) {
-    const vVec = new THREE.Vector3( -Math.sin(theta), this.e + Math.cos(theta), 0 );
-    return vVec.multiplyScalar( Math.sqrt( this.μ / this.p ) );
+  _vec(s) {
+    return new THREE.Vector3(s.x, s.y, s.z).multiplyScalar(this.scale);
   }
 
-  // distance from center of central body to point on ellipse
-  r(theta) { return this.p / ( 1 + this.e * Math.cos(theta) ); }
-
-  // this is not x in terms of the axis, this is a created variable
-  // to assist in solving kepler's problem.
-  // for elliptical orbits, works as a good first guess for newton iteration.
-  x(t) { return ( this.rootMu * t ) / this.a; }
-
-  // newton iteration scheme to get accurate value of x
-  // note: this was the final piece of the puzzle to get
-  // the orbit to match the drawn ellipse!
-  xNewton(t) {
-    let x = this.x(t);
-    let tn, dtdxn, xn;
-
-    do {
-      tn = this.tn(x);
-      dtdxn = this.dtdxn(x);
-      xn = x + ( t - tn ) / dtdxn;
-      x = xn;
-    } while ( Math.abs( t - tn ) > 1e-6 );
-
-    return xn;
+  // Replace the sample buffer with a new contiguous window (for streaming, the
+  // next window starts where the previous ended, so playback stays continuous).
+  setBuffer(samples) {
+    this.buffer = samples;
+    if (this._trailSpanEt == null) this._trailSpanEt = this._estimatePeriodEt(samples);
+    if (this.guide.visible) this.buildGuide();
   }
 
-  // nth value of t, given x
-  tn(x) {
-    const r0 = this.r0Vec.length();
-    const term1 = ( this.r0Vec.dot( this.v0Vec ) / this.rootMu ) * Math.pow(x, 2) * this.C(x);
-    const term2 = ( 1 - r0 / this.a ) * Math.pow(x, 3) * this.S(x);
-    const term3 = r0 * x;
-
-    return ( term1 + term2 + term3 ) / this.rootMu;
+  bounds() {
+    const b = this.buffer;
+    return b && b.length ? { startEt: b[0].et, endEt: b[b.length - 1].et } : null;
   }
 
-  // nth dt/dx term, given x
-  dtdxn(x) {
-    const r0 = this.r0Vec.length();
-    const z = this.z(x);
-    const term1 = Math.pow(x, 2) * this.C(x);
-    const term2 = ( this.r0Vec.dot( this.v0Vec ) / this.rootMu ) * x * ( 1 - z * this.S(x) );
-    const term3 = r0 * ( 1 - z * this.C(x) );
-
-    return ( term1 + term2 + term3 ) / this.rootMu;
+  get periodEt() {
+    return this._trailSpanEt;
   }
 
-  z(x) { return Math.pow(x, 2) / this.a; }
+  // Interpolated scene position at ephemeris time `et` (clamped to the buffer).
+  positionAtEt(et) {
+    const b = this.buffer;
+    if (!b || !b.length) return new THREE.Vector3();
 
-  f(x) {
-    const r0 = this.r0Vec.length();
-    return 1 - ( Math.pow(x, 2) / r0 ) * this.C(x);
+    const first = b[0].et;
+    const last = b[b.length - 1].et;
+    const cl = Math.max(first, Math.min(last, et));
+    const dt = (last - first) / (b.length - 1);
+    const idx = dt > 0 ? (cl - first) / dt : 0;
+    const i0 = Math.min(b.length - 1, Math.floor(idx));
+    const i1 = Math.min(b.length - 1, i0 + 1);
+
+    return this._vec(b[i0]).lerp(this._vec(b[i1]), idx - i0);
   }
 
-  g(x, t) {
-    return t - ( Math.pow(x, 3) / this.rootMu ) * this.S(x);
+  // Extend the trail to the body's position at `et`, dropping points older than
+  // ~one period so the trail always shows roughly the current orbit.
+  updateTrail(et) {
+    const t = this._trail;
+    const last = t[t.length - 1];
+    if (last && et <= last.et) return; // paused / no time advanced
+
+    t.push({ et, v: this.positionAtEt(et) });
+
+    const span = this._trailSecondsOverride != null ? this._trailSecondsOverride : this._trailSpanEt;
+    const cutoff = et - span;
+    while (t.length > 2 && t[0].et < cutoff) t.shift();
+    while (t.length > this._trailMax) t.shift();
+
+    const pos = this.trail.geometry.attributes.position;
+    const col = this.trail.geometry.attributes.color;
+    const n = t.length;
+    const c = this._trailColor;
+
+    // Fade by position along the trail (0 = oldest tail, 1 = head/body):
+    //   >= SOLID_FROM : full colour
+    //   FADE_TO..SOLID_FROM : ramp down toward black (reads as translucent)
+    //   < FADE_TO : fully transparent, and skipped via drawRange so those
+    //               always-invisible vertices aren't rendered at all.
+    const FADE_TO = 0.15;
+    const SOLID_FROM = 0.5;
+    for (let i = 0; i < n; i++) {
+      pos.setXYZ(i, t[i].v.x, t[i].v.y, t[i].v.z);
+      const frac = n > 1 ? i / (n - 1) : 1;
+      let a;
+      if (frac >= SOLID_FROM) a = 1;
+      else if (frac >= FADE_TO) a = (frac - FADE_TO) / (SOLID_FROM - FADE_TO);
+      else a = 0;
+      col.setXYZ(i, c.r * a, c.g * a, c.b * a);
+    }
+    pos.needsUpdate = true;
+    col.needsUpdate = true;
+
+    const start = Math.floor(n * FADE_TO);
+    this.trail.geometry.setDrawRange(start, n - start);
   }
 
-  fPrime(x, r) {
-    const r0 = this.r0Vec.length();
-    const z = this.z(x);
-    return ( this.rootMu / ( r0 * r ) ) * x * ( z * this.S(x) - 1 );
+  set guideVisible(v) {
+    this.guide.visible = v;
+    if (v && this.buffer) this.buildGuide();
   }
 
-  gPrime(x, r) {
-    return 1 - ( Math.pow(x, 2) / r ) * this.C(x);
+  // Best-fit focus-at-origin ellipse of the current samples. In the orbital
+  // plane, 1/r = A + B cos(theta) + C sin(theta) is LINEAR in (A,B,C), so a
+  // plain least-squares solve recovers the conic without needing the mass (mu).
+  buildGuide() {
+    let b = this.buffer;
+    if (!b || b.length < 6) return;
+
+    // Fit over ~one revolution for a crisp single ellipse (fitting many
+    // precessing revolutions would smear it).
+    if (this._trailSpanEt) {
+      const oneRev = b.filter((s) => s.et <= b[0].et + this._trailSpanEt);
+      if (oneRev.length >= 6) b = oneRev;
+    }
+
+    const pts = b.map((s) => this._vec(s));
+
+    // Orbital-plane normal from averaged r_i x r_{i+1} (angular-momentum sense).
+    const n = new THREE.Vector3();
+    for (let i = 0; i < pts.length - 1; i++) {
+      n.add(new THREE.Vector3().crossVectors(pts[i], pts[i + 1]));
+    }
+    if (n.lengthSq() === 0) return;
+    n.normalize();
+
+    // In-plane orthonormal basis (u, w).
+    const u = new THREE.Vector3(1, 0, 0);
+    if (Math.abs(n.dot(u)) > 0.9) u.set(0, 1, 0);
+    u.crossVectors(u, n).normalize();
+    const w = new THREE.Vector3().crossVectors(n, u).normalize();
+
+    // Normal equations for 1/r = A + B cos + C sin.
+    let m00 = 0, m01 = 0, m02 = 0, m11 = 0, m12 = 0, m22 = 0, r0 = 0, r1 = 0, r2 = 0;
+    for (const p of pts) {
+      const x = p.dot(u);
+      const y = p.dot(w);
+      const r = Math.hypot(x, y);
+      if (r < 1e-9) continue;
+      const c = x / r;
+      const s = y / r;
+      const val = 1 / r;
+      m00 += 1; m01 += c; m02 += s;
+      m11 += c * c; m12 += c * s; m22 += s * s;
+      r0 += val; r1 += c * val; r2 += s * val;
+    }
+
+    const sol = solve3(
+      [m00, m01, m02, m01, m11, m12, m02, m12, m22],
+      [r0, r1, r2]
+    );
+    if (!sol) return;
+    const [A, B, C] = sol;
+
+    const out = [];
+    const N = 256;
+    for (let i = 0; i <= N; i++) {
+      const th = (i / N) * Math.PI * 2;
+      const denom = A + B * Math.cos(th) + C * Math.sin(th);
+      if (denom <= 1e-9) continue; // skip the (hyperbolic) far branch if any
+      const r = 1 / denom;
+      out.push(
+        u.clone().multiplyScalar(r * Math.cos(th)).add(w.clone().multiplyScalar(r * Math.sin(th)))
+      );
+    }
+    this.guide.geometry.dispose();
+    this.guide.geometry = new THREE.BufferGeometry().setFromPoints(out);
   }
 
-  C(x) {
-    const z = this.z(x);
-    return ( 1 - Math.cos( Math.sqrt(z) ) ) / z;
+  // Epoch span to one revolution: the closest return to the first sample's
+  // position (requires the buffer to span more than one period).
+  _estimatePeriodEt(b) {
+    if (!b || b.length < 4) return 0;
+    const p0 = new THREE.Vector3(b[0].x, b[0].y, b[0].z);
+
+    let maxD = 0;
+    for (const s of b) maxD = Math.max(maxD, p0.distanceTo(new THREE.Vector3(s.x, s.y, s.z)));
+
+    // First return: after the body has departed (past half the max distance),
+    // the first sample back within 5% of the start. Scanning the whole second
+    // half would instead find the *second* return on a multi-period buffer.
+    let departed = false;
+    for (let i = 1; i < b.length; i++) {
+      const d = p0.distanceTo(new THREE.Vector3(b[i].x, b[i].y, b[i].z));
+      if (d > 0.5 * maxD) departed = true;
+      if (departed && d < 0.05 * maxD) return b[i].et - b[0].et;
+    }
+    return b[b.length - 1].et - b[0].et;
   }
+}
 
-  S(x) {
-    const z = this.z(x);
-    const rootZ = Math.sqrt(z);
-    return ( rootZ - Math.sin(rootZ) ) / Math.sqrt( Math.pow(z, 3) );
-  }
+// Solve a symmetric 3x3 system m (row-major, 9) * x = rhs (3) via Cramer's rule.
+function solve3(m, rhs) {
+  const det =
+    m[0] * (m[4] * m[8] - m[5] * m[7]) -
+    m[1] * (m[3] * m[8] - m[5] * m[6]) +
+    m[2] * (m[3] * m[7] - m[4] * m[6]);
+  if (Math.abs(det) < 1e-20) return null;
 
-  // algorithm for solution to the kepler problem
-  // (aka universal variable foumulation)
-  //
-  // the advantages of this method over other methods are that only one
-  // set of equations works for all conic orbits and accuracy and
-  // convergence for nearly parabolic orbits is better.
-  solveKeplers(t) {
-    // 1) from r0Vec, v0Vec, determine r0 and a
-    // these are used within other functions used below
+  const col = (c) => {
+    const a = m.slice();
+    a[0 + c] = rhs[0];
+    a[3 + c] = rhs[1];
+    a[6 + c] = rhs[2];
+    return (
+      a[0] * (a[4] * a[8] - a[5] * a[7]) -
+      a[1] * (a[3] * a[8] - a[5] * a[6]) +
+      a[2] * (a[3] * a[7] - a[4] * a[6])
+    );
+  };
 
-    // 2) given t-t0 (usually t0 is assumed to be zero), solve the universal
-    // time of flight equation for x using a Newton iteration scheme
-    // const x = this.x(t);
-    const x = this.xNewton(t);
-
-    // 3) Evaluate f and g from quations (4.4-31) and (4.4-34); then compute
-    // rVec and r from equation (4.4-18).
-    const f = this.f(x);
-    const g = this.g(x, t);
-    const rVec = new THREE.Vector3();
-
-    rVec.addScaledVector( this.r0Vec, f );
-    rVec.addScaledVector( this.v0Vec, g );
-
-    this.rVec.copy(rVec);
-
-    // 4) Evaluate fPrime and gPrime from equations (4.4-35) and (4.4-36);
-    // then compute vVec from equation (4.4-19).
-    const r = this.rVec.length();
-    const fPrime = this.fPrime(x, r);
-    const gPrime = this.gPrime(x, r);
-    const vVec = new THREE.Vector3();
-
-    vVec.addScaledVector( this.r0Vec, fPrime );
-    vVec.addScaledVector( this.v0Vec, gPrime );
-
-    this.vVec.copy(vVec);
-  }
-
-  updatePosition(t) {
-    const orbitingBody = this[_orbitingBody];
-
-    this.solveKeplers(t);
-
-    orbitingBody.position.copy(this.rVec);//console.log('rVec: %o', this.rVec);
-
-    orbitingBody.updatePosition(t);
-  }
-
-  toString() {
-    const str = [
-      `BODIES:         ${this[_orbitingBody].specs.name} orbiting ${this[_centralBody].specs.name}`,
-      super.toString(),
-    ];
-    return str.join("\n");
-  }
-};
+  return [col(0) / det, col(1) / det, col(2) / det];
+}

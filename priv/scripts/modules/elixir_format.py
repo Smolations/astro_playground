@@ -2,6 +2,18 @@ _map_open = '%{'
 _map_close = '}'
 
 
+def attrs_map(attrs_arr):
+  pairs = [
+    'equatorial_radius_large: {:19.6f}'.format(attrs_arr[0]),
+    'equatorial_radius_small: {:19.6f}'.format(attrs_arr[1]),
+    'polar_radius: {:19.6f}'.format(attrs_arr[2]),
+    'mu: {:19.6f}'.format(attrs_arr[3]),
+    # 'dy: {:19.6f}'.format(attrs_arr[4]),
+    # 'dz: {:19.6f}'.format(attrs_arr[5]),
+  ]
+  return _to_map(pairs)
+
+
 def state_map(state_arr):
   pairs = [
     ' x: {:19.6f}'.format(state_arr[0]),

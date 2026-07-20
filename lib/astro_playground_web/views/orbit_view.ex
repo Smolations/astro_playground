@@ -1,13 +1,13 @@
 defmodule AstroPlaygroundWeb.OrbitView do
   use AstroPlaygroundWeb, :view
-  alias AstroPlaygroundWeb.{BodyView, OrbitView}
+  alias AstroPlaygroundWeb.{SpiceObjectView, OrbitView}
 
   def render("index.json", %{orbits: orbits}) do
     %{data: render_many(orbits, OrbitView, "orbit.json")}
   end
 
   def render("orbits_index.json", %{orbits: orbits}) do
-    %{data: render_many(orbits, OrbitView, "orbit_center.json")}
+    %{data: render_many(orbits, OrbitView, "orbit_barycenter.json")}
   end
 
   def render("orbiting_index.json", %{orbiting: orbiting}) do
@@ -21,53 +21,26 @@ defmodule AstroPlaygroundWeb.OrbitView do
   def render("orbit.json", %{orbit: orbit}) do
     %{
       id: orbit.id,
-      central_body_id: orbit.central_body_id,
-      orbiting_body_id: orbit.orbiting_body_id,
-      semi_major_axis: orbit.semi_major_axis,
-      sidereal_period: orbit.sidereal_period,
-      periapsis: orbit.periapsis,
-      apoapsis: orbit.apoapsis,
-      min_velocity: orbit.min_velocity,
-      max_velocity: orbit.max_velocity,
-      inclination: orbit.inclination,
-      eccentricity: orbit.eccentricity,
-      ascending_node: orbit.ascending_node,
+      barycenter_id: orbit.barycenter_id,
+      orbiting_id: orbit.orbiting_id,
     }
   end
 
-  def render("orbit_center.json", %{orbit: orbit}) do
-    central_body = render_one(orbit.central_body, BodyView, "body.json")
+  def render("orbit_barycenter.json", %{orbit: orbit}) do
+    barycenter = render_one(orbit.barycenter, SpiceObjectView, "object.json")
     %{
       id: orbit.id,
-      central_body: central_body,
-      orbiting_body_id: orbit.orbiting_body_id,
-      semi_major_axis: orbit.semi_major_axis,
-      sidereal_period: orbit.sidereal_period,
-      periapsis: orbit.periapsis,
-      apoapsis: orbit.apoapsis,
-      min_velocity: orbit.min_velocity,
-      max_velocity: orbit.max_velocity,
-      inclination: orbit.inclination,
-      eccentricity: orbit.eccentricity,
-      ascending_node: orbit.ascending_node,
+      barycenter: barycenter,
+      orbiting_id: orbit.orbiting_id,
     }
   end
 
   def render("orbit_orbiting.json", %{orbit: orbit}) do
-    orbiting_body = render_one(orbit.orbiting_body, BodyView, "body.json")
+    orbiting = render_one(orbit.orbiting, SpiceObjectView, "object.json")
     %{
       id: orbit.id,
-      central_body_id: orbit.central_body_id,
-      orbiting_body: orbiting_body,
-      semi_major_axis: orbit.semi_major_axis,
-      sidereal_period: orbit.sidereal_period,
-      periapsis: orbit.periapsis,
-      apoapsis: orbit.apoapsis,
-      min_velocity: orbit.min_velocity,
-      max_velocity: orbit.max_velocity,
-      inclination: orbit.inclination,
-      eccentricity: orbit.eccentricity,
-      ascending_node: orbit.ascending_node,
+      barycenter_id: orbit.barycenter_id,
+      orbiting: orbiting,
     }
   end
 end

@@ -12,12 +12,20 @@ defmodule AstroPlaygroundWeb.TextureView do
 
   def render("texture.json", %{texture: texture}) do
     %{id: texture.id,
-      body_id: texture.body_id,
+      spice_object_id: texture.spice_object_id,
       ambient_occlusion: texture.ambient_occlusion,
       bump: texture.bump,
       displacement: texture.displacement,
       emissive: texture.emissive,
       map: texture.map,
-      normal: texture.normal}
+      normal: texture.normal,
+      # Provenance — surfaced so the UI can credit sources (CC BY 4.0 requires
+      # visible attribution) and flag non-real textures.
+      fidelity: texture.fidelity,
+      source: texture.source,
+      source_url: texture.source_url,
+      license: texture.license,
+      attribution: texture.attribution,
+      resolution: texture.resolution}
   end
 end

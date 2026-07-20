@@ -1,0 +1,10 @@
+# The dev image mounts the source at runtime and does not COPY the app, so this
+# only trims the build context sent to the daemon.
+.git
+_build
+deps
+node_modules
+priv/static
+*.gif
+# NAIF kernels are large binaries, downloaded by seeds — never ship in context.
+priv/kernels

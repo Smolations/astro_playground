@@ -1,8 +1,8 @@
 import React from 'react';
-import { Container, Header, Image } from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
 
 
-export default class ConstrainedLayout extends React.Component {
+export default class Root extends React.Component {
   render() {
     return (
       <Container fluid={true}>

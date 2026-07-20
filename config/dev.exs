@@ -1,23 +1,19 @@
-use Mix.Config
+import Config
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
-# The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with brunch.io to recompile .js and .css sources.
+# Bind to 0.0.0.0 so the server is reachable from the host when Phoenix runs
+# inside the Docker container (loopback-only would hide it behind the port map).
 config :astro_playground, AstroPlaygroundWeb.Endpoint,
-  http: [port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: 4000],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [
-    {"node", [
-      "node_modules/webpack/bin/webpack.js",
-      "--watch-stdin",
-      "--colors"
-    ]}
-  ]
+  # Hybrid dev stack: the frontend build/watch runs on the HOST via mise, not
+  # from Phoenix (this container has no node). Assets land in priv/static and are
+  # picked up by live_reload below.
+  watchers: []
 
 # ## SSL Support
 #
@@ -55,9 +51,9 @@ config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
 config :astro_playground, AstroPlayground.Repo,
-  adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
   database: "astro_playground_dev",
-  hostname: "localhost",
+  hostname: System.get_env("DATABASE_HOST") || "localhost",
+  show_sensitive_data_on_connection_error: true,
   pool_size: 10

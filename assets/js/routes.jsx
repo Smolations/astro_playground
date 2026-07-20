@@ -1,21 +1,32 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
-import ConstrainedLayoutRoute from './components/ConstrainedLayoutRoute';
-import UnconstrainedLayoutRoute from './components/UnconstrainedLayoutRoute';
+import ConstrainedLayout from './routes/ConstrainedLayoutRoute';
+import UnconstrainedLayout from './routes/UnconstrainedLayoutRoute';
 import Root from './components/Root';
 
-import Home from './components/Home';
-import Bodies from './components/Bodies';
-import Body from './components/Body';
+import Home from './routes/Home';
+import Barycenter from './routes/Barycenter';
+import Spheroid from './routes/Spheroid';
+import SpiceObjects from './routes/SpiceObjects';
 
+export default function AppRoutes() {
+  return (
+    <Root>
+      <Routes>
+        <Route element={<UnconstrainedLayout />}>
+          <Route path="/barycenters/:id" element={<Barycenter />} />
+          <Route path="/planets/:id" element={<Spheroid />} />
+          <Route path="/satellites/:id" element={<Spheroid />} />
+          <Route path="/stars/:id" element={<Spheroid />} />
+          <Route path="/dwarf_planets/:id" element={<Spheroid />} />
+        </Route>
 
-export const routes = (
-  <Root>
-    <Switch>
-      <UnconstrainedLayoutRoute path="/bodies/:id" component={ Body } />
-      <ConstrainedLayoutRoute exact path="/bodies" component={ Bodies } />
-      <ConstrainedLayoutRoute exact path="/" component={ Home } />
-    </Switch>
-  </Root>
-);
+        <Route element={<ConstrainedLayout />}>
+          <Route path="/objects" element={<SpiceObjects />} />
+          <Route path="/" element={<Home />} />
+        </Route>
+      </Routes>
+    </Root>
+  );
+}
