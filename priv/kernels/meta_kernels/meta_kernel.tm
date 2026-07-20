@@ -10,5 +10,7 @@ KERNELS_TO_LOAD = (
                   '$KERNELS/spk/satellites/mar099s.bsp',
                   '$KERNELS/spk/satellites/plu060.bsp',
                   '$KERNELS/spk/satellites/nep097.bsp',
+                  '$KERNELS/spk/satellites/a_old_versions/ura111.bsp',
+                  '$KERNELS/spk/satellites/nep105.bsp',
                   )
 \begintext

@@ -497,9 +497,11 @@ defmodule NaifFiles do
     "spk/satellites/mar099s.bsp",  # Mars: Phobos, Deimos
     "spk/satellites/plu060.bsp",   # Pluto: Charon, Nix, Hydra, Kerberos, Styx
     "spk/satellites/nep097.bsp",   # Neptune: Triton
-    # Uranus majors (701-705) and Nereid (802) only exist as multi-GB kernels
-    # (ura111xl-70x ~2 GB each; nep101xl-802 ~767 MB) — deferred; those moons
-    # gracefully skip until added.
+    # ura111.bsp lives in a_old_versions/ — the current ura116xl.bsp holds only
+    # the minor irregular moons (716-724), not the five majors (701-705). The
+    # xl per-moon kernels are multi-GB; ura111 (majors + Puck, 1899-2100) is 162M.
+    "spk/satellites/a_old_versions/ura111.bsp",  # Uranus: Ariel, Umbriel, Titania, Oberon, Miranda, Puck
+    "spk/satellites/nep105.bsp",   # Neptune: Nereid (nep097 has only Triton)
     # "spk/stations/aa_spk_production_dates_by-alpha.txt",
     # "spk/stations/aa_spk_production_dates_by-date.txt",
     # "spk/stations/aa_summaries.txt",
