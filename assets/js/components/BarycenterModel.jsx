@@ -9,16 +9,21 @@ import util from '../three/util';
 const START_UTC = '2026-01-01T00:00:00';
 // Contiguous sample window fetched per streaming step; longer than one period so
 // the trail/guide have a full revolution to work with and refetches are rare.
-const WINDOW_DAYS = 60;
-const SAMPLES = 240;
+// The step (WINDOW_DAYS/SAMPLES ~ 0.04 day) must be small relative to the
+// fastest moon's period or its orbit aliases (Metis/Amalthea are ~0.3-0.5 day).
+const WINDOW_DAYS = 40;
+const SAMPLES = 1000;
 
 // True proportions: the largest orbit maps to this many scene units.
 const TARGET_SCENE_RADIUS = 8;
 
-// Wall-clock seconds for one orbital period, at time scale 1. Tuned so the
-// default (1) is an unhurried, take-it-in pace. (A future "actual" mode would
-// make motion effectively imperceptible.)
-const SECONDS_PER_ORBIT = 60;
+// GLOBAL simulation speed: ephemeris-time seconds advanced per wall-second at
+// time scale 1 — the same for every system, so a body's on-screen speed
+// reflects its true period (an inner moon really is faster than an outer one).
+// Calibrated to ~one lunar orbit per minute. (An "actual" mode would set this
+// to 1, making motion imperceptible.)
+const ET_PER_WALL_SECOND = (27.321661 * 86400) / 60;
+
 // Prefetch the next window once this fraction of the current one is left.
 const PREFETCH_FRACTION = 0.4;
 
@@ -37,7 +42,6 @@ export default class BarycenterModel extends React.Component {
 
     this.orbits = [];        // [{ orbit: Orbit, mesh, locator, body }]
     this.scale = 1;          // km -> scene units
-    this.etPerSecond = 0;    // playback rate
     this.et = 0;             // continuous ephemeris clock
     this.guiSettings = { animate: true, timeScale: 1, follow: 'Barycenter', markers: false, guide: false };
     this._lastGuide = false;
@@ -183,10 +187,6 @@ export default class BarycenterModel extends React.Component {
 
       return { orbit, mesh, locator, body };
     });
-
-    // Playback rate: one period per SECONDS_PER_ORBIT wall-seconds.
-    const period = this.orbits[0].orbit.periodEt || 27.32 * 86400;
-    this.etPerSecond = period / SECONDS_PER_ORBIT;
   };
 
   // Stream the next contiguous window as we near the current one's end, and swap
@@ -252,7 +252,7 @@ export default class BarycenterModel extends React.Component {
     const render = () => {
       const delta = clock.getDelta();
       if (this.guiSettings.animate) {
-        this.et += delta * this.guiSettings.timeScale * this.etPerSecond;
+        this.et += delta * this.guiSettings.timeScale * ET_PER_WALL_SECOND;
       }
 
       this.maybeStream();

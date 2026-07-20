@@ -74,6 +74,9 @@ export default class Orbit {
   }
 
   // Interpolated scene position at ephemeris time `et` (clamped to the buffer).
+  // Catmull-Rom cubic through the 4 surrounding samples, so the path follows the
+  // orbit's curve rather than straight chords between samples — otherwise modest
+  // samples-per-period render as polygons (or a line, for the fastest moons).
   positionAtEt(et) {
     const b = this.buffer;
     if (!b || !b.length) return new THREE.Vector3();
@@ -83,10 +86,26 @@ export default class Orbit {
     const cl = Math.max(first, Math.min(last, et));
     const dt = (last - first) / (b.length - 1);
     const idx = dt > 0 ? (cl - first) / dt : 0;
-    const i0 = Math.min(b.length - 1, Math.floor(idx));
-    const i1 = Math.min(b.length - 1, i0 + 1);
 
-    return this._vec(b[i0]).lerp(this._vec(b[i1]), idx - i0);
+    const i1 = Math.min(b.length - 1, Math.floor(idx));
+    const f = idx - i1;
+    const i0 = Math.max(0, i1 - 1);
+    const i2 = Math.min(b.length - 1, i1 + 1);
+    const i3 = Math.min(b.length - 1, i1 + 2);
+
+    const cr = (a, p, q, r) =>
+      0.5 *
+      (2 * p + (-a + q) * f + (2 * a - 5 * p + 4 * q - r) * f * f + (-a + 3 * p - 3 * q + r) * f * f * f);
+
+    const s0 = b[i0];
+    const s1 = b[i1];
+    const s2 = b[i2];
+    const s3 = b[i3];
+    return new THREE.Vector3(
+      cr(s0.x, s1.x, s2.x, s3.x),
+      cr(s0.y, s1.y, s2.y, s3.y),
+      cr(s0.z, s1.z, s2.z, s3.z)
+    ).multiplyScalar(this.scale);
   }
 
   // Extend the trail to the body's position at `et`, dropping points older than
