@@ -6,6 +6,10 @@ defmodule Mix.Tasks.Astro.Kernels.Upgrade do
   target epoch, then downloads it and swaps the references in the meta-kernel and
   the manifest (`AstroPlayground.Kernels`). The old kernel file is left on disk.
 
+  Those two swapped files are **git-tracked** (the kernel binary itself is not),
+  so the command finishes by printing the exact `git`/`gh` commands to open a PR
+  with just those changes — nothing is committed automatically.
+
       mix astro.kernels.upgrade OLD NEW [TARGET_YEAR]
 
   Both OLD and NEW are paths relative to the NAIF generic_kernels root, e.g.

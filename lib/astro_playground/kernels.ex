@@ -221,6 +221,15 @@ defmodule AstroPlayground.Kernels do
   the manifest — leaving the old kernel file on disk. Aborts if coverage regresses.
   """
   def upgrade(old_rel, new_rel, target_year \\ 2026) do
+    tracked = [@meta_kernel, @manifest_source]
+
+    unless Enum.any?(tracked, &String.contains?(File.read!(&1), old_rel)) do
+      Mix.raise(
+        "#{old_rel} is not referenced in the meta-kernel or manifest — nothing to " <>
+          "upgrade. Check the path (see `mix astro.kernels.check`)."
+      )
+    end
+
     old_cmt = fetch_cmt(old_rel) || Mix.raise("No .cmt for current kernel #{old_rel}.")
     new_cmt = fetch_cmt(new_rel) || Mix.raise("No .cmt for #{new_rel} — cannot verify coverage; aborting.")
 
@@ -246,19 +255,40 @@ defmodule AstroPlayground.Kernels do
     IO.puts("Coverage verified: #{new_rel} ⊇ #{old_rel} bodies. Downloading...")
     get_file(new_rel)
 
-    swap_in_file(@meta_kernel, old_rel, new_rel)
-    swap_in_file(@manifest_source, old_rel, new_rel)
+    changed = Enum.filter(tracked, &swap_in_file(&1, old_rel, new_rel))
+    print_upgrade_summary(old_rel, new_rel, changed)
+    :ok
+  end
+
+  defp print_upgrade_summary(old_rel, new_rel, changed) do
+    old_base = Path.basename(old_rel, ".bsp")
+    new_base = Path.basename(new_rel, ".bsp")
+    branch = "upgrade-kernel-#{old_base}-to-#{new_base}"
+    files = Enum.join(changed, " ")
+    changed_list = Enum.map_join(changed, "\n", &("      - " <> &1 <> "  (git-tracked)"))
 
     IO.puts("""
 
     Upgraded #{old_rel} -> #{new_rel}
-      - downloaded the new kernel (old kept on disk)
-      - swapped references in #{@meta_kernel} and #{@manifest_source}
-    Next: recompile, re-run the app, verify the affected system renders, then
-    commit. To undo, revert those two files and delete the new .bsp.
-    """)
+      - downloaded the new kernel to priv/kernels/ (GITIGNORED — not committed;
+        the old kernel is left on disk)
 
-    :ok
+    These TRACKED files changed and must be shared via a pull request, so every
+    environment picks up the new kernel name (each still re-downloads the binary
+    itself on setup):
+    #{changed_list}
+
+    Once you've recompiled, re-run the app, and confirmed the affected system
+    still renders, open a PR with just these files:
+
+        git checkout -b #{branch}
+        git add #{files}
+        git commit -m "Upgrade #{old_base} -> #{new_base} kernel"
+        git push -u origin #{branch}
+        gh pr create --fill
+
+    To undo instead:  git checkout -- #{files} && rm priv/kernels/#{new_rel}
+    """)
   end
 
   defp assess(file, target_year) do
@@ -404,13 +434,16 @@ defmodule AstroPlayground.Kernels do
     end
   end
 
+  # Replace old_rel with new_rel in a tracked file. Returns true if it changed
+  # (the file referenced old_rel), false otherwise.
   defp swap_in_file(path, old_rel, new_rel) do
     contents = File.read!(path)
 
-    unless String.contains?(contents, old_rel) do
-      Mix.raise("Could not find #{old_rel} in #{path} to swap.")
+    if String.contains?(contents, old_rel) do
+      File.write!(path, String.replace(contents, old_rel, new_rel))
+      true
+    else
+      false
     end
-
-    File.write!(path, String.replace(contents, old_rel, new_rel))
   end
 end
