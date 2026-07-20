@@ -87,7 +87,15 @@ window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-R
 
 - `.bsp`/`.tls`/`.tpc` under `priv/kernels/` are **gitignored and disposable** —
   deleted between work sessions; a clean re-fetch doubles as first-time-setup
-  validation. Download list + fetcher (`NaifFiles`) live in `priv/repo/seeds.exs`.
+  validation. The manifest + downloader is `AstroPlayground.Kernels`
+  (`lib/astro_playground/kernels.ex`) — single source of truth for `@files`;
+  `seeds.exs` just calls `Kernels.fetch/0`.
+- **Preflight**: `Kernels.fetch/0` HEAD-checks every URL first and **aborts before
+  downloading** if a *required* kernel (`.bsp`/`.tls`/`.tpc`/`.bpc`) 404s (NAIF
+  renames are frequent), printing per-file guidance; optional metadata 404s only
+  warn. Run it standalone with **`mix astro.preflight`** (no download, no DB).
+  **`mix astro.doctor`** is the on-demand health check (required kernels on disk +
+  DB seed counts).
 - **NAIF renames/supersedes filenames constantly.** The 2018 names (jup310,
   mar097, plu055...) 404. Current: `jup365`, `mar099s`, `plu060`, `nep097`
   (Triton), `nep105` (Nereid), `ura111` (Uranus majors, from `a_old_versions/`),
