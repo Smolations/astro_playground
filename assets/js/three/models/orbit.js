@@ -227,18 +227,30 @@ export default class Orbit {
   _estimatePeriodEt(b) {
     if (!b || b.length < 4) return 0;
     const p0 = new THREE.Vector3(b[0].x, b[0].y, b[0].z);
+    const dist = (i) => p0.distanceTo(new THREE.Vector3(b[i].x, b[i].y, b[i].z));
 
     let maxD = 0;
-    for (const s of b) maxD = Math.max(maxD, p0.distanceTo(new THREE.Vector3(s.x, s.y, s.z)));
+    for (let i = 0; i < b.length; i++) maxD = Math.max(maxD, dist(i));
 
-    // First return: after the body has departed (past half the max distance),
-    // the first sample back within 5% of the start. Scanning the whole second
-    // half would instead find the *second* return on a multi-period buffer.
+    // First return = the first local MINIMUM of distance-to-start after the body
+    // has departed (past half the max distance). Robust to sampling density: a
+    // fixed distance threshold is never satisfied by a fast, coarsely-sampled
+    // moon (its nearest sample to the start is still far), so the period
+    // defaulted to the whole buffer and the trail became many overlapping loops
+    // with no visible fade.
     let departed = false;
-    for (let i = 1; i < b.length; i++) {
-      const d = p0.distanceTo(new THREE.Vector3(b[i].x, b[i].y, b[i].z));
+    for (let i = 2; i < b.length - 1; i++) {
+      const d = dist(i);
       if (d > 0.5 * maxD) departed = true;
-      if (departed && d < 0.05 * maxD) return b[i].et - b[0].et;
+      if (departed && d <= dist(i - 1) && d < dist(i + 1)) {
+        // parabolic sub-sample refinement of the minimum
+        const dm = dist(i - 1);
+        const dp = dist(i + 1);
+        const denom = dm - 2 * d + dp;
+        const frac = denom !== 0 ? (0.5 * (dm - dp)) / denom : 0;
+        const step = b[1].et - b[0].et;
+        return b[i].et - b[0].et + frac * step;
+      }
     }
     return b[b.length - 1].et - b[0].et;
   }
