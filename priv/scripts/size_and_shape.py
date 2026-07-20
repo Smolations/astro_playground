@@ -1,47 +1,33 @@
-import sys, argparse
+import argparse
+import json
 
 import mod_dir
-import elixir_format as fmt
-from meta_kernel import load as load_mk, unload as unload_mk
 import naif
+from meta_kernel import load as load_mk, unload as unload_mk
 
 epi = '\n'.join([
-  'Outputs an Elixir map with keys:  x, y, z, dx, dy, dz',
-  '',
-  'Units are km and km/sec.',
+  'Outputs JSON: equatorial_radius_large / _small, polar_radius, mu, and',
+  'radii_measured (false when the body has no radii in the PCK and a nominal',
+  'fallback size was used). Radii in km, mu in km^3/s^2.',
 ])
 
 parser = argparse.ArgumentParser(
   formatter_class=argparse.RawDescriptionHelpFormatter,
   description='Get size and shape constants for a given spice object.',
-  epilog=epi
+  epilog=epi,
 )
-parser.add_argument('id', metavar='id',
-                    help='the spice id of the target object')
+parser.add_argument('id', metavar='id', help='the spice id of the target object')
 
 args = parser.parse_args()
-
 
 meta_kernel_name = 'meta_kernel'
 
 
 def size_and_shape():
-    #
-    # Load the kernels that this program requires.  We
-    # will need:
-    #
     load_mk( meta_kernel_name )
 
-    # get data
-    # args.id.isnumeric()
     data = naif.get_size_and_shape( int(args.id) )
-    # print( data )
-
-    #
-    # Display the results.
-    #
-    print( fmt.attrs_map(data) )
-
+    print( json.dumps(data) )
 
     unload_mk( meta_kernel_name )
 

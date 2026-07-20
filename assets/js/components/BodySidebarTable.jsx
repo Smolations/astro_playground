@@ -7,8 +7,9 @@ import FidelityBadge from './FidelityBadge';
 
 export default class BodySidebarTable extends React.Component {
   render() {
-    const { body } = this.props;
+    const { body, specs } = this.props;
     const texture = body.texture;
+    const nominalSize = specs && specs.radii_measured === false;
 
     return (
       <Table className={'body_sidebar_table'}>
@@ -45,6 +46,13 @@ export default class BodySidebarTable extends React.Component {
             <Table.Cell>Rotation Period</Table.Cell>
             <Table.Cell>{body.sidereal_rotation_period}h</Table.Cell>
           </Table.Row>
+
+          {nominalSize && (
+            <Table.Row warning>
+              <Table.Cell>Size</Table.Cell>
+              <Table.Cell>nominal placeholder — no measured radii for this body</Table.Cell>
+            </Table.Row>
+          )}
 
           {texture && (
             <React.Fragment>

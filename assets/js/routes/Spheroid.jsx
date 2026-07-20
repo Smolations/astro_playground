@@ -95,7 +95,7 @@ class Spheroid extends React.Component {
               visible={sidebar}
               width="wide"
             >
-              <BodySidebarTable body={spiceObject} />
+              <BodySidebarTable body={spiceObject} specs={specs} />
             </Sidebar>
 
             <Sidebar.Pusher>

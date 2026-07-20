@@ -13,7 +13,8 @@ defmodule AstroPlayground.Spicey do
   end
 
   def size_and_shape(id) do
-    sys_cmd "size_and_shape", [Integer.to_string(id)]
+    # Clean invocation (stderr separate) so stdout is pure JSON.
+    System.cmd(@cmd, [@script_path <> "size_and_shape.py", to_string(id)])
   end
 
   @doc """

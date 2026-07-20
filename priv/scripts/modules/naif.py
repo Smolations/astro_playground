@@ -82,16 +82,36 @@ def pole_orientation(body, date='2026-01-01T00:00:00', frame='ECLIPJ2000'):
   }
 
 
+FALLBACK_RADIUS_KM = 10.0
+
+
 def get_size_and_shape(body_id):
-  data = []
+  # Some tiny/unresolved bodies (inner moons) have no RADII (and often no GM) in
+  # the loaded PCK. Fall back to a nominal size and flag it, so the body still
+  # renders and the app can note the size is a placeholder rather than 500ing.
+  try:
+    [_dim, radii] = spiceypy.bodvcd( body_id, "RADII", 3 )
+    a, b, c = float(radii[0]), float(radii[1]), float(radii[2])
+    measured = True
+  except Exception:
+    spiceypy.reset()
+    a = b = c = FALLBACK_RADIUS_KM
+    measured = False
 
-  [dim, radii] = spiceypy.bodvcd( body_id, "RADII", 3 )
-  data.extend(radii)
+  try:
+    [_dim, mu] = spiceypy.bodvcd( body_id, "GM", 1 )
+    gm = float(mu[0])
+  except Exception:
+    spiceypy.reset()
+    gm = 0.0
 
-  [dim, mu] = spiceypy.bodvcd( body_id, "GM", 1 )
-  data.extend(mu)
-
-  return data
+  return {
+    'equatorial_radius_large': a,
+    'equatorial_radius_small': b,
+    'polar_radius': c,
+    'mu': gm,
+    'radii_measured': measured,
+  }
 
 
 def _position(target, et, frame, abcorr, observer):

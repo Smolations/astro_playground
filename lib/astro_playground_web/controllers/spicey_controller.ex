@@ -31,8 +31,8 @@ defmodule AstroPlaygroundWeb.SpiceyController do
   def get_size_and_shape(conn, %{"spice_object_id" => spice_object_id}) do
     object = SpiceObjects.get_object!(spice_object_id)
     {result, 0} = Spicey.size_and_shape(object.spice_id)
-    {data, []} = Code.eval_string(result)
-    render(conn, "size_and_shape.json", %{id: object.spice_id, data: data})
+    data = Jason.decode!(result)
+    json(conn, Map.put(data, "spice_id", object.spice_id))
   end
 
   def get_orientation(conn, %{"spice_object_id" => spice_object_id}) do
