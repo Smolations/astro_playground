@@ -188,4 +188,229 @@ defmodule AstroPlayground.Kernels do
              priv/kernels/meta_kernels/meta_kernel.tm if this kernel is furnsh'd.
     """
   end
+
+  # ——— Kernel version detection & opt-in upgrade (issue #7) ———
+
+  @meta_kernel "priv/kernels/meta_kernels/meta_kernel.tm"
+  @manifest_source "lib/astro_playground/kernels.ex"
+
+  # human labels for the NAIF family prefixes we use
+  @family_names %{
+    "de" => "Planets (DE)", "jup" => "Jupiter", "mar" => "Mars",
+    "plu" => "Pluto", "ura" => "Uranus", "nep" => "Neptune", "sat" => "Saturn"
+  }
+
+  @doc "Human label for a family prefix (e.g. \"jup\" -> \"Jupiter\")."
+  def family_name(prefix), do: Map.get(@family_names, prefix, prefix)
+
+  @doc """
+  For every furnsh'd `.bsp` in the manifest, look for newer same-family kernels
+  on NAIF and assess whether each still covers the current kernel's bodies and a
+  target epoch year. Network-heavy (directory listings + a `.cmt` per candidate).
+  Returns a list of assessment maps.
+  """
+  def upgrade_report(target_year \\ 2026) do
+    @files
+    |> Enum.filter(&(required?(&1) and Path.extname(&1) == ".bsp"))
+    |> Enum.map(&assess(&1, target_year))
+  end
+
+  @doc """
+  Opt-in upgrade: verify `new_rel` covers all of `old_rel`'s bodies (and the
+  target epoch), then download it and swap the references in the meta-kernel and
+  the manifest — leaving the old kernel file on disk. Aborts if coverage regresses.
+  """
+  def upgrade(old_rel, new_rel, target_year \\ 2026) do
+    old_cmt = fetch_cmt(old_rel) || Mix.raise("No .cmt for current kernel #{old_rel}.")
+    new_cmt = fetch_cmt(new_rel) || Mix.raise("No .cmt for #{new_rel} — cannot verify coverage; aborting.")
+
+    old_bodies = cmt_bodies(old_cmt)
+    new_bodies = cmt_bodies(new_cmt)
+    missing = MapSet.difference(old_bodies, new_bodies)
+
+    if MapSet.size(old_bodies) > 0 and MapSet.size(missing) > 0 do
+      Mix.raise("""
+      #{new_rel} does NOT cover all bodies currently provided by #{old_rel}.
+      Missing: #{missing |> MapSet.to_list() |> Enum.sort() |> Enum.join(", ")}
+      Refusing to regress coverage. (Some newer kernels are complements, not
+      supersets — e.g. nep105/Nereid does not replace nep097/Triton.)
+      """)
+    end
+
+    case cmt_years(new_cmt) do
+      {a, b} when target_year < a or target_year > b ->
+        Mix.raise("#{new_rel} timespan #{a}–#{b} does not cover target epoch #{target_year}; aborting.")
+      _ -> :ok
+    end
+
+    IO.puts("Coverage verified: #{new_rel} ⊇ #{old_rel} bodies. Downloading...")
+    get_file(new_rel)
+
+    swap_in_file(@meta_kernel, old_rel, new_rel)
+    swap_in_file(@manifest_source, old_rel, new_rel)
+
+    IO.puts("""
+
+    Upgraded #{old_rel} -> #{new_rel}
+      - downloaded the new kernel (old kept on disk)
+      - swapped references in #{@meta_kernel} and #{@manifest_source}
+    Next: recompile, re-run the app, verify the affected system renders, then
+    commit. To undo, revert those two files and delete the new .bsp.
+    """)
+
+    :ok
+  end
+
+  defp assess(file, target_year) do
+    cur = parse_name(Path.basename(file))
+
+    cur_bodies =
+      case fetch_cmt(file) do
+        nil -> MapSet.new()
+        cmt -> cmt_bodies(cmt)
+      end
+
+    candidates =
+      file
+      |> candidate_files()
+      |> Enum.filter(&newer_variant?(&1, cur))
+      |> Enum.sort_by(&parse_name(Path.basename(&1)).version, :desc)
+      |> Enum.take(6)
+      |> Enum.map(&assess_candidate(&1, cur_bodies, target_year))
+
+    %{file: file, current: cur, current_bodies: cur_bodies, candidates: candidates}
+  end
+
+  defp assess_candidate(cand, cur_bodies, target_year) do
+    cmt = fetch_cmt(cand)
+    bodies = if cmt, do: cmt_bodies(cmt), else: MapSet.new()
+    years = cmt && cmt_years(cmt)
+
+    covers =
+      cond do
+        MapSet.size(cur_bodies) == 0 -> :unknown
+        MapSet.subset?(cur_bodies, bodies) -> true
+        true -> false
+      end
+
+    epoch_ok = case years do {a, b} -> target_year >= a and target_year <= b; _ -> nil end
+
+    %{
+      file: cand,
+      bodies: bodies,
+      covers: covers,
+      missing: MapSet.difference(cur_bodies, bodies),
+      gained: MapSet.difference(bodies, cur_bodies),
+      years: years,
+      epoch_ok: epoch_ok,
+      recommended: covers == true and epoch_ok == true
+    }
+  end
+
+  @doc "Parse a NAIF kernel basename into %{prefix, version, suffix} (or nil)."
+  def parse_name(name) do
+    case Regex.run(~r/^([a-z]+)(\d+)([a-z]*)\.bsp$/i, name) do
+      [_, pfx, ver, sfx] ->
+        %{base: name, prefix: String.downcase(pfx), version: String.to_integer(ver), suffix: String.downcase(sfx)}
+
+      _ ->
+        nil
+    end
+  end
+
+  defp newer_variant?(cand, cur) when is_map(cur) do
+    case parse_name(Path.basename(cand)) do
+      %{prefix: p, version: v, suffix: s} ->
+        p == cur.prefix and Path.basename(cand) != cur.base and
+          (v > cur.version or (v == cur.version and s != cur.suffix))
+
+      _ ->
+        false
+    end
+  end
+
+  defp newer_variant?(_, _), do: false
+
+  # Same-family .bsp files in the kernel's own dir and its a_old_versions sibling.
+  defp candidate_files(file) do
+    dir = Path.dirname(file)
+    base_dir = String.replace_suffix(dir, "/a_old_versions", "")
+
+    [base_dir, base_dir <> "/a_old_versions"]
+    |> Enum.uniq()
+    |> Enum.flat_map(&list_bsp/1)
+    |> Enum.uniq()
+  end
+
+  defp list_bsp(dir) do
+    case Req.get(@url_root <> "/" <> dir <> "/", retry: false, receive_timeout: 30_000) do
+      {:ok, %{status: 200, body: body}} ->
+        ~r/href="([a-z]+\d+[a-z]*\.bsp)"/i
+        |> Regex.scan(to_string(body))
+        |> Enum.map(fn [_, n] -> dir <> "/" <> n end)
+
+      _ ->
+        []
+    end
+  end
+
+  defp fetch_cmt(file) do
+    url = @url_root <> "/" <> String.replace_suffix(file, ".bsp", ".cmt")
+
+    case Req.get(url, retry: false, receive_timeout: 30_000) do
+      {:ok, %{status: 200, body: body}} -> to_string(body)
+      _ -> nil
+    end
+  end
+
+  # NAIF ID integers from the "Bodies on the File" table (2nd column).
+  defp cmt_bodies(text) do
+    text
+    |> String.split("\n")
+    |> Enum.drop_while(&(not String.contains?(&1, "Bodies on the File")))
+    |> Enum.drop(1)
+    |> Enum.drop_while(&(String.trim(&1) == ""))
+    |> Enum.take_while(fn line ->
+      String.trim(line) != "" and not String.contains?(line, "Additional Constants")
+    end)
+    |> Enum.flat_map(fn line ->
+      case Regex.run(~r/^\s*\S+\s+(\d{2,6})\b/, line) do
+        [_, n] -> [String.to_integer(n)]
+        _ -> []
+      end
+    end)
+    |> MapSet.new()
+  end
+
+  # {min_year, max_year} from the .cmt timespan (parenthesised dates, or BEGIN/END_TIME).
+  defp cmt_years(text) do
+    years =
+      ~r/\((?:\d{1,2}-[A-Za-z]{3}-)?(\d{4})\)/
+      |> Regex.scan(text)
+      |> Enum.map(fn [_, y] -> String.to_integer(y) end)
+
+    years =
+      if length(years) >= 2 do
+        years
+      else
+        ~r/(?:BEGIN|END)_TIME\s*=\s*(?:CAL-ET\s+)?(\d{4})/
+        |> Regex.scan(text)
+        |> Enum.map(fn [_, y] -> String.to_integer(y) end)
+      end
+
+    case years do
+      [] -> nil
+      ys -> {Enum.min(ys), Enum.max(ys)}
+    end
+  end
+
+  defp swap_in_file(path, old_rel, new_rel) do
+    contents = File.read!(path)
+
+    unless String.contains?(contents, old_rel) do
+      Mix.raise("Could not find #{old_rel} in #{path} to swap.")
+    end
+
+    File.write!(path, String.replace(contents, old_rel, new_rel))
+  end
 end
