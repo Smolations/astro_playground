@@ -45,7 +45,9 @@ defmodule AstroPlayground.MixProject do
       # Used by seeds to fetch NAIF kernels. Replaces the legacy `download`
       # package, whose httpoison/hackney/ssl_verify_fun chain won't build on
       # modern OTP.
-      {:req, "~> 0.5"}
+      {:req, "~> 0.5"},
+      # OpenAPI 3 spec + Swagger UI for the JSON API (issue #2).
+      {:open_api_spex, "~> 3.21"}
     ]
   end
 

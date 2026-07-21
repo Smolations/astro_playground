@@ -16,7 +16,11 @@ parser.add_argument('name', metavar='name',
 
 args = parser.parse_args()
 
-meta_kernel_name = 'codes_and_names'
+# The main meta-kernel (correct relative paths). SPICE's built-in name<->code
+# mappings cover standard bodies even without it, but loading it also picks up
+# any names defined by the seeded kernels. (Was 'codes_and_names', whose .tm had
+# a hardcoded absolute path from the original author's machine and 404'd.)
+meta_kernel_name = 'meta_kernel'
 
 
 def code_from_name():
