@@ -6,6 +6,7 @@ import Spheroid from '../three/models/spheroid';
 import ThreeModel from './ThreeModel';
 import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
+import simSettings from '../three/lib/sim-settings';
 
 
 // The single-body view has no orbital clock, so compress real time here:
@@ -127,10 +128,9 @@ export default class SpheroidModel extends React.Component {
 
   configureGUI = (gui) => {
     this.guiSettings.animate = true;
-    this.guiSettings.timeScale = 10;
 
+    // Time scale is a global control (top-center), not a per-view setting.
     gui.add( this.guiSettings, 'animate' ).name('Animate?');
-    // gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
     // gui.add( params, 'lookAt', bodies ).name('Look at:');
 
     gui.open();
@@ -227,18 +227,21 @@ export default class SpheroidModel extends React.Component {
 
   renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
+    let etElapsed = 0;
 
     const render = () => {
-      if (!this.guiSettings.animate) {
-        controls.update();
+      const delta = clock.getDelta();
 
-      } else {
-        const t = clock.getElapsedTime();
-
-        // Update animated elements. Feed elapsed *ephemeris* seconds so the spin
-        // period is true-to-scale (see BODY_ET_PER_WALL_SECOND).
-        this[_body].updatePosition(t * BODY_ET_PER_WALL_SECOND);
+      if (this.guiSettings.animate) {
+        // Accumulate elapsed *ephemeris* seconds incrementally, scaled by the
+        // global time multiplier, so the spin period is true-to-scale (see
+        // BODY_ET_PER_WALL_SECOND) and changing the scale mid-spin doesn't jump
+        // (multiplying absolute elapsed time would retroactively rescale it).
+        etElapsed += delta * BODY_ET_PER_WALL_SECOND * simSettings.timeScale;
+        this[_body].updatePosition(etElapsed);
       }
+
+      controls.update();
 
       // Render the scene/camera combination
       renderer.render(scene, camera);
@@ -246,8 +249,6 @@ export default class SpheroidModel extends React.Component {
       // Repeat
       requestAnimationFrame(render);
     };
-
-    // this.renderer.autoClear = false;
 
     requestAnimationFrame(render);
   }

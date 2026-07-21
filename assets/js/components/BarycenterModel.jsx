@@ -5,6 +5,7 @@ import ThreeModel from './ThreeModel';
 import Orbit from '../three/models/orbit';
 import Locator from '../three/lib/marker';
 import util from '../three/util';
+import simSettings from '../three/lib/sim-settings';
 
 const START_UTC = '2026-01-01T00:00:00';
 // Contiguous sample window fetched per streaming step; longer than one period so
@@ -65,7 +66,8 @@ export default class BarycenterModel extends React.Component {
     this.orbits = [];        // [{ orbit: Orbit, mesh, locator, body }]
     this.scale = 1;          // km -> scene units
     this.et = 0;             // continuous ephemeris clock
-    this.guiSettings = { animate: true, timeScale: 1, follow: 'Barycenter', markers: false, guide: false };
+    // timeScale is global (top-center TimeScaleControl) — not a per-view knob.
+    this.guiSettings = { animate: true, follow: 'Barycenter', markers: false, guide: false };
     this._lastGuide = false;
     this._lastMarkers = false;
     this._followName = 'Barycenter';
@@ -185,7 +187,6 @@ export default class BarycenterModel extends React.Component {
 
   configureGUI = (gui) => {
     gui.add(this.guiSettings, 'animate').name('Animate?');
-    gui.add(this.guiSettings, 'timeScale', 0.1, 10).name('Time scale');
     gui.add(this.guiSettings, 'follow', ['Barycenter', ...this.bodyList.map((b) => b.name)]).name('Follow');
     gui.add(this.guiSettings, 'markers').name('Show markers');
     gui.add(this.guiSettings, 'guide').name('Show ellipse guide');
@@ -324,7 +325,7 @@ export default class BarycenterModel extends React.Component {
     const render = () => {
       const delta = clock.getDelta();
       if (this.guiSettings.animate) {
-        this.et += delta * this.guiSettings.timeScale * ET_PER_WALL_SECOND;
+        this.et += delta * simSettings.timeScale * ET_PER_WALL_SECOND;
       }
 
       this.maybeStream();

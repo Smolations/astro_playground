@@ -18,6 +18,37 @@
   z-index: 10;
 }
 
+// Global time-scale control, docked top-center over every animated view — its
+// placement signals that the pace is shared across the system and body views.
+.time_scale {
+  position: fixed;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+
+  color: white;
+  font-size: 13px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+
+  input[type='range'] {
+    width: 160px;
+    cursor: pointer;
+  }
+
+  .time_scale_value {
+    min-width: 2.6em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 .ui {
   &.header {
     &.dividing {
