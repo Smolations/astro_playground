@@ -56,6 +56,29 @@ def _usgs(body, spice_id, url, out, fidelity, mission, kind="color",
     }
 
 
+# --- NASA/Cassini enhanced-colour maps, public domain via Wikimedia Commons ---
+# Paul Schenk's 2014 global colour mosaics of the mid-size icy moons (Cassini
+# ISS, PIA18434-18439). These are ENHANCED colour (IR-GRN-UV composites that
+# exaggerate real compositional differences — the moons are near-neutral gray to
+# the eye), not true colour. NASA work, public domain; the Commons file pages
+# carry the PD-USGov template. Commons hosts the full-res originals (5-19 MB); we
+# downsample to 2k on fetch.
+_SCHENK = "Wikimedia Commons — NASA/JPL-Caltech/SSI/LPI (Cassini ISS)"
+_SCHENK_URL = "https://commons.wikimedia.org/wiki/Category:Maps_of_Saturn%27s_moons"
+_SCHENK_LICENSE = "Public Domain (NASA)"
+_SCHENK_ATTRIB = "NASA / JPL-Caltech / SSI / LPI (enhanced colour, P. Schenk 2014)"
+
+
+def _schenk(body, spice_id, path, out):
+    return {
+        "body": body, "spice_id": spice_id, "kind": "color", "out": out,
+        "url": f"https://upload.wikimedia.org/wikipedia/commons/{path}",
+        "source": _SCHENK, "source_url": _SCHENK_URL,
+        "license": _SCHENK_LICENSE, "attribution": _SCHENK_ATTRIB,
+        "fidelity": "real", "max_width": 2048, "from_dem": False,
+    }
+
+
 _CKAN = "https://astrogeology.usgs.gov/ckan/dataset"
 
 # ---------------------------------------------------------------------------
@@ -159,6 +182,40 @@ TIER3 = [
 ]
 
 # ---------------------------------------------------------------------------
+# Tier 4 — Saturn's major moons.
+#
+# The six mid-size icy moons get NASA public-domain ENHANCED-colour global
+# mosaics (Schenk 2014, via Commons) — richer than the clear-filter grayscale
+# USGS holds, and colour is the only route that covers Mimas at all (USGS has no
+# Mimas photomosaic). Titan has NO public-domain colour surface map, so it keeps
+# the USGS grayscale 938 nm ISS mosaic (`partial` — coarse, haze-limited).
+# Hyperion, Phoebe and the five small co-orbitals have no global map (see
+# UNOBTAINABLE) and stay untextured.
+# ---------------------------------------------------------------------------
+TIER4 = [
+    _schenk("Mimas", 601,
+            "4/4f/Map_of_Mimas_colorized_2014-04_PIA18437.jpg",
+            "mimas_2k_color.jpg"),
+    _schenk("Enceladus", 602, "a/aa/Enceladus_Color_Map.jpg",
+            "enceladus_2k_color.jpg"),
+    _schenk("Tethys", 603, "4/40/Tethys_Color_Map.jpg",
+            "tethys_2k_color.jpg"),
+    _schenk("Dione", 604, "1/18/Dione_Color_Map.jpg",
+            "dione_2k_color.jpg"),
+    _schenk("Rhea", 605, "2/21/Rhea_Color_Map.jpg",
+            "rhea_2k_color.jpg"),
+    _schenk("Iapetus", 608, "5/53/Iapetus_Color_Map.jpg",
+            "iapetus_2k_color.jpg"),
+
+    # Titan: no PD colour surface map exists — keep the grayscale 938 nm mosaic.
+    _usgs("Titan", 606,
+          f"{_CKAN}/8ee17e4e-26c6-4e22-9c23-bc9a4c7ed35e/resource/"
+          "c3f3006c-3174-4716-920f-44f5dc749a4a/download/"
+          "titan_iss_p19658_mosaic_global_1024.jpg",
+          "titan_1k_grayscale.jpg", "partial", "Cassini ISS"),
+]
+
+# ---------------------------------------------------------------------------
 # Full-resolution USGS sources, recorded but NOT fetched by default — these
 # are hundreds of MB to multiple GB. Use --tier hires deliberately.
 # ---------------------------------------------------------------------------
@@ -186,14 +243,20 @@ HIRES_NOTES = {
 #     -network tables and PDFs for these; no texture or DEM raster exists.
 #   Deimos, Amalthea, Thebe, Adrastea, Metis, Nereid, Nix, Hydra, Kerberos,
 #     Styx - never resolved well enough for a global map.
+#   Hyperion, Phoebe - no global mosaic; Hyperion is a chaotic irregular and
+#     Phoebe has only partial flyby coverage. (Mimas has no USGS grayscale
+#     mosaic but IS covered by the Schenk enhanced-colour map in TIER4.)
+#   Helene, Telesto, Calypso, Methone, Polydeuces - tiny co-orbitals, no map.
 UNOBTAINABLE = [
     "Ariel", "Umbriel", "Titania", "Oberon", "Miranda", "Deimos", "Amalthea",
     "Thebe", "Adrastea", "Metis", "Nereid", "Nix", "Hydra", "Kerberos", "Styx",
+    "Hyperion", "Phoebe", "Helene", "Telesto", "Calypso", "Methone",
+    "Polydeuces",
 ]
 
 
 def all_entries():
-    return TIER1 + TIER2 + TIER3
+    return TIER1 + TIER2 + TIER3 + TIER4
 
 
-TIERS = {"1": TIER1, "2": TIER2, "3": TIER3}
+TIERS = {"1": TIER1, "2": TIER2, "3": TIER3, "4": TIER4}

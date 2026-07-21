@@ -50,6 +50,21 @@ defmodule Seeds.Tex do
     insert(spice_object, Map.merge(base, Map.new(fields)))
   end
 
+  # NASA/Cassini enhanced-colour maps (P. Schenk 2014), public domain via
+  # Wikimedia Commons. Enhanced (exaggerated IR-GRN-UV) colour, not true colour —
+  # the moons are near-neutral gray; the exaggeration reveals real compositional
+  # differences. See tools/textures/manifest.py and BODIES.md.
+  @schenk %{
+    source: "Wikimedia Commons — NASA/JPL-Caltech/SSI/LPI (Cassini ISS)",
+    source_url: "https://commons.wikimedia.org/wiki/Category:Maps_of_Saturn's_moons",
+    license: "Public Domain (NASA)",
+    attribution: "NASA / JPL-Caltech / SSI / LPI (enhanced colour, P. Schenk 2014)",
+    resolution: "2048x1024"
+  }
+
+  def schenk(spice_object, fields),
+    do: insert(spice_object, Map.merge(@schenk, Map.new(fields)))
+
   defp insert(spice_object, attrs),
     do: Repo.insert!(struct(Texture, Map.put(attrs, :spice_object, spice_object)))
 end
@@ -347,6 +362,19 @@ Seeds.Tex.usgs(charon, "New Horizons LORRI/MVIC", map: "charon_1k_color.jpg", no
 
 # Triton (Voyager 2, 1989) — "GlobalFill": gaps interpolated from neighbours.
 Seeds.Tex.usgs(triton, "Voyager 2", map: "triton_1k_color.jpg", fidelity: :partial)
+
+# Saturn's mid-size icy moons — NASA public-domain ENHANCED-colour global
+# mosaics (Schenk 2014; exaggerated IR-GRN-UV, not true colour — the moons are
+# near-neutral gray). Colour is also the only route that covers Mimas at all.
+Seeds.Tex.schenk(mimas,     map: "mimas_2k_color.jpg",     fidelity: :real)
+Seeds.Tex.schenk(enceladus, map: "enceladus_2k_color.jpg", fidelity: :real)
+Seeds.Tex.schenk(tethys,    map: "tethys_2k_color.jpg",    fidelity: :real)
+Seeds.Tex.schenk(dione,     map: "dione_2k_color.jpg",     fidelity: :real)
+Seeds.Tex.schenk(rhea,      map: "rhea_2k_color.jpg",      fidelity: :real)
+Seeds.Tex.schenk(iapetus,   map: "iapetus_2k_color.jpg",   fidelity: :real)
+# Titan has no public-domain colour surface map — keep the grayscale 938 nm ISS
+# mosaic (coarse, haze-limited).
+Seeds.Tex.usgs(titan, "Cassini ISS", map: "titan_1k_grayscale.jpg", fidelity: :partial)
 
 # Deimos and Amalthea previously referenced textures we can no longer source
 # (no global USGS mosaic exists; see UNOBTAINABLE in tools/textures/manifest.py).
