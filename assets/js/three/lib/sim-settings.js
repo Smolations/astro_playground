@@ -59,6 +59,14 @@ export function setBaseEtPerWallSecond(rate) {
   }
 }
 
+// Clear the base rate so the control drops its real→sim hint. Used by views
+// whose motion doesn't represent physical time (the isolated body showcase),
+// where the time scale is just a spin-speed multiplier.
+export function clearBaseEtPerWallSecond() {
+  simSettings.baseEtPerWallSecond = null;
+  notify();
+}
+
 // Subscribe to any settings change (for UI that mirrors the value). The
 // callback receives the live settings object. Returns an unsubscriber.
 export function subscribe(fn) {

@@ -6,15 +6,20 @@ import Spheroid from '../three/models/spheroid';
 import ThreeModel from './ThreeModel';
 import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
-import simSettings, { setBaseEtPerWallSecond } from '../three/lib/sim-settings';
+import simSettings, { clearBaseEtPerWallSecond } from '../three/lib/sim-settings';
 
 
-// The single-body view has no orbital clock, so compress real time here:
-// ephemeris seconds advanced per wall-second. Tuned so Earth (one sidereal
-// rotation per day) spins about once every ~8 s; every other body's period
-// stays true-to-scale against that — Jupiter races (~0.9 s), the Moon creeps
-// (~3.6 min), Venus barely moves and turns backward.
-const BODY_ET_PER_WALL_SECOND = 86400 / 8;
+// The isolated single-body view is a showcase, not a physics sim: it's about
+// looking at one body on its own. So every body gets the SAME calm baseline
+// spin and the SAME fixed axial tilt — framing stays consistent from body to
+// body. (Real per-body obliquity + rotation, and satellite tidal-locking, live
+// in the system view.) One revolution per this many wall-seconds at 1×; the
+// global time scale multiplies it.
+const BODY_SPIN_SECONDS_PER_REV = 8;
+
+// Consistent display tilt (deg) for every body's pole — a recognizable "tilted
+// globe" lean, identical for all so the polar axis always reads the same angle.
+const BODY_DISPLAY_TILT_DEG = 23.4;
 
 const _axesHelper = Symbol('axesHelper');
 const _bodies = Symbol('bodies');
@@ -74,9 +79,11 @@ export default class SpheroidModel extends React.Component {
 
 
   async componentDidMount() {
-    // Register this view's 1× rate so the global control's hint reflects body
-    // spin time flow while a single body is on screen.
-    setBaseEtPerWallSecond(BODY_ET_PER_WALL_SECOND);
+    // The showcase view uses a fixed display tilt + uniform spin (no SPICE
+    // orientation needed). Clear any base rate a prior system view registered,
+    // so the global control drops its real→sim hint — the showcase spin isn't
+    // physical time, so the time scale is just a spin-speed multiplier here.
+    clearBaseEtPerWallSecond();
 
     // Texture images are optional; a body with no (or a missing) map simply
     // renders as a bland sphere. Never let a failed load block the render.
@@ -87,25 +94,22 @@ export default class SpheroidModel extends React.Component {
       this.maps = {};
     }
 
-    // Real axial tilt + rotation sense from SPICE. Best-effort: falls back to
-    // pole-up / prograde if unavailable.
-    this.orientation = await fetch(`/api/objects/${this.props.info.id}/orientation`)
-      .then((r) => r.json())
-      .catch(() => null);
-
     this.setState({ loading: false });
   }
 
-  applyOrientation(body) {
-    const o = this.orientation;
-    if (!o || !o.pole) return;
-
-    // Align the body's local +Y (its pole) to the true pole vector, expressed
-    // in the ecliptic (ECLIPJ2000) frame the scene uses.
-    const pole = new THREE.Vector3(o.pole.x, o.pole.y, o.pole.z).normalize();
-    body.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pole);
-    // Real spin rate + sense; drives updatePosition. 0 leaves the body static.
-    body.rotationDegPerDay = Number.isFinite(o.rotation_deg_per_day) ? o.rotation_deg_per_day : 0;
+  applyDisplayTilt(body) {
+    // Fixed, consistent orientation for the showcase view: put the pole (local
+    // +Y) up (+Z), then lean it a constant amount so every body shows the same
+    // recognizable axial tilt regardless of its real obliquity.
+    const poleUp = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 0, 1)
+    );
+    const lean = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(1, 0, 0),
+      THREE.MathUtils.degToRad(BODY_DISPLAY_TILT_DEG)
+    );
+    body.quaternion.copy(lean).multiply(poleUp);
   }
 
 
@@ -204,7 +208,7 @@ export default class SpheroidModel extends React.Component {
   preRender = ({ scene }) => {
     this[_axesHelper] = this.getAxesHelper({ length: this.bodyScale.max * 2 });
     this[_body] = this.getBody();
-    this.applyOrientation(this[_body]);
+    this.applyDisplayTilt(this[_body]);
     console.log(this[_body].toString());
 
     scene.add( this[_axesHelper] );
@@ -231,18 +235,18 @@ export default class SpheroidModel extends React.Component {
 
   renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
-    let etElapsed = 0;
+    let spinRad = 0;
+    const spinRadPerSec = (2 * Math.PI) / BODY_SPIN_SECONDS_PER_REV;
 
     const render = () => {
       const delta = clock.getDelta();
 
       if (this.guiSettings.animate) {
-        // Accumulate elapsed *ephemeris* seconds incrementally, scaled by the
-        // global time multiplier, so the spin period is true-to-scale (see
-        // BODY_ET_PER_WALL_SECOND) and changing the scale mid-spin doesn't jump
-        // (multiplying absolute elapsed time would retroactively rescale it).
-        etElapsed += delta * BODY_ET_PER_WALL_SECOND * simSettings.timeScale;
-        this[_body].updatePosition(etElapsed);
+        // Uniform baseline spin for every body, scaled by the global time
+        // multiplier. Accumulated incrementally so a mid-spin scale change
+        // doesn't jump.
+        spinRad += delta * spinRadPerSec * simSettings.timeScale;
+        this[_body].updatePosition(spinRad);
       }
 
       controls.update();

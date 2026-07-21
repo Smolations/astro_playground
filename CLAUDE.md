@@ -85,20 +85,27 @@ window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-R
 
 ### Axial tilt & spin (issue #1)
 
-Both views orient bodies from the SPICE `orientation` endpoint (`pole` +
-`rotation_deg_per_day`, in ECLIPJ2000). Tilt = align the mesh's local **+Y**
-(SphereGeometry's pole) to the true `pole` vector — without it, poles point +Y
-(sideways to the +Z ecliptic up), which was the "bodies look tipped" bug. Spin =
-rotate about that pole at the real rate; `rotation_deg_per_day`'s sign carries
-prograde/retrograde (Venus turns backward). Compose **tilt ∘ spin** so the spin
-is about the untilted local +Y before the tilt carries it to the true axis.
+The two views intentionally differ: the **system view is physical**, the
+**single-body view is a showcase**.
 
-The key move: in the system view (`BarycenterModel`) spin is phased off the
-**same `et` clock as the orbit** — so a synchronous rotator (Moon 13.18 °/day ==
-its orbital rate, Io, Titan) keeps one face to its primary for free, no special
-casing. The single-body view (`SpheroidModel` → `Spheroid.updatePosition`) has
-no orbit, so it compresses real time via `BODY_ET_PER_WALL_SECOND` (Earth ≈ one
-turn / 8 s) to keep every body's spin period true-to-scale.
+**System view (`BarycenterModel`)** orients each body from the SPICE
+`orientation` endpoint (`pole` + `rotation_deg_per_day`, in ECLIPJ2000). Tilt =
+align the mesh's local **+Y** (SphereGeometry's pole) to the true `pole` vector —
+without it, poles point +Y (sideways to the +Z ecliptic up), which was the
+"bodies look tipped" bug. Spin = rotate about that pole at the real rate;
+`rotation_deg_per_day`'s sign carries prograde/retrograde. Compose **tilt ∘
+spin** so the spin is about the untilted local +Y before the tilt carries it to
+the true axis. The key move: spin is phased off the **same `et` clock as the
+orbit**, so a synchronous rotator (Moon 13.18 °/day == its orbital rate, Io,
+Titan) keeps one face to its primary for free — no special-casing.
+
+**Single-body view (`SpheroidModel` → `Spheroid.updatePosition`)** is about
+viewing one body in isolation, so it drops physical accuracy for consistent
+framing: a **fixed display tilt** (`BODY_DISPLAY_TILT_DEG`, same lean for every
+body) and a **uniform baseline spin** (`BODY_SPIN_SECONDS_PER_REV`, same speed
+for every body). No SPICE orientation is fetched here. Because the spin isn't
+physical time, this view registers no base rate, so the global time control
+hides its real→sim hint (the scale is just a spin-speed multiplier here).
 
 ## Kernels
 

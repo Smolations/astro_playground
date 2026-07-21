@@ -88,12 +88,9 @@ export default class Spheroid extends AstroGroup {
     this.add(this[_spheroid]);
     this.add(this[_polarAxis]);
 
-    // Real axial tilt is applied by the caller, which aligns this group's local
-    // +Y (the sphere's pole and the polar-axis line) to the body's true pole
-    // vector. `rotationDegPerDay` is the SPICE spin rate (sign = prograde(+)/
-    // retrograde(-)); the caller drives `updatePosition` with elapsed ephemeris
-    // seconds so the on-screen spin period is true-to-scale. Default: no spin.
-    this.rotationDegPerDay = 0;
+    // Axial tilt is applied by the caller to this group's local +Y (the
+    // sphere's pole and the polar-axis line). Spin is driven by the caller via
+    // `updatePosition`, which sets the absolute rotation angle about that pole.
   }
 
   getPolarAxis(radius) {
@@ -179,11 +176,9 @@ export default class Spheroid extends AstroGroup {
     return glowSphere;
   }
 
-  updatePosition(etSeconds = 0) {
-    // Spin about the body's own axis (local +Y, aligned by the caller to the
-    // real pole). Absolute angle from the real SPICE rate over the elapsed
-    // ephemeris time, so Venus creeps (and reversed), Jupiter races — all in
-    // true proportion — instead of every body ticking the same arbitrary step.
-    this[_spheroid].rotation.y = this.rotationDegPerDay * etSeconds / 86400 * (Math.PI / 180);
+  updatePosition(spinRadians = 0) {
+    // Spin about the body's own axis (local +Y). The caller passes an absolute
+    // angle; the axial tilt lives on the parent group's quaternion.
+    this[_spheroid].rotation.y = spinRadians;
   }
 };
