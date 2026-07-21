@@ -107,6 +107,28 @@ for every body). No SPICE orientation is fetched here. Because the spin isn't
 physical time, this view registers no base rate, so the global time control
 hides its real→sim hint (the scale is just a spin-speed multiplier here).
 
+### Focus, real Sun lighting & "Now" (issue #10)
+
+The system view can showcase a single body *with real context* — this is why the
+standalone body view stays a stylized showcase and the "physical" body view is
+just the system view zoomed in. All in `BarycenterModel`:
+
+- **Real Sun lighting.** The Sun (NAIF `10`) is fetched as one extra interpolated
+  trajectory (`this.sunOrbit`, reusing the `Orbit` class) and drives a
+  `DirectionalLight` aimed from its true direction each frame — so bodies show
+  real phases/terminators. Ambient is low (`AMBIENT_INTENSITY`) so the dark side
+  reads. Skipped for the Solar-System barycenter (observer `'0'`, Sun ≈ centre),
+  which keeps a fixed key light.
+- **Focus body** (GUI button). Dollies the camera to frame the *followed* body at
+  a lit 3/4 angle (`FRAME_RADII`, offset off the Sun direction by
+  `FOCUS_SUN_AZIMUTH_DEG`), eased over `FOCUS_SECONDS` via `Clock.getDelta` +
+  `Vector3.lerp` (`beginFocus`/`stepFocus`). No-op when following the barycenter.
+  Complements the Follow dropdown, which only re-centers.
+- **Now** (GUI button). `jumpTo(nowUtc())` swaps every orbit + the Sun buffer to
+  today's window and resets the clock (`this.et`/`et0`) — positions *and* lighting
+  jump to the body's real current state. Reuses the streaming `fetchWindow` path;
+  nulls `_followName` so the camera re-anchors to the teleported positions.
+
 ## Kernels
 
 - `.bsp`/`.tls`/`.tpc` under `priv/kernels/` are **gitignored and disposable** —
@@ -223,9 +245,10 @@ Hyperion/Phoebe/the five co-orbitals stay bland) · (3) **Sun + planets finale**
 intentionally held).
 
 Open GitHub issues track the rest: #3 kernel caching/subsetting, #8 UI polish,
-#9 project-specific Claude skills, #10 system-view zoom-and-focus on a selected
-body (dolly the camera in to frame a chosen body — complements the existing
-Follow dropdown, which only re-centers). Done: #1 axial tilt/spin (real pole +
+#9 project-specific Claude skills. Done: #10 system-view Focus + real Sun
+lighting + "Now" (dolly to frame a followed body, lit by the true Sun direction,
+jumpable to today's real positions — the "enhanced body view" is the system view
+focused; see above), #1 axial tilt/spin (real pole +
 `rotation_deg_per_day` from SPICE applied in both views — see below), #2
 OpenAPI/Swagger docs (`/api/docs`), #5 home-page link validation + grouping
 (`mix astro.manifest` + `SystemsView`), #6 fresh-clone setup, #7 kernel-version

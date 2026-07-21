@@ -7,7 +7,9 @@ import Locator from '../three/lib/marker';
 import util from '../three/util';
 import simSettings, { setBaseEtPerWallSecond } from '../three/lib/sim-settings';
 
-const START_UTC = '2026-01-01T00:00:00';
+const DEFAULT_START_UTC = '2026-01-01T00:00:00';
+// NAIF id for the Sun — fetched as an extra trajectory to drive real lighting.
+const SUN_SPICE_ID = '10';
 // Contiguous sample window fetched per streaming step; longer than one period so
 // the trail/guide have a full revolution to work with and refetches are rare.
 // The step (WINDOW_DAYS/SAMPLES ~ 0.04 day) must be small relative to the
@@ -61,6 +63,23 @@ const MIN_SURFACE_GAP = 0.02;
 // Zoom-in cap when following the barycenter itself (no single focused body).
 const BARY_MIN_DISTANCE = 0.15;
 
+// Focus dolly: frame the body at this many radii from centre (~⅓ of view
+// height at fov 70) and ease the move over this many seconds.
+const FRAME_RADII = 4.5;
+const FOCUS_SECONDS = 0.8;
+// Off-Sun azimuth + elevation of the focus camera, so the framed body shows a
+// lit gibbous phase with a visible terminator rather than a flat full face.
+const FOCUS_SUN_AZIMUTH_DEG = 50;
+const FOCUS_ELEVATION_DEG = 25;
+
+// Ambient fill in the system view. Low, so the real directional Sun leaves a
+// visible terminator/phase instead of washing the dark side flat.
+const AMBIENT_INTENSITY = 0.2;
+// Distance to park the directional Sun light — only its direction matters.
+const SUN_LIGHT_DIST = 50;
+
+const smoothstep = (t) => t * t * (3 - 2 * t);
+
 // Treat a non-2xx response (e.g. a 500 HTML error page) as a failure rather
 // than trying to JSON.parse "<!DOCTYPE ...".
 function okJson(r) {
@@ -83,6 +102,11 @@ export default class BarycenterModel extends React.Component {
     this._lastMarkers = false;
     this._followName = 'Barycenter';
     this._prevFollowPos = new THREE.Vector3();
+
+    this.startUtc = DEFAULT_START_UTC;
+    this.sunOrbit = null;        // interpolated Sun path driving the key light
+    this._focus = null;          // active dolly transition, or null
+    this._focusRequested = false;
   }
 
   async componentDidMount() {
@@ -94,7 +118,7 @@ export default class BarycenterModel extends React.Component {
       this.observer = String(barycenter.spice_id);
       const orbiting = (this.props.orbiting || []).map((o) => o.orbiting);
 
-      const start = START_UTC;
+      const start = this.startUtc;
       const stop = this.windowStop(start);
       this.currentStopUtc = stop;
 
@@ -156,11 +180,21 @@ export default class BarycenterModel extends React.Component {
       this.scale = TARGET_SCENE_RADIUS / extentKm;
 
       this.et = this.data[0].traj.samples[0].et;
-      // Phase reference for spin: all bodies share START_UTC, and the SPICE
-      // orientation epoch is that same instant, so spin angle is measured from
-      // here. Driving spin off this shared clock is what makes tidal locking
-      // fall out for free (the Moon's 13.18 deg/day == its orbital rate).
+      // Phase reference for spin: spin angle is measured from the window start
+      // (reset on a "Now" jump). Driving spin off this shared clock at the real
+      // rate is what makes tidal locking fall out for free (the Moon's 13.18
+      // deg/day == its orbital rate), regardless of the absolute epoch.
       this.et0 = this.et;
+
+      // Sun as an extra interpolated trajectory to drive real lighting. Skip
+      // for the Solar-System barycenter (observer '0'), where the Sun ≈ the
+      // centre and its direction degenerates — that view keeps a fixed key light.
+      if (this.observer !== '0') {
+        this.sunSamples = await this.fetchTrajectory({ spice_id: SUN_SPICE_ID }, start, stop)
+          .then((t) => (t && t.samples && t.samples.length ? t.samples : null))
+          .catch(() => null);
+      }
+
       this.setState({ loading: false });
     } catch (err) {
       console.error('BarycenterModel load failed', err);
@@ -190,18 +224,71 @@ export default class BarycenterModel extends React.Component {
       }),
     }).then(okJson);
 
-  // Streaming: next contiguous window for the (already-filtered) body list.
+  // Streaming: next contiguous window for the (already-filtered) body list,
+  // plus the Sun window (when lit) so the light tracks the epoch too.
   fetchWindow = async (startUtc) => {
     const stopUtc = this.windowStop(startUtc);
-    const trajectories = await Promise.all(
-      this.bodyList.map((body) => this.fetchTrajectory(body, startUtc, stopUtc))
-    );
-    return { stopUtc, trajectories };
+    const [trajectories, sunTrajectory] = await Promise.all([
+      Promise.all(this.bodyList.map((body) => this.fetchTrajectory(body, startUtc, stopUtc))),
+      this.sunOrbit
+        ? this.fetchTrajectory({ spice_id: SUN_SPICE_ID }, startUtc, stopUtc).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    return { stopUtc, trajectories, sunTrajectory };
   };
+
+  // Current unit vector from the barycenter toward the Sun, for lighting/framing.
+  sunDirection() {
+    if (this.sunOrbit) {
+      const p = this.sunOrbit.positionAtEt(this.et);
+      if (p.lengthSq() > 1e-9) return p.normalize();
+    }
+    return new THREE.Vector3(-1, 0, 0); // vernal-equinox fallback
+  }
+
+  // Reset the whole view to a new start epoch (the "Now" button). Meshes/orbits
+  // already exist, so this is just a buffer swap + clock reset via the streaming
+  // path — bodies jump to that date's real positions and the lighting follows.
+  jumpTo = async (startUtc) => {
+    if (this._jumping || !this.orbits.length) return;
+    this._jumping = true;
+    try {
+      const { stopUtc, trajectories, sunTrajectory } = await this.fetchWindow(startUtc);
+      this.orbits.forEach(({ orbit }, i) => {
+        const t = trajectories[i];
+        if (t && t.samples && t.samples.length) orbit.setBuffer(t.samples);
+      });
+      if (this.sunOrbit && sunTrajectory && sunTrajectory.samples) {
+        this.sunOrbit.setBuffer(sunTrajectory.samples);
+      }
+      this.startUtc = startUtc;
+      this.currentStopUtc = stopUtc;
+      this._pending = null;
+      // Reset the clock (and spin phase reference) to the new window's start.
+      this.et = this.et0 = this.orbits[0].orbit.bounds().startEt;
+      // Positions teleported, so force applyFollow to re-anchor the camera to
+      // the body's new location (preserving the current offset/zoom) instead of
+      // tracking from a stale position — otherwise the followed body flies off.
+      this._followName = null;
+    } catch (e) {
+      console.warn('jumpTo failed', String(e));
+    } finally {
+      this._jumping = false;
+    }
+  };
+
+  // Current UTC trimmed to the API's second-resolution format.
+  nowUtc() {
+    return new Date().toISOString().replace(/\.\d+Z$/, '');
+  }
 
   configureGUI = (gui) => {
     gui.add(this.guiSettings, 'animate').name('Animate?');
     gui.add(this.guiSettings, 'follow', ['Barycenter', ...this.bodyList.map((b) => b.name)]).name('Follow');
+    // Dolly in to frame the followed body at a lit 3/4 angle (no-op for Barycenter).
+    gui.add({ focus: () => { this._focusRequested = true; } }, 'focus').name('Focus body');
+    // Jump the whole system to today's real positions + lighting.
+    gui.add({ now: () => this.jumpTo(this.nowUtc()) }, 'now').name('Now');
     gui.add(this.guiSettings, 'markers').name('Show markers');
     gui.add(this.guiSettings, 'guide').name('Show ellipse guide');
     gui.open();
@@ -219,10 +306,21 @@ export default class BarycenterModel extends React.Component {
   };
 
   preRender = ({ scene }) => {
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const key = new THREE.DirectionalLight(0xffffff, 1.2);
-    key.position.set(-10, -6, 4);
-    scene.add(key);
+    scene.add(new THREE.AmbientLight(0xffffff, AMBIENT_INTENSITY));
+
+    if (this.sunSamples) {
+      // Real Sun: a directional light aimed from the Sun's true position (updated
+      // each frame from an interpolated Sun path), so bodies show real phases.
+      this.sunOrbit = new Orbit({ scale: this.scale });
+      this.sunOrbit.setBuffer(this.sunSamples);
+      this.sunLight = new THREE.DirectionalLight(0xffffff, 1.3);
+      scene.add(this.sunLight);
+    } else {
+      // Fallback (Solar-System barycenter): the old fixed key light.
+      const key = new THREE.DirectionalLight(0xffffff, 1.2);
+      key.position.set(-10, -6, 4);
+      scene.add(key);
+    }
 
     // Barycenter locator: a constant-size gold dot. No physical size, so it
     // never fades. Hidden unless markers are enabled.
@@ -313,6 +411,9 @@ export default class BarycenterModel extends React.Component {
       this.orbits.forEach(({ orbit }, i) =>
         orbit.setBuffer(this._pending.trajectories[i].samples)
       );
+      if (this.sunOrbit && this._pending.sunTrajectory && this._pending.sunTrajectory.samples) {
+        this.sunOrbit.setBuffer(this._pending.sunTrajectory.samples);
+      }
       this.currentStopUtc = this._pending.stopUtc;
       this._pending = null;
     }
@@ -345,6 +446,66 @@ export default class BarycenterModel extends React.Component {
     }
 
     this._prevFollowPos.copy(followPos);
+  }
+
+  // Begin a dolly that frames the followed body at a lit 3/4 angle. No-op when
+  // following the barycenter (nothing specific to frame).
+  beginFocus(camera, controls) {
+    const name = this.guiSettings.follow;
+    if (name === 'Barycenter') return;
+    const entry = this.orbits.find((o) => o.body && o.body.name === name);
+    if (!entry) return;
+
+    const d = Math.max(FRAME_RADII * entry.worldRadius, entry.worldRadius + MIN_SURFACE_GAP);
+
+    // Camera direction: start from the Sun direction (lit side), swing
+    // FOCUS_SUN_AZIMUTH_DEG off it so the terminator is visible, then raise it
+    // FOCUS_ELEVATION_DEG above the ecliptic for a 3/4 look.
+    const up = new THREE.Vector3(0, 0, 1);
+    const sunDir = this.sunDirection();
+    let side = new THREE.Vector3().crossVectors(sunDir, up);
+    if (side.lengthSq() < 1e-6) side.set(1, 0, 0);
+    side.normalize();
+
+    const az = FOCUS_SUN_AZIMUTH_DEG * DEG2RAD;
+    const el = FOCUS_ELEVATION_DEG * DEG2RAD;
+    const horiz = new THREE.Vector3()
+      .addScaledVector(sunDir, Math.cos(az))
+      .addScaledVector(side, Math.sin(az))
+      .normalize();
+    const dir = new THREE.Vector3()
+      .addScaledVector(horiz, Math.cos(el))
+      .addScaledVector(up, Math.sin(el))
+      .normalize();
+
+    this._focus = {
+      t: 0,
+      name,
+      entry,
+      from: camera.position.clone(),
+      fromTarget: controls.target.clone(),
+      destOffset: dir.multiplyScalar(d),
+    };
+    this.guiSettings.follow = name; // so applyFollow tracks it after the dolly
+    this.updateMinDistance(controls);
+  }
+
+  // Advance the active dolly; hand control back to applyFollow when it lands.
+  stepFocus(camera, controls, delta) {
+    const f = this._focus;
+    f.t = Math.min(1, f.t + delta / FOCUS_SECONDS);
+    const e = smoothstep(f.t);
+
+    const bodyPos = f.entry.orbit.positionAtEt(this.et);
+    const destPos = bodyPos.clone().add(f.destOffset);
+    camera.position.lerpVectors(f.from, destPos, e);
+    controls.target.lerpVectors(f.fromTarget, bodyPos, e);
+
+    if (f.t >= 1) {
+      this._followName = f.name;
+      this._prevFollowPos.copy(bodyPos);
+      this._focus = null;
+    }
   }
 
   renderScene = ({ scene, camera, controls, renderer }) => {
@@ -394,7 +555,18 @@ export default class BarycenterModel extends React.Component {
         mesh.quaternion.copy(tiltQuat).multiply(_spinQ);
       });
 
-      this.applyFollow(camera, controls);
+      // Aim the real Sun light from the Sun's current direction.
+      if (this.sunOrbit && this.sunLight) {
+        const s = this.sunOrbit.positionAtEt(this.et);
+        if (s.lengthSq() > 1e-9) this.sunLight.position.copy(s.normalize()).multiplyScalar(SUN_LIGHT_DIST);
+      }
+
+      if (this._focusRequested) {
+        this._focusRequested = false;
+        this.beginFocus(camera, controls);
+      }
+      if (this._focus) this.stepFocus(camera, controls, delta);
+      else this.applyFollow(camera, controls);
       controls.update();
 
       renderer.render(scene, camera);
