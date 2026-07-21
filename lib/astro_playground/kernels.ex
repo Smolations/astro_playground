@@ -52,6 +52,13 @@ defmodule AstroPlayground.Kernels do
     # Satellite ephemerides loaded by the meta-kernel. The 2018 filenames
     # (jup310, mar097, plu055, ...) were superseded on the NAIF server.
     "spk/satellites/jup365.bsp",   # Jupiter: Galilean + inner moons
+    # Saturn: 9 majors (Mimas-Phoebe) + co-orbitals (Helene, Telesto, Calypso,
+    # Methone, Polydeuces) + Saturn center, all w.r.t. the Saturn barycenter.
+    # sat427 (242M, 1950-2050) from a_old_versions: the current sat441 has the
+    # same 14 moons but is 630M (span to 2250 we don't need), and the current
+    # small sat45x/sat459 are SUPPLEMENTS — only 699 + provisional irregulars,
+    # no majors (the ura116xl trap again). sat427 covers the render epoch.
+    "spk/satellites/a_old_versions/sat427.bsp",
     "spk/satellites/mar099s.bsp",  # Mars: Phobos, Deimos
     "spk/satellites/plu060.bsp",   # Pluto: Charon, Nix, Hydra, Kerberos, Styx
     "spk/satellites/nep097.bsp",   # Neptune: Triton

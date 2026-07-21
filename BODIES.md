@@ -184,9 +184,15 @@ essentially unresolved).
   low resolution. Saturn's rings are a separate rendering problem entirely and
   are not currently modelled.
 
-*No Saturnian moons are currently tracked* — a notable gap, since Titan,
-Enceladus, Iapetus, Rhea, Dione, Tethys and Mimas are all well mapped by
-Cassini and would be among the highest-quality additions available.
+**Saturn's 14 named moons are now tracked** (ephemeris only, via `sat427.bsp`):
+the 9 majors — Mimas `601`, Enceladus `602`, Tethys `603`, Dione `604`, Rhea
+`605`, Titan `606`, Hyperion `607`, Iapetus `608`, Phoebe `609` — plus the
+co-orbitals Helene `612`, Telesto `613`, Calypso `614`, Methone `632`,
+Polydeuces `634`. They render as procedural ellipsoids for now; **textures are
+the remaining upgrade**, and Titan/Enceladus/Iapetus/Rhea/Dione/Tethys/Mimas are
+all superbly mapped by Cassini. The ring/inner shepherds (Janus, Epimetheus,
+Atlas, Prometheus, Pandora, Pan, …) are not in `sat427` and stay untracked.
+Saturn's rings remain a separate, unmodelled rendering problem.
 
 ---
 
@@ -339,7 +345,7 @@ returns and its maps prove better than the USGS equivalents.
 3. **Miranda** — best Uranian moon data: good mosaic plus the group's best DEM.
 4. **Ariel, Titania** — partial mosaics, each with a real partial DEM.
 5. **Umbriel, Oberon** — colour only; no usable DEM.
-6. **Saturn's moons** — not currently tracked at all, yet Titan/Enceladus/Iapetus/Rhea/Dione/Tethys/Mimas are superbly mapped by Cassini. Probably the largest single upgrade available to this project.
+6. **Saturn's moons** — now tracked (ephemeris via `sat427.bsp`) but untextured; adding the Cassini mosaics for Titan/Enceladus/Iapetus/Rhea/Dione/Tethys/Mimas is probably the largest single upgrade available to this project.
 7. **Normal maps generally** — every `normal`, `bump`, `displacement`, `emissive` and `ambient_occlusion` column is currently empty for all 18 textured bodies. Eight bodies have real global DEMs ready to convert.
 8. **Thebe, Adrastea, Metis, Nix, Hydra, Kerberos, Styx** — procedural ellipsoids; no real imagery exists.
 9. **Nereid** — skip.

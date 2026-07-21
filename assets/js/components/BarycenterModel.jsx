@@ -17,6 +17,18 @@ const SAMPLES = 1000;
 // True proportions: the largest orbit maps to this many scene units.
 const TARGET_SCENE_RADIUS = 8;
 
+// Fallback framing for a system with no orbital extent (a moonless planet on
+// its own barycenter): scale so the largest body radius spans 1/this of the
+// scene, rather than dividing by a ~0 orbit radius.
+const MIN_EXTENT_BODY_RADII = 3;
+
+// Frame the system on its *regular* extent: ignore orbits beyond this multiple
+// of the median orbit radius when choosing the initial scale. A distant
+// irregular moon (Saturn's Phoebe ~215 planet radii out, Neptune's Nereid)
+// would otherwise dominate the scale and load the view absurdly zoomed out.
+// Trimmed orbits still render — they just extend past the initial frame.
+const FRAME_MEDIAN_MULTIPLE = 12;
+
 // GLOBAL simulation speed: ephemeris-time seconds advanced per wall-second at
 // time scale 1 — the same for every system, so a body's on-screen speed
 // reflects its true period (an inner moon really is faster than an outer one).
@@ -87,11 +99,28 @@ export default class BarycenterModel extends React.Component {
       this.bodyList = this.data.map((d) => d.body);
       if (!this.data.length) throw new Error('no renderable bodies in this system');
 
-      // True-proportion scale from the largest orbit radius in the system.
-      const maxR = Math.max(
-        ...this.data.flatMap((d) => d.traj.samples.map((s) => Math.hypot(s.x, s.y, s.z)))
+      // True-proportion scale, framed on the system's regular extent. Take each
+      // body's max distance from the barycenter over the window, then frame on
+      // the largest that's within FRAME_MEDIAN_MULTIPLE of the median — so a
+      // distant irregular moon (Phoebe, Nereid) doesn't blow out the scale and
+      // leave the main system a speck. Trimmed orbits still render past the frame.
+      const bodyRadii = this.data
+        .map((d) => Math.max(...d.traj.samples.map((s) => Math.hypot(s.x, s.y, s.z))))
+        .sort((a, b) => a - b);
+
+      const median = bodyRadii[Math.floor(bodyRadii.length / 2)];
+      const cap = median * FRAME_MEDIAN_MULTIPLE;
+      const framed = bodyRadii.filter((r) => r <= cap);
+      const frameR = framed.length ? framed[framed.length - 1] : bodyRadii[bodyRadii.length - 1];
+
+      // A moonless planet sits essentially on its own barycenter, so frameR ~ 0 —
+      // dividing by it yields an infinite scale and a NaN-sized (invisible)
+      // sphere. Floor the extent by the largest body radius so it stays visible.
+      const maxBodyR = Math.max(
+        ...this.data.map((d) => d.specs.polar_radius || d.specs.equatorial_radius_large || 1000)
       );
-      this.scale = TARGET_SCENE_RADIUS / maxR;
+      const extentKm = Math.max(frameR, maxBodyR * MIN_EXTENT_BODY_RADII);
+      this.scale = TARGET_SCENE_RADIUS / extentKm;
 
       this.et = this.data[0].traj.samples[0].et;
       this.setState({ loading: false });
@@ -143,7 +172,11 @@ export default class BarycenterModel extends React.Component {
   };
 
   configureCamera = (camera) => {
-    camera.position.set(0, -TARGET_SCENE_RADIUS * 2.2, TARGET_SCENE_RADIUS * 0.75);
+    // A 3/4 top-down view (~40° above the orbital plane): orbits open into
+    // legible ellipses and the system fills the frame, while enough obliquity
+    // remains to read inclinations. A near-edge-on default made every system
+    // look like a flat smear.
+    camera.position.set(0, -TARGET_SCENE_RADIUS * 1.3, TARGET_SCENE_RADIUS * 1.05);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     return camera;
   };

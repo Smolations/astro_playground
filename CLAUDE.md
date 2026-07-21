@@ -119,13 +119,19 @@ window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-R
 nominal-placeholder fallback when RADII missing; `mu:0` when GM missing),
 `/objects/:id/orientation`, `/objects/:id/orbiting`, `/objects/:id/textures`,
 `POST /trajectory`, `POST /get_state`, `/identify_code/:code`,
-`/identify_name/:name`. (No formal schema yet — issue #2 proposes OpenAPI.)
+`/identify_name/:name`, `GET /home_manifest` (serves the precomputed
+`priv/render_manifest.json` — no per-request SPICE work).
+(No formal schema yet — issue #2 proposes OpenAPI.)
 
 ## Frontend map (`assets/js/`)
 
 - `routes.jsx` — RR6 routes: `/barycenters/:id` → system view (`Barycenter.jsx`
   → `BarycenterModel.jsx`); `/planets|satellites|stars|dwarf_planets/:id` →
-  single body (`Spheroid.jsx` → `SpheroidModel.jsx`); `/objects` → home table.
+  single body (`Spheroid.jsx` → `SpheroidModel.jsx`); `/objects` → home page,
+  now grouped by system (`components/SystemsView.jsx` — a collapsible section per
+  barycenter, each with a renderability-gated "System view" CTA (live for
+  `ok`/`lone`, disabled with a tooltip for `empty`) plus per-body "View body"
+  links; reads `GET /home_manifest`; replaced the removed flat `SpiceObjectsTable.jsx`).
 - `three/models/orbit.js`, `three/models/spheroid.js`, `three/lib/marker.js`
   (`Locator` — constant-pixel findability dots that fade as the real sphere
   resolves).
@@ -155,18 +161,36 @@ warnings — they're benign noise. (This is a good skill candidate — issue #9.
 Also verify trajectories directly:
 `docker compose exec app python3 -c "import spiceypy as s; s.furnsh('priv/kernels/meta_kernels/meta_kernel.tm'); print(s.spkezr('705', s.str2et('2026-01-01'), 'ECLIPJ2000','NONE','7'))"`
 
+**`mix astro.manifest`** is the automated home-page-link validator (issue #5
+goal 1). It walks every seeded object plus the orbit parent/child graph and,
+via a batch SPICE probe (`priv/scripts/renderability.py`), determines what each
+link renders and whether it can — emitting a UI-ready, committed
+`priv/render_manifest.json` (the data source for the grouped home page, goal 2)
+plus a console report. Per-barycenter `status`: `ok` (multiple bodies with
+orbital extent — animated view is meaningful), `lone` (a single body coincident
+with its barycenter, i.e. a moonless planet like Mercury/Venus — renders, but as
+a lone body with no orbital motion), `empty` (no child ephemeris resolves, so
+nothing renders — e.g. Saturn, no seeded satellite kernel). Flags: `--out PATH`,
+`--check` (exit non-zero if any system is `empty` — CI gate). Runs automatically
+as the last step of `mix ecto.setup`, so the committed manifest regenerates on
+seed/reset.
+
 ## Roadmap / open issues
 
 Revival directions: (1) findability markers ✅ · (2) moon systems ✅ (Earth,
-Jupiter, Mars, Pluto, Uranus, Neptune — every system with available ephemeris;
-Saturn moons not yet seeded) · (3) **Sun + planets finale** — forces the deferred
+Jupiter, Mars, Saturn, Pluto, Uranus, Neptune — every system with available
+ephemeris; Saturn's 14 named moons from `sat427.bsp` are ephemeris-only, no
+textures yet) · (3) **Sun + planets finale** — forces the deferred
 true-vs-exaggerated **scale toggle** (issue #4, intentionally held).
 
 GitHub issues track the rest: #1 system-view axial tilt/spin (bodies look tipped
 — `SpheroidModel.applyOrientation` does it right, reuse in `BarycenterModel`),
 #2 OpenAPI docs, #3 kernel caching/subsetting, #5 validate home-page links +
-grouping, #6 fresh-clone setup validation, #7 kernel-version upgrade check,
-#8 UI polish, #9 project-specific Claude skills.
+grouping (in progress — `mix astro.manifest` + grouped `SystemsView`),
+#6 fresh-clone setup validation, #7 kernel-version upgrade check,
+#8 UI polish, #9 project-specific Claude skills, #10 system-view zoom-and-focus
+on a selected body (dolly the camera in to frame a chosen body — complements the
+existing Follow dropdown, which only re-centers).
 
 ## Conventions & gotchas
 

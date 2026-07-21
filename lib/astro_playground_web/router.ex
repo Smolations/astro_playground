@@ -18,6 +18,7 @@ defmodule AstroPlaygroundWeb.Router do
   scope "/api", AstroPlaygroundWeb do
     pipe_through :api
 
+    get "/home_manifest", HomeManifestController, :show
     post "/get_state", SpiceyController, :show
     post "/trajectory", SpiceyController, :trajectory
     get "/identify_code/:code", SpiceyController, :identify_code
