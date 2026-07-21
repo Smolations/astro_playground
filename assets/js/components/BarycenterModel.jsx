@@ -63,6 +63,11 @@ const MIN_SURFACE_GAP = 0.02;
 // Zoom-in cap when following the barycenter itself (no single focused body).
 const BARY_MIN_DISTANCE = 0.15;
 
+// Default whole-system framing offset (camera relative to the look-at target):
+// a 3/4 view ~40° above the ecliptic. Used at load and to reset framing when the
+// Follow target changes, so switching Follow doesn't inherit a deep Focus zoom.
+const DEFAULT_VIEW_OFFSET = new THREE.Vector3(0, -TARGET_SCENE_RADIUS * 1.3, TARGET_SCENE_RADIUS * 1.05);
+
 // Focus dolly: frame the body at this many radii from centre (~⅓ of view
 // height at fov 70) and ease the move over this many seconds.
 const FRAME_RADII = 4.5;
@@ -253,10 +258,11 @@ export default class BarycenterModel extends React.Component {
       this._pending = null;
       // Reset the clock (and spin phase reference) to the new window's start.
       this.et = this.et0 = this.orbits[0].orbit.bounds().startEt;
-      // Positions teleported, so force applyFollow to re-anchor the camera to
-      // the body's new location (preserving the current offset/zoom) instead of
-      // tracking from a stale position — otherwise the followed body flies off.
-      this._followName = null;
+      // Leave `_followName`/`_prevFollowPos` alone: next frame applyFollow's
+      // track branch translates the camera by the teleport delta (new − stale
+      // followPos), so the followed body stays framed at the same zoom through
+      // the jump — and it deliberately does NOT reset framing the way a Follow
+      // *switch* does.
     } catch (e) {
       console.warn('jumpTo failed', String(e));
     } finally {
@@ -287,7 +293,7 @@ export default class BarycenterModel extends React.Component {
     // legible ellipses and the system fills the frame, while enough obliquity
     // remains to read inclinations. A near-edge-on default made every system
     // look like a flat smear.
-    camera.position.set(0, -TARGET_SCENE_RADIUS * 1.3, TARGET_SCENE_RADIUS * 1.05);
+    camera.position.copy(DEFAULT_VIEW_OFFSET);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     return camera;
   };
@@ -421,9 +427,11 @@ export default class BarycenterModel extends React.Component {
     const followPos = this.getFollowPos();
 
     if (this.guiSettings.follow !== this._followName) {
-      const offset = camera.position.clone().sub(controls.target);
+      // Reset to the default whole-system framing, then centre on the new
+      // target — don't inherit the current (possibly deep Focus) zoom, or
+      // switching Follow could bury the camera inside a large body.
       controls.target.copy(followPos);
-      camera.position.copy(followPos).add(offset);
+      camera.position.copy(followPos).add(DEFAULT_VIEW_OFFSET);
       this._followName = this.guiSettings.follow;
       this.updateMinDistance(controls);
     } else {
