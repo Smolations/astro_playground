@@ -50,6 +50,17 @@ const LOCAL_POLE = new THREE.Vector3(0, 1, 0);
 // Scratch quaternion reused each frame to avoid per-frame allocation.
 const _spinQ = new THREE.Quaternion();
 
+// Zoom-in cap for a focused body: closest approach leaves a full body-diameter
+// of empty space between the camera and the surface, so distance-to-centre =
+// radius + diameter = 3× radius. Sizing the cap to the body keeps a tiny moon
+// (Earth's Moon in the system view) reachable, where a fixed floor left it a
+// distant speck. Floored by MIN_SURFACE_GAP so a very small body can't dolly
+// past the near clip plane.
+const MIN_SURFACE_GAP = 0.02;
+
+// Zoom-in cap when following the barycenter itself (no single focused body).
+const BARY_MIN_DISTANCE = 0.15;
+
 // Treat a non-2xx response (e.g. a 500 HTML error page) as a failure rather
 // than trying to JSON.parse "<!DOCTYPE ...".
 function okJson(r) {
@@ -261,9 +272,22 @@ export default class BarycenterModel extends React.Component {
       locator.object3d.visible = this.guiSettings.markers;
       scene.add(locator.object3d);
 
-      return { orbit, mesh, locator, body, tiltQuat, spinRate };
+      return { orbit, mesh, locator, body, tiltQuat, spinRate, worldRadius };
     });
   };
+
+  // Cap zoom-in relative to the focused body's size: you can approach until the
+  // camera is one body-diameter off the surface, then it stops. Keeps small
+  // bodies reachable while never letting the camera punch into a large one.
+  updateMinDistance(controls) {
+    if (this.guiSettings.follow === 'Barycenter') {
+      controls.minDistance = BARY_MIN_DISTANCE;
+      return;
+    }
+    const entry = this.orbits.find((o) => o.body && o.body.name === this.guiSettings.follow);
+    const r = entry ? entry.worldRadius : 0;
+    controls.minDistance = r > 0 ? r + Math.max(2 * r, MIN_SURFACE_GAP) : BARY_MIN_DISTANCE;
+  }
 
   // Stream the next contiguous window as we near the current one's end, and swap
   // buffers once consumed. `et` is clamped to available data so a slow fetch
@@ -313,6 +337,7 @@ export default class BarycenterModel extends React.Component {
       controls.target.copy(followPos);
       camera.position.copy(followPos).add(offset);
       this._followName = this.guiSettings.follow;
+      this.updateMinDistance(controls);
     } else {
       const d = followPos.clone().sub(this._prevFollowPos);
       camera.position.add(d);
@@ -324,6 +349,9 @@ export default class BarycenterModel extends React.Component {
 
   renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
+
+    // Initial cap for the default follow (Barycenter); refreshed on each switch.
+    this.updateMinDistance(controls);
 
     const render = () => {
       const delta = clock.getDelta();
