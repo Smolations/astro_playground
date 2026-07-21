@@ -67,10 +67,6 @@ const BARY_MIN_DISTANCE = 0.15;
 // height at fov 70) and ease the move over this many seconds.
 const FRAME_RADII = 4.5;
 const FOCUS_SECONDS = 0.8;
-// Off-Sun azimuth + elevation of the focus camera, so the framed body shows a
-// lit gibbous phase with a visible terminator rather than a flat full face.
-const FOCUS_SUN_AZIMUTH_DEG = 50;
-const FOCUS_ELEVATION_DEG = 25;
 
 // Ambient fill in the system view. Low, so the real directional Sun leaves a
 // visible terminator/phase instead of washing the dark side flat.
@@ -236,15 +232,6 @@ export default class BarycenterModel extends React.Component {
     ]);
     return { stopUtc, trajectories, sunTrajectory };
   };
-
-  // Current unit vector from the barycenter toward the Sun, for lighting/framing.
-  sunDirection() {
-    if (this.sunOrbit) {
-      const p = this.sunOrbit.positionAtEt(this.et);
-      if (p.lengthSq() > 1e-9) return p.normalize();
-    }
-    return new THREE.Vector3(-1, 0, 0); // vernal-equinox fallback
-  }
 
   // Reset the whole view to a new start epoch (the "Now" button). Meshes/orbits
   // already exist, so this is just a buffer swap + clock reset via the streaming
@@ -448,8 +435,8 @@ export default class BarycenterModel extends React.Component {
     this._prevFollowPos.copy(followPos);
   }
 
-  // Begin a dolly that frames the followed body at a lit 3/4 angle. No-op when
-  // following the barycenter (nothing specific to frame).
+  // Begin a dolly that frames the followed body. No-op when following the
+  // barycenter (nothing specific to frame).
   beginFocus(camera, controls) {
     const name = this.guiSettings.follow;
     if (name === 'Barycenter') return;
@@ -458,25 +445,15 @@ export default class BarycenterModel extends React.Component {
 
     const d = Math.max(FRAME_RADII * entry.worldRadius, entry.worldRadius + MIN_SURFACE_GAP);
 
-    // Camera direction: start from the Sun direction (lit side), swing
-    // FOCUS_SUN_AZIMUTH_DEG off it so the terminator is visible, then raise it
-    // FOCUS_ELEVATION_DEG above the ecliptic for a 3/4 look.
-    const up = new THREE.Vector3(0, 0, 1);
-    const sunDir = this.sunDirection();
-    let side = new THREE.Vector3().crossVectors(sunDir, up);
-    if (side.lengthSq() < 1e-6) side.set(1, 0, 0);
-    side.normalize();
-
-    const az = FOCUS_SUN_AZIMUTH_DEG * DEG2RAD;
-    const el = FOCUS_ELEVATION_DEG * DEG2RAD;
-    const horiz = new THREE.Vector3()
-      .addScaledVector(sunDir, Math.cos(az))
-      .addScaledVector(side, Math.sin(az))
-      .normalize();
-    const dir = new THREE.Vector3()
-      .addScaledVector(horiz, Math.cos(el))
-      .addScaledVector(up, Math.sin(el))
-      .normalize();
+    // Dolly straight in along the CURRENT sightline: keep the user's orientation
+    // (don't reorient the orbital plane — a sun-relative angle could swing the
+    // system edge-on/vertical, which is disorienting, especially for a tilted
+    // moon plane like Saturn's). Real Sun lighting still gives the phase; the
+    // user can orbit for a different angle. Fall back to the default 3/4
+    // direction only if the camera sits right on the target.
+    const dir = camera.position.clone().sub(controls.target);
+    if (dir.lengthSq() < 1e-9) dir.set(0, -1.3, 1.05);
+    dir.normalize();
 
     this._focus = {
       t: 0,
