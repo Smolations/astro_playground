@@ -114,22 +114,20 @@ export default class SpheroidModel extends React.Component {
 
 
   configureCamera = (camera) => {
-    // Reposition the camera at an angle where axes markers would be
-    // visible, and where sunlight is visible
-    const yDist = {
-      star: this.bodyScale.max * 2,
-      planet: this.bodyScale.max * 2.5,
-      dwarf_planet: this.bodyScale.max * 3, // eventually
+    // A 3/4 hero view from above the equator, with up = ecliptic +Z, so the
+    // fixed display tilt reads as a near-vertical polar axis (a globe on a
+    // stand) rather than the old near-edge-on framing that left the axis lying
+    // closer to horizontal. Distance is keyed to body type for a nice frame.
+    const dist = {
+      star: this.bodyScale.max * 2.4,
+      planet: this.bodyScale.max * 3,
+      dwarf_planet: this.bodyScale.max * 3.5,
       satellite: this.bodyScale.max * 5,
-    }
-    const camX = -5;
-    const camY = -yDist[this.bodyType];
-    const camZ = 3;
+    }[this.bodyType] || this.bodyScale.max * 3;
 
-    camera.position.set(camX, camY, camZ);
-
-    // Point the camera at the central body (origin)
-    // camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.up.set(0, 0, 1);
+    camera.position.set(-dist * 0.35, -dist * 0.82, dist * 0.5);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     return camera;
   }
