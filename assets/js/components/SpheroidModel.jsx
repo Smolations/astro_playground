@@ -8,6 +8,13 @@ import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
 
 
+// The single-body view has no orbital clock, so compress real time here:
+// ephemeris seconds advanced per wall-second. Tuned so Earth (one sidereal
+// rotation per day) spins about once every ~8 s; every other body's period
+// stays true-to-scale against that — Jupiter races (~0.9 s), the Moon creeps
+// (~3.6 min), Venus barely moves and turns backward.
+const BODY_ET_PER_WALL_SECOND = 86400 / 8;
+
 const _axesHelper = Symbol('axesHelper');
 const _bodies = Symbol('bodies');
 const _body = Symbol('body');
@@ -92,7 +99,8 @@ export default class SpheroidModel extends React.Component {
     // in the ecliptic (ECLIPJ2000) frame the scene uses.
     const pole = new THREE.Vector3(o.pole.x, o.pole.y, o.pole.z).normalize();
     body.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pole);
-    body.spinSign = Math.sign(o.rotation_deg_per_day) || 1;
+    // Real spin rate + sense; drives updatePosition. 0 leaves the body static.
+    body.rotationDegPerDay = Number.isFinite(o.rotation_deg_per_day) ? o.rotation_deg_per_day : 0;
   }
 
 
@@ -227,8 +235,9 @@ export default class SpheroidModel extends React.Component {
       } else {
         const t = clock.getElapsedTime();
 
-        // Update animated elements
-        this[_body].updatePosition(t);
+        // Update animated elements. Feed elapsed *ephemeris* seconds so the spin
+        // period is true-to-scale (see BODY_ET_PER_WALL_SECOND).
+        this[_body].updatePosition(t * BODY_ET_PER_WALL_SECOND);
       }
 
       // Render the scene/camera combination

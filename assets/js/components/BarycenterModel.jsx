@@ -39,6 +39,16 @@ const ET_PER_WALL_SECOND = (27.321661 * 86400) / 60;
 // Prefetch the next window once this fraction of the current one is left.
 const PREFETCH_FRACTION = 0.4;
 
+const DEG2RAD = Math.PI / 180;
+
+// SphereGeometry's poles are on local +Y, so a body's spin axis is local +Y
+// before we tilt it. Scene up is +Z (the ecliptic normal), so an untilted mesh
+// has its poles pointing sideways — that's the "bodies look tipped" bug (#1).
+const LOCAL_POLE = new THREE.Vector3(0, 1, 0);
+
+// Scratch quaternion reused each frame to avoid per-frame allocation.
+const _spinQ = new THREE.Quaternion();
+
 // Treat a non-2xx response (e.g. a 500 HTML error page) as a failure rather
 // than trying to JSON.parse "<!DOCTYPE ...".
 function okJson(r) {
@@ -87,7 +97,14 @@ export default class BarycenterModel extends React.Component {
                 ? await util.loadTexture(`/images/${body.texture.map}`).catch(() => null)
                 : null;
 
-            return { body, traj, specs, map };
+            // Real axial tilt + rotation sense/rate from SPICE (in ECLIPJ2000,
+            // the scene frame). Best-effort: a body without orientation falls
+            // back to pole-up / no spin rather than being skipped.
+            const orientation = await fetch(`/api/objects/${body.id}/orientation`)
+              .then(okJson)
+              .catch(() => null);
+
+            return { body, traj, specs, map, orientation };
           } catch (e) {
             console.warn(`Skipping ${body.name} in system view:`, String(e));
             return null;
@@ -123,6 +140,11 @@ export default class BarycenterModel extends React.Component {
       this.scale = TARGET_SCENE_RADIUS / extentKm;
 
       this.et = this.data[0].traj.samples[0].et;
+      // Phase reference for spin: all bodies share START_UTC, and the SPICE
+      // orientation epoch is that same instant, so spin angle is measured from
+      // here. Driving spin off this shared clock is what makes tidal locking
+      // fall out for free (the Moon's 13.18 deg/day == its orbital rate).
+      this.et0 = this.et;
       this.setState({ loading: false });
     } catch (err) {
       console.error('BarycenterModel load failed', err);
@@ -195,7 +217,7 @@ export default class BarycenterModel extends React.Component {
     scene.add(this.baryLocator.object3d);
     scene.add(new THREE.AxesHelper(TARGET_SCENE_RADIUS * 0.5));
 
-    this.orbits = this.data.map(({ body, specs, map, traj }) => {
+    this.orbits = this.data.map(({ body, specs, map, traj, orientation }) => {
       const orbit = new Orbit({ scale: this.scale });
       orbit.setBuffer(traj.samples);
       orbit.object3ds.forEach((o) => scene.add(o));
@@ -211,6 +233,23 @@ export default class BarycenterModel extends React.Component {
       if (map) material.map = map;
 
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(worldRadius, 48, 48), material);
+
+      // Tilt the spin axis to the body's true pole, expressed in ECLIPJ2000
+      // (the scene frame). Missing orientation → pole up (ecliptic north).
+      const tiltQuat = new THREE.Quaternion();
+      const pole =
+        orientation && orientation.pole
+          ? new THREE.Vector3(orientation.pole.x, orientation.pole.y, orientation.pole.z)
+          : new THREE.Vector3(0, 0, 1);
+      tiltQuat.setFromUnitVectors(LOCAL_POLE, pole.normalize());
+      mesh.quaternion.copy(tiltQuat);
+
+      // deg/day; sign encodes prograde(+)/retrograde(-). No orientation → no spin.
+      const spinRate =
+        orientation && Number.isFinite(orientation.rotation_deg_per_day)
+          ? orientation.rotation_deg_per_day
+          : 0;
+
       scene.add(mesh);
 
       // Findability: a constant-pixel dot that fades as the real sphere resolves.
@@ -218,7 +257,7 @@ export default class BarycenterModel extends React.Component {
       locator.object3d.visible = this.guiSettings.markers;
       scene.add(locator.object3d);
 
-      return { orbit, mesh, locator, body };
+      return { orbit, mesh, locator, body, tiltQuat, spinRate };
     });
   };
 
@@ -306,12 +345,21 @@ export default class BarycenterModel extends React.Component {
       }
 
       const viewportHeight = renderer.domElement.height;
-      this.orbits.forEach(({ orbit, mesh, locator }) => {
+      this.orbits.forEach(({ orbit, mesh, locator, tiltQuat, spinRate }) => {
         const pos = orbit.positionAtEt(this.et);
         mesh.position.copy(pos);
         orbit.updateTrail(this.et);
         if (this.guiSettings.markers) locator.update(pos, camera, viewportHeight);
-        mesh.rotation.y += 0.01;
+
+        // Spin about the true pole at the real rate, phased off the same
+        // ephemeris clock as the orbit. Compose tilt ∘ spin: spin is about the
+        // untilted local pole (+Y), then tilt carries it to the real pole — so
+        // the net rotation is about the true axis. Because the spin shares the
+        // orbit's clock, a synchronous rotator (Moon, Io, Titan) keeps one face
+        // toward its primary instead of tumbling.
+        const spinAngle = spinRate * (this.et - this.et0) / 86400 * DEG2RAD;
+        _spinQ.setFromAxisAngle(LOCAL_POLE, spinAngle);
+        mesh.quaternion.copy(tiltQuat).multiply(_spinQ);
       });
 
       this.applyFollow(camera, controls);
