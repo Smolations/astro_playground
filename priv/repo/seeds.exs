@@ -192,35 +192,66 @@ metis = Repo.insert! %SpiceObject{ name: "Metis",
   spice_name: "Metis",
   type: :satellite }
 
-# // saturn
-# mimas
-# enceladus
-# tethys
-# dione
-# rhea
-# titan
-# hyperion
-# iapetus
-# phoebe
-# janus
-# epimetheus
-# helene
-# telesto
-# calypso
-# atlas
-# prometheus
-# pandora
-# pan
-# methone
-# pallene
-# polydeuces
-# daphnis
-# anthe
-# aegaeon
-# _ = Repo.insert! %SpiceObject{ name: "",
-#   spice_id: 9,
-#   spice_name: "",
-#   type: "" }
+# // saturn — the 14 named moons carried by sat427.bsp (9 majors + 5 co-orbitals).
+# The ring/inner shepherds (janus, epimetheus, atlas, prometheus, pandora, pan,
+# daphnis, pallene, anthe, aegaeon) are NOT in sat427 — they need a separate
+# kernel, so they stay unseeded for now.
+mimas = Repo.insert! %SpiceObject{ name: "Mimas",
+  spice_id: 601,
+  spice_name: "Mimas",
+  type: :satellite }
+enceladus = Repo.insert! %SpiceObject{ name: "Enceladus",
+  spice_id: 602,
+  spice_name: "Enceladus",
+  type: :satellite }
+tethys = Repo.insert! %SpiceObject{ name: "Tethys",
+  spice_id: 603,
+  spice_name: "Tethys",
+  type: :satellite }
+dione = Repo.insert! %SpiceObject{ name: "Dione",
+  spice_id: 604,
+  spice_name: "Dione",
+  type: :satellite }
+rhea = Repo.insert! %SpiceObject{ name: "Rhea",
+  spice_id: 605,
+  spice_name: "Rhea",
+  type: :satellite }
+titan = Repo.insert! %SpiceObject{ name: "Titan",
+  spice_id: 606,
+  spice_name: "Titan",
+  type: :satellite }
+hyperion = Repo.insert! %SpiceObject{ name: "Hyperion",
+  spice_id: 607,
+  spice_name: "Hyperion",
+  type: :satellite }
+iapetus = Repo.insert! %SpiceObject{ name: "Iapetus",
+  spice_id: 608,
+  spice_name: "Iapetus",
+  type: :satellite }
+phoebe = Repo.insert! %SpiceObject{ name: "Phoebe",
+  spice_id: 609,
+  spice_name: "Phoebe",
+  type: :satellite }
+helene = Repo.insert! %SpiceObject{ name: "Helene",
+  spice_id: 612,
+  spice_name: "Helene",
+  type: :satellite }
+telesto = Repo.insert! %SpiceObject{ name: "Telesto",
+  spice_id: 613,
+  spice_name: "Telesto",
+  type: :satellite }
+calypso = Repo.insert! %SpiceObject{ name: "Calypso",
+  spice_id: 614,
+  spice_name: "Calypso",
+  type: :satellite }
+methone = Repo.insert! %SpiceObject{ name: "Methone",
+  spice_id: 632,
+  spice_name: "Methone",
+  type: :satellite }
+polydeuces = Repo.insert! %SpiceObject{ name: "Polydeuces",
+  spice_id: 634,
+  spice_name: "Polydeuces",
+  type: :satellite }
 
 # // uranus
 ariel = Repo.insert! %SpiceObject{ name: "Ariel",
@@ -387,6 +418,34 @@ Repo.insert! %Orbit{ barycenter: jupiter_bc, orbiting: metis,
 }
 
 Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: saturn,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: mimas,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: enceladus,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: tethys,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: dione,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: rhea,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: titan,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: hyperion,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: iapetus,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: phoebe,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: helene,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: telesto,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: calypso,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: methone,
+}
+Repo.insert! %Orbit{ barycenter: saturn_bc, orbiting: polydeuces,
 }
 
 Repo.insert! %Orbit{ barycenter: uranus_bc, orbiting: uranus,
