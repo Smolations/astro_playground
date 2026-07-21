@@ -1,14 +1,23 @@
 defmodule AstroPlaygroundWeb.TextureController do
   use AstroPlaygroundWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   alias AstroPlayground.Textures
   alias AstroPlayground.Textures.Texture
+  alias AstroPlaygroundWeb.Schemas
 
   action_fallback AstroPlaygroundWeb.FallbackController
 
-  # /bodies/:body_id/textures
-  # find the textures connected to a body
-  def index(conn, %{"body_id" => body_id}) do
+  tags ["Objects"]
+
+  operation :index,
+    summary: "Textures for a body",
+    description: "Under /objects/{spice_object_id}/textures, the textures for that body (the bare /textures lists all).",
+    parameters: [spice_object_id: [in: :path, description: "Database id of the body", type: :integer, required: true, example: 37]],
+    responses: [ok: {"Textures", "application/json", Schemas.TexturesResponse}]
+
+  # /objects/:spice_object_id/textures — textures connected to a body.
+  def index(conn, %{"spice_object_id" => body_id}) do
     textures = Textures.find_textures(body_id)
     render(conn, "index.json", textures: textures)
   end
