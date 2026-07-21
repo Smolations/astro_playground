@@ -6,7 +6,7 @@ import Spheroid from '../three/models/spheroid';
 import ThreeModel from './ThreeModel';
 import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
-import simSettings from '../three/lib/sim-settings';
+import simSettings, { setBaseEtPerWallSecond } from '../three/lib/sim-settings';
 
 
 // The single-body view has no orbital clock, so compress real time here:
@@ -74,6 +74,10 @@ export default class SpheroidModel extends React.Component {
 
 
   async componentDidMount() {
+    // Register this view's 1× rate so the global control's hint reflects body
+    // spin time flow while a single body is on screen.
+    setBaseEtPerWallSecond(BODY_ET_PER_WALL_SECOND);
+
     // Texture images are optional; a body with no (or a missing) map simply
     // renders as a bland sphere. Never let a failed load block the render.
     try {

@@ -5,7 +5,7 @@ import ThreeModel from './ThreeModel';
 import Orbit from '../three/models/orbit';
 import Locator from '../three/lib/marker';
 import util from '../three/util';
-import simSettings from '../three/lib/sim-settings';
+import simSettings, { setBaseEtPerWallSecond } from '../three/lib/sim-settings';
 
 const START_UTC = '2026-01-01T00:00:00';
 // Contiguous sample window fetched per streaming step; longer than one period so
@@ -75,6 +75,9 @@ export default class BarycenterModel extends React.Component {
   }
 
   async componentDidMount() {
+    // Register this view's 1× rate so the global control's hint reflects
+    // orbital time flow while a system is on screen.
+    setBaseEtPerWallSecond(ET_PER_WALL_SECOND);
     try {
       const barycenter = this.props.model;
       this.observer = String(barycenter.spice_id);

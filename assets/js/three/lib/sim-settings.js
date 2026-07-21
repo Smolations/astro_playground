@@ -8,6 +8,11 @@
 // loops read `simSettings.timeScale` fresh each frame; the top-center
 // TimeScaleControl is the sole writer. Persisted to localStorage so it also
 // survives a reload.
+//
+// `baseEtPerWallSecond` is the ephemeris seconds advanced per wall-second at 1×
+// for the *active* view. Orbit motion and body spin are calibrated to different
+// base rates, so each view registers its own on mount; the control uses it only
+// to show an approximate real→sim time mapping under the slider.
 
 const STORAGE_KEY = 'astro.timeScale';
 
@@ -27,9 +32,11 @@ function load() {
 }
 
 const listeners = new Set();
+const notify = () => listeners.forEach((fn) => fn(simSettings));
 
 const simSettings = {
   timeScale: load(),
+  baseEtPerWallSecond: null, // set by the active view on mount
 };
 
 export function setTimeScale(value) {
@@ -40,11 +47,21 @@ export function setTimeScale(value) {
   } catch (e) {
     // Non-fatal: the in-memory value still drives the sim this session.
   }
-  listeners.forEach((fn) => fn(v));
+  notify();
 }
 
-// Subscribe to changes (for UI that mirrors the value). Returns an unsubscriber.
-export function subscribeTimeScale(fn) {
+// The active view registers its 1× base rate (ephemeris s / wall s) so the
+// control can show the approximate real→sim time mapping for what's on screen.
+export function setBaseEtPerWallSecond(rate) {
+  if (Number.isFinite(rate) && rate > 0) {
+    simSettings.baseEtPerWallSecond = rate;
+    notify();
+  }
+}
+
+// Subscribe to any settings change (for UI that mirrors the value). The
+// callback receives the live settings object. Returns an unsubscriber.
+export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
 }
