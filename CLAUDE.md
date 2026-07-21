@@ -103,14 +103,19 @@ window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-R
   verifies coverage, downloads, swaps refs in `meta_kernel.tm` + the manifest,
   keeps the old file. Never automatic.
 - **NAIF renames/supersedes filenames constantly.** The 2018 names (jup310,
-  mar097, plu055...) 404. Current: `jup365`, `mar099s`, `plu060`, `nep097`
-  (Triton), `nep105` (Nereid), `ura111` (Uranus majors, from `a_old_versions/`),
+  mar097, plu055...) 404. Current: `jup365`, `sat427` (Saturn majors +
+  co-orbitals, from `a_old_versions/`), `mar099s`, `plu060`, `nep097` (Triton),
+  `nep105` (Nereid), `ura111` (Uranus majors, from `a_old_versions/`),
   `de432s` (planets).
 - **Check coverage WITHOUT downloading:** every `foo.bsp` has a `foo.cmt`
   comment file at the same URL. `grep -A15 'Bodies on the File'` lists the
   covered bodies; also check the timespan covers the render epoch. A newer file
   is **not always a superset** — e.g. `ura116xl` dropped the five major moons
-  (keeps only minor 716–724); the majors live in the older `ura111`.
+  (keeps only minor 716–724), and Saturn's newest `sat45x`/`sat459` hold only the
+  planet + provisional irregulars (no majors); the majors live in the older
+  `ura111` / `sat427`. (The `.cmt` can mislead here: it lists moons in its
+  constants table even when the file has no ephemeris segment for them — confirm
+  with `spkobj`/`brief`, not just the comment.)
 
 ## API (base `/api`, all JSON)
 
@@ -170,7 +175,8 @@ plus a console report. Per-barycenter `status`: `ok` (multiple bodies with
 orbital extent — animated view is meaningful), `lone` (a single body coincident
 with its barycenter, i.e. a moonless planet like Mercury/Venus — renders, but as
 a lone body with no orbital motion), `empty` (no child ephemeris resolves, so
-nothing renders — e.g. Saturn, no seeded satellite kernel). Flags: `--out PATH`,
+nothing renders — the state Saturn was in before `sat427` was seeded; no system
+is currently `empty`). Flags: `--out PATH`,
 `--check` (exit non-zero if any system is `empty` — CI gate). Runs automatically
 as the last step of `mix ecto.setup`, so the committed manifest regenerates on
 seed/reset.
@@ -179,18 +185,20 @@ seed/reset.
 
 Revival directions: (1) findability markers ✅ · (2) moon systems ✅ (Earth,
 Jupiter, Mars, Saturn, Pluto, Uranus, Neptune — every system with available
-ephemeris; Saturn's 14 named moons from `sat427.bsp` are ephemeris-only, no
-textures yet) · (3) **Sun + planets finale** — forces the deferred
-true-vs-exaggerated **scale toggle** (issue #4, intentionally held).
+ephemeris; Saturn's 14 named moons from `sat427.bsp`, six textured with NASA
+public-domain enhanced-colour Cassini mosaics — Titan stays grayscale, and
+Hyperion/Phoebe/the five co-orbitals stay bland) · (3) **Sun + planets finale**
+— forces the deferred true-vs-exaggerated **scale toggle** (issue #4,
+intentionally held).
 
-GitHub issues track the rest: #1 system-view axial tilt/spin (bodies look tipped
-— `SpheroidModel.applyOrientation` does it right, reuse in `BarycenterModel`),
-#2 OpenAPI docs, #3 kernel caching/subsetting, #5 validate home-page links +
-grouping (in progress — `mix astro.manifest` + grouped `SystemsView`),
-#6 fresh-clone setup validation, #7 kernel-version upgrade check,
-#8 UI polish, #9 project-specific Claude skills, #10 system-view zoom-and-focus
-on a selected body (dolly the camera in to frame a chosen body — complements the
-existing Follow dropdown, which only re-centers).
+Open GitHub issues track the rest: #1 system-view axial tilt/spin (bodies look
+tipped — `SpheroidModel.applyOrientation` does it right, reuse in
+`BarycenterModel`), #2 OpenAPI docs, #3 kernel caching/subsetting, #8 UI polish,
+#9 project-specific Claude skills, #10 system-view zoom-and-focus on a selected
+body (dolly the camera in to frame a chosen body — complements the existing
+Follow dropdown, which only re-centers). Done: #5 home-page link validation +
+grouping (`mix astro.manifest` + `SystemsView`), #6 fresh-clone setup, #7
+kernel-version upgrade check.
 
 ## Conventions & gotchas
 
