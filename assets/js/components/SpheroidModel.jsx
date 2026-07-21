@@ -6,7 +6,20 @@ import Spheroid from '../three/models/spheroid';
 import ThreeModel from './ThreeModel';
 import QuantScale from '../three/lib/quant-scale';
 import util from '../three/util';
+import simSettings, { clearBaseEtPerWallSecond } from '../three/lib/sim-settings';
 
+
+// The isolated single-body view is a showcase, not a physics sim: it's about
+// looking at one body on its own. So every body gets the SAME calm baseline
+// spin and the SAME fixed axial tilt — framing stays consistent from body to
+// body. (Real per-body obliquity + rotation, and satellite tidal-locking, live
+// in the system view.) One revolution per this many wall-seconds at 1×; the
+// global time scale multiplies it.
+const BODY_SPIN_SECONDS_PER_REV = 8;
+
+// Consistent display tilt (deg) for every body's pole — a recognizable "tilted
+// globe" lean, identical for all so the polar axis always reads the same angle.
+const BODY_DISPLAY_TILT_DEG = 23.4;
 
 const _axesHelper = Symbol('axesHelper');
 const _bodies = Symbol('bodies');
@@ -66,6 +79,12 @@ export default class SpheroidModel extends React.Component {
 
 
   async componentDidMount() {
+    // The showcase view uses a fixed display tilt + uniform spin (no SPICE
+    // orientation needed). Clear any base rate a prior system view registered,
+    // so the global control drops its real→sim hint — the showcase spin isn't
+    // physical time, so the time scale is just a spin-speed multiplier here.
+    clearBaseEtPerWallSecond();
+
     // Texture images are optional; a body with no (or a missing) map simply
     // renders as a bland sphere. Never let a failed load block the render.
     try {
@@ -75,54 +94,49 @@ export default class SpheroidModel extends React.Component {
       this.maps = {};
     }
 
-    // Real axial tilt + rotation sense from SPICE. Best-effort: falls back to
-    // pole-up / prograde if unavailable.
-    this.orientation = await fetch(`/api/objects/${this.props.info.id}/orientation`)
-      .then((r) => r.json())
-      .catch(() => null);
-
     this.setState({ loading: false });
   }
 
-  applyOrientation(body) {
-    const o = this.orientation;
-    if (!o || !o.pole) return;
-
-    // Align the body's local +Y (its pole) to the true pole vector, expressed
-    // in the ecliptic (ECLIPJ2000) frame the scene uses.
-    const pole = new THREE.Vector3(o.pole.x, o.pole.y, o.pole.z).normalize();
-    body.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pole);
-    body.spinSign = Math.sign(o.rotation_deg_per_day) || 1;
+  applyDisplayTilt(body) {
+    // Fixed, consistent orientation for the showcase view: put the pole (local
+    // +Y) up (+Z), then lean it a constant amount so every body shows the same
+    // recognizable axial tilt regardless of its real obliquity.
+    const poleUp = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 0, 1)
+    );
+    const lean = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(1, 0, 0),
+      THREE.MathUtils.degToRad(BODY_DISPLAY_TILT_DEG)
+    );
+    body.quaternion.copy(lean).multiply(poleUp);
   }
 
 
   configureCamera = (camera) => {
-    // Reposition the camera at an angle where axes markers would be
-    // visible, and where sunlight is visible
-    const yDist = {
-      star: this.bodyScale.max * 2,
-      planet: this.bodyScale.max * 2.5,
-      dwarf_planet: this.bodyScale.max * 3, // eventually
+    // A 3/4 hero view from above the equator, with up = ecliptic +Z, so the
+    // fixed display tilt reads as a near-vertical polar axis (a globe on a
+    // stand) rather than the old near-edge-on framing that left the axis lying
+    // closer to horizontal. Distance is keyed to body type for a nice frame.
+    const dist = {
+      star: this.bodyScale.max * 2.4,
+      planet: this.bodyScale.max * 3,
+      dwarf_planet: this.bodyScale.max * 3.5,
       satellite: this.bodyScale.max * 5,
-    }
-    const camX = -5;
-    const camY = -yDist[this.bodyType];
-    const camZ = 3;
+    }[this.bodyType] || this.bodyScale.max * 3;
 
-    camera.position.set(camX, camY, camZ);
-
-    // Point the camera at the central body (origin)
-    // camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.up.set(0, 0, 1);
+    camera.position.set(-dist * 0.35, -dist * 0.82, dist * 0.5);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     return camera;
   }
 
   configureGUI = (gui) => {
     this.guiSettings.animate = true;
-    this.guiSettings.timeScale = 10;
 
+    // Time scale is a global control (top-center), not a per-view setting.
     gui.add( this.guiSettings, 'animate' ).name('Animate?');
-    // gui.add( params, 'timeScale' ).min(1).max(20).step(1).name('Time Scale x');
     // gui.add( params, 'lookAt', bodies ).name('Look at:');
 
     gui.open();
@@ -192,7 +206,7 @@ export default class SpheroidModel extends React.Component {
   preRender = ({ scene }) => {
     this[_axesHelper] = this.getAxesHelper({ length: this.bodyScale.max * 2 });
     this[_body] = this.getBody();
-    this.applyOrientation(this[_body]);
+    this.applyDisplayTilt(this[_body]);
     console.log(this[_body].toString());
 
     scene.add( this[_axesHelper] );
@@ -219,17 +233,21 @@ export default class SpheroidModel extends React.Component {
 
   renderScene = ({ scene, camera, controls, renderer }) => {
     const clock = new THREE.Clock();
+    let spinRad = 0;
+    const spinRadPerSec = (2 * Math.PI) / BODY_SPIN_SECONDS_PER_REV;
 
     const render = () => {
-      if (!this.guiSettings.animate) {
-        controls.update();
+      const delta = clock.getDelta();
 
-      } else {
-        const t = clock.getElapsedTime();
-
-        // Update animated elements
-        this[_body].updatePosition(t);
+      if (this.guiSettings.animate) {
+        // Uniform baseline spin for every body, scaled by the global time
+        // multiplier. Accumulated incrementally so a mid-spin scale change
+        // doesn't jump.
+        spinRad += delta * spinRadPerSec * simSettings.timeScale;
+        this[_body].updatePosition(spinRad);
       }
+
+      controls.update();
 
       // Render the scene/camera combination
       renderer.render(scene, camera);
@@ -237,8 +255,6 @@ export default class SpheroidModel extends React.Component {
       // Repeat
       requestAnimationFrame(render);
     };
-
-    // this.renderer.autoClear = false;
 
     requestAnimationFrame(render);
   }

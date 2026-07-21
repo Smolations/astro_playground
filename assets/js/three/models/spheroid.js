@@ -88,11 +88,9 @@ export default class Spheroid extends AstroGroup {
     this.add(this[_spheroid]);
     this.add(this[_polarAxis]);
 
-    // Real axial tilt is applied by the caller, which aligns this group's local
-    // +Y (the sphere's pole and the polar-axis line) to the body's true pole
-    // vector. `spinSign` carries the prograde(+)/retrograde(-) sense from SPICE.
-    // Default: pole up, prograde.
-    this.spinSign = 1;
+    // Axial tilt is applied by the caller to this group's local +Y (the
+    // sphere's pole and the polar-axis line). Spin is driven by the caller via
+    // `updatePosition`, which sets the absolute rotation angle about that pole.
   }
 
   getPolarAxis(radius) {
@@ -178,9 +176,9 @@ export default class Spheroid extends AstroGroup {
     return glowSphere;
   }
 
-  updatePosition() {
-    // Spin about the body's own axis (local +Y, aligned by the caller to the
-    // real pole). spinSign carries the prograde/retrograde sense from SPICE.
-    this[_spheroid].rotation.y += this.spinSign * 0.01;
+  updatePosition(spinRadians = 0) {
+    // Spin about the body's own axis (local +Y). The caller passes an absolute
+    // angle; the axial tilt lives on the parent group's quaternion.
+    this[_spheroid].rotation.y = spinRadians;
   }
 };

@@ -83,6 +83,30 @@ Real orbits **precess** (they don't close). We don't force loops — we stream:
 **Sampling caveat:** fast inner moons alias with coarse time steps. Current
 window is dense (`WINDOW_DAYS=40`, `SAMPLES=1000` ≈ 0.04 day/step) + Catmull-Rom.
 
+### Axial tilt & spin (issue #1)
+
+The two views intentionally differ: the **system view is physical**, the
+**single-body view is a showcase**.
+
+**System view (`BarycenterModel`)** orients each body from the SPICE
+`orientation` endpoint (`pole` + `rotation_deg_per_day`, in ECLIPJ2000). Tilt =
+align the mesh's local **+Y** (SphereGeometry's pole) to the true `pole` vector —
+without it, poles point +Y (sideways to the +Z ecliptic up), which was the
+"bodies look tipped" bug. Spin = rotate about that pole at the real rate;
+`rotation_deg_per_day`'s sign carries prograde/retrograde. Compose **tilt ∘
+spin** so the spin is about the untilted local +Y before the tilt carries it to
+the true axis. The key move: spin is phased off the **same `et` clock as the
+orbit**, so a synchronous rotator (Moon 13.18 °/day == its orbital rate, Io,
+Titan) keeps one face to its primary for free — no special-casing.
+
+**Single-body view (`SpheroidModel` → `Spheroid.updatePosition`)** is about
+viewing one body in isolation, so it drops physical accuracy for consistent
+framing: a **fixed display tilt** (`BODY_DISPLAY_TILT_DEG`, same lean for every
+body) and a **uniform baseline spin** (`BODY_SPIN_SECONDS_PER_REV`, same speed
+for every body). No SPICE orientation is fetched here. Because the spin isn't
+physical time, this view registers no base rate, so the global time control
+hides its real→sim hint (the scale is just a spin-speed multiplier here).
+
 ## Kernels
 
 - `.bsp`/`.tls`/`.tpc` under `priv/kernels/` are **gitignored and disposable** —
@@ -198,14 +222,14 @@ Hyperion/Phoebe/the five co-orbitals stay bland) · (3) **Sun + planets finale**
 — forces the deferred true-vs-exaggerated **scale toggle** (issue #4,
 intentionally held).
 
-Open GitHub issues track the rest: #1 system-view axial tilt/spin (bodies look
-tipped — `SpheroidModel.applyOrientation` does it right, reuse in
-`BarycenterModel`), #3 kernel caching/subsetting, #8 UI polish,
+Open GitHub issues track the rest: #3 kernel caching/subsetting, #8 UI polish,
 #9 project-specific Claude skills, #10 system-view zoom-and-focus on a selected
 body (dolly the camera in to frame a chosen body — complements the existing
-Follow dropdown, which only re-centers). Done: #2 OpenAPI/Swagger docs
-(`/api/docs`), #5 home-page link validation + grouping (`mix astro.manifest` +
-`SystemsView`), #6 fresh-clone setup, #7 kernel-version upgrade check.
+Follow dropdown, which only re-centers). Done: #1 axial tilt/spin (real pole +
+`rotation_deg_per_day` from SPICE applied in both views — see below), #2
+OpenAPI/Swagger docs (`/api/docs`), #5 home-page link validation + grouping
+(`mix astro.manifest` + `SystemsView`), #6 fresh-clone setup, #7 kernel-version
+upgrade check.
 
 ## Conventions & gotchas
 
