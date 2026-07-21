@@ -17,7 +17,9 @@ parser.add_argument('code', metavar='code',
 
 args = parser.parse_args()
 
-meta_kernel_name = 'codes_and_names'
+# See code_from_name.py: repointed from the stale 'codes_and_names' meta-kernel
+# (hardcoded absolute path) to the working main meta-kernel.
+meta_kernel_name = 'meta_kernel'
 
 
 def name_from_code():
