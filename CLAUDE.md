@@ -200,21 +200,14 @@ Barycenter DB ids: Solar System 1, Mercury 2 … Uranus 8, Neptune 9, Pluto 10.
 
 ## Verifying renders (headless Playwright)
 
-The `mcr.microsoft.com/playwright` image ships browsers but **not** the
-`playwright` npm package, and it must join the compose network to reach
-`http://assets:5173`. Recipe that works (install the package at runtime):
-
-```bash
-docker run --rm --network astro_playground_default \
-  -v "$SCRATCH/shot.js:/shot.js" -v "$SCRATCH/shots:/out" \
-  mcr.microsoft.com/playwright:v1.48.0-jammy \
-  bash -c 'cd /tmp && npm i playwright@1.48.0 >/dev/null 2>&1 && NODE_PATH=/tmp/node_modules node /shot.js'
-```
-
-The script launches chromium with `--use-gl=swiftshader`, `goto` the route,
-`waitForTimeout(~9s)` for the WebGL scene, `screenshot` to `/out`. Then Read the
-PNG. Ignore the semantic-ui-react `defaultProps`/`findDOMNode` deprecation
-warnings — they're benign noise. (This is a good skill candidate — issue #9.)
+Use the **`verify-render` skill** (`.claude/skills/verify-render/`, issue #9) —
+it packages the container recipe as a parameterized driver. Write a `steps.json`
+(goto / wait / shot / gui / follow / toggle / slider / eval), run
+`scripts/run.sh <steps.json> <out-dir>`, then Read the PNGs. It joins the compose
+network, uses swiftshader (software WebGL), waits ~9s per scene, filters the
+benign semantic-ui-react `defaultProps`/`findDOMNode` noise, and exits non-zero on
+a real `PAGEERROR`. See the skill's `SKILL.md` for the step vocabulary, DB-id
+lookups, and SPICE spot-checks. (Playwright pinned to `v1.48.0` to match the image.)
 
 Also verify trajectories directly:
 `docker compose exec app python3 -c "import spiceypy as s; s.furnsh('priv/kernels/meta_kernels/meta_kernel.tm'); print(s.spkezr('705', s.str2et('2026-01-01'), 'ECLIPJ2000','NONE','7'))"`
