@@ -1,0 +1,18 @@
+[
+  { "goto": "/barycenters/4" },
+  { "wait": 9000 },
+  { "shot": "earthmoon-overview" },
+
+  { "follow": "Luna" },
+  { "wait": 1200 },
+  { "gui": "Focus body" },
+  { "wait": 2500 },
+  { "shot": "luna-focus" },
+
+  { "gui": "Now" },
+  { "wait": 4000 },
+  { "shot": "luna-now" },
+
+  { "slider": ["#time_scale_range", 5] },
+  { "eval": "document.querySelector('.time_scale_value').textContent" }
+]
